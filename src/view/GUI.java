@@ -6,11 +6,15 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 
 /**
@@ -34,8 +38,10 @@ public class GUI {
      * Sets up the frame for the GUI.
      */
     private static void setupFrame() {
-        final int frameWidth = 800;
+        final int frameWidth =  800;
         final int frameHeight = 800;
+
+
         final JFrame frame = new JFrame("Trivia Maze");
         frame.setLocationRelativeTo(null);
         frame.setSize(frameWidth, frameHeight);
@@ -45,6 +51,7 @@ public class GUI {
 
 
         setupMenuBar(frame);
+        setupPanels(frame);
         frame.setVisible(true);
     }
 
@@ -157,5 +164,56 @@ public class GUI {
                 JOptionPane.INFORMATION_MESSAGE
                 ));
         return instructionFileItem;
+    }
+
+    /**
+     * Creates the panels for the Trivia maze. In this method, it calls setupMazePanel
+     * and setupRightPanel
+     * @param theFrame - The frame for the window.
+     */
+    private static void setupPanels(final JFrame theFrame) {
+        final int halfWidth = (int) Math.floor(theFrame.getWidth() * 0.5);
+        final int halfHeight = (int) Math.floor(theFrame.getHeight() * 0.5);
+
+        setupMazePanel(theFrame, halfWidth);
+        setupRightPanel(theFrame, halfWidth, halfHeight);
+    }
+
+    /**
+     * Sets up the left panel that contains the maze.
+     * @param theFrame - The frame for the window.
+     * @param theHalfWidth - Half the width of the given frame.
+     */
+    private static void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
+        final JPanel mazePanel = new JPanel();
+        mazePanel.setBackground(Color.MAGENTA);
+        mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
+        theFrame.add(mazePanel);
+    }
+
+    /**
+     * Sets up the right panel that contains the maze.
+     * @param theFrame - The frame for the window.
+     * @param theHalfWidth - Half the width of the given frame.
+     * @param theHalfHeight - Half the height of the given frame.
+     */
+    private static void setupRightPanel(JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
+        final JPanel rightPanel = new JPanel();
+        rightPanel.setBounds(theHalfWidth,0,theHalfWidth, theFrame.getHeight());
+        final BoxLayout boxLayout = new BoxLayout(rightPanel, BoxLayout.Y_AXIS);
+        rightPanel.setLayout(boxLayout);
+        rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
+        theFrame.add(rightPanel, BorderLayout.EAST);
+
+
+        final JPanel roomPanel = new JPanel();
+        roomPanel.setBackground(Color.BLUE);
+        roomPanel.setBounds(theHalfWidth,0, theHalfWidth, theHalfHeight);
+        rightPanel.add(roomPanel, boxLayout);
+
+        final JPanel questionPanel = new JPanel();
+        questionPanel.setBackground(Color.RED);
+        questionPanel.setBounds(theHalfWidth,theHalfHeight, theHalfWidth, theHalfHeight);
+        rightPanel.add(questionPanel, boxLayout);
     }
 }
