@@ -48,7 +48,7 @@ public class Trivia {
      * Creates the trivia and adds the inputted name to myName.
      * @param theName - The name of the player.
      */
-    private Trivia(final String theName) {
+    protected Trivia(final String theName) {
         myName = theName;
         myRightAnswer = 0;
         myWrongAnswer = 0;
@@ -76,14 +76,14 @@ public class Trivia {
     /**
      * When the player finds the treasure, increment the try count.
      */
-    protected void incrementTries() {
+    protected void incrementTrys() {
         myTrys++;
     }
 
     /**
      * When the player gets a question wrong, decrement the try count.
      */
-    protected void decrementTries() {
+    protected void decrementTrys() {
         myTrys--;
     }
 
