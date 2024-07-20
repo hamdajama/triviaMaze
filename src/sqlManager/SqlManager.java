@@ -111,4 +111,39 @@ public class SqlManager {
             pstmt.setObject(i + 1, params[i]);
         }
     }
+
+    public void createTable(String query) throws SQLException {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            int rv = stmt.executeUpdate(query);
+            System.out.println("executedUpdate() returned " + rv);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public void insertData(String query) throws SQLException {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            int rv = stmt.executeUpdate(query);
+            System.out.println("executedUpdate() returned " + rv);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public void displayData(String query) throws SQLException {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                System.out.println(rs.getString("QUESTION") + " " + rs.getString("ANSWER"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
 }
