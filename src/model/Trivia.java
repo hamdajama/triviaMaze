@@ -1,6 +1,5 @@
 /**
  * TCSS 360 Trivia Class
- * @author - Eric John
  * Summer 2024
  */
 package model;
