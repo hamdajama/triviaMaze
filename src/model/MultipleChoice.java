@@ -44,11 +44,8 @@ public class MultipleChoice extends Question{
 
     /**
      * Deletes two wrong choices from the question.
-     * @param theChoices - The choices relating to the question.
-     * @param theRightAnswer - The right answer from the list of choices.
      */
-    protected void deleteChoice(final Map<String, String> theChoices,
-                                final String theRightAnswer) {
+    protected void deleteChoice() {
 
         //Create two different maps.
         Map<String, String> wrongChoices = new HashMap<>();
@@ -56,8 +53,8 @@ public class MultipleChoice extends Question{
         Random randChoice = new Random();
 
         //Separate the correct choice from the wrong choice.
-        for (Map.Entry<String, String> entry : theChoices.entrySet()) {
-            if (!entry.getKey().equals(theRightAnswer)) {
+        for (Map.Entry<String, String> entry : myChoices.entrySet()) {
+            if (!entry.getKey().equals(myRightAnswer)) {
                 wrongChoices.put(entry.getKey(), entry.getValue());
             } else {
                 correctChoice.put(entry.getKey(), entry.getValue());
@@ -75,9 +72,9 @@ public class MultipleChoice extends Question{
 
 
         //Clear all the choices then put the correct choice and an incorrect choice.
-        theChoices.clear();
-        theChoices.putAll(correctChoice);
-        theChoices.putAll(wrongChoices);
+        myChoices.clear();
+        myChoices.putAll(correctChoice);
+        myChoices.putAll(wrongChoices);
 
     }
 
