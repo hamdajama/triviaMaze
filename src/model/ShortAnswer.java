@@ -9,18 +9,7 @@ package model;
  * @author Eric John
  * @version 7/20/2024
  */
-public class ShortAnswer {
-
-    /**
-     * The ID of the question from the sql file.
-     */
-    private final int myID;
-
-    /**
-     * The short answer question from the sql file.
-     */
-    private final String myQuestion;
-
+public class ShortAnswer extends Question {
     /**
      * The correct answer for the short answer from the sql file.
      */
@@ -35,18 +24,18 @@ public class ShortAnswer {
      */
     public ShortAnswer(final int theID, final String theQuestion,
                        final String theAnswer) {
-        myID = theID;
-        myQuestion = theQuestion;
+        super(theID, theQuestion);
         myAnswer = theAnswer;
     }
 
     /**
      * Checks if the typed answer from the user is the same as the correct answer.
-     * @param theAnswer - The answer typed from the user.
+     * @param thePlayerAnswer - The answer typed from the user.
      * @return True if the answer matched. False otherwise.
      */
-    protected boolean isMatch(final String theAnswer) {
-        return theAnswer.equals(myAnswer);
+    @Override
+    protected boolean isMatch(final String thePlayerAnswer) {
+        return thePlayerAnswer.equals(myAnswer);
     }
 
     /**
@@ -58,21 +47,6 @@ public class ShortAnswer {
         return "The word starts with a \"" + theAnswer.charAt(0) + "\"";
     }
 
-    /**
-     * Gets the ID of the question.
-     * @return The ID of the question.
-     */
-    protected int getID() {
-        return myID;
-    }
-
-    /**
-     * Gets the question to ask the user.
-     * @return The question.
-     */
-    protected String getQuestion() {
-        return myQuestion;
-    }
 
     /**
      * Gets the correct answer for the question.

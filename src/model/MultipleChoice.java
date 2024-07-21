@@ -14,18 +14,7 @@ import java.util.Random;
  * @author Eric John
  * @version 7/20/2024
  */
-public class MultipleChoice {
-
-    /**
-     * The question ID from the sql file.
-     */
-    private final int myQuestionID;
-
-    /**
-     * The question from the sql file.
-     */
-    private final String myQuestion;
-
+public class MultipleChoice extends Question{
     /**
      * The choices available to the player given with the key being the letter and
      * the value being the answer to that choice.
@@ -47,8 +36,8 @@ public class MultipleChoice {
      */
     public MultipleChoice(final int theQuestionID, final String theQuestion,
                           final Map<String, String> theChoices, final String theAnswer) {
-        myQuestionID = theQuestionID;
-        myQuestion = theQuestion;
+
+        super(theQuestionID, theQuestion);
         myChoices = new HashMap<>(theChoices);
         myRightAnswer = theAnswer;
     }
@@ -93,22 +82,6 @@ public class MultipleChoice {
     }
 
     /**
-     * Gets the questionID.
-     * @return The questionId.
-     */
-    protected int getQuestionID(){
-        return myQuestionID;
-    }
-
-    /**
-     * Gets the question.
-     * @return The question to be asked.
-     */
-    protected String getQuestion() {
-        return myQuestion;
-    }
-
-    /**
      * Gets the choices of the question.
      * @return The choices of the question.
      */
@@ -122,5 +95,15 @@ public class MultipleChoice {
      */
     protected String getAnswer() {
         return myRightAnswer;
+    }
+
+    /**
+     * Checks if the user answer is the same as the right answer.
+     * @param thePlayerAnswer - The answer given by the player.
+     * @return True if the answer matched. False otherwise.
+     */
+    @Override
+    protected boolean isMatch(final String thePlayerAnswer) {
+        return thePlayerAnswer.equals(myRightAnswer);
     }
 }
