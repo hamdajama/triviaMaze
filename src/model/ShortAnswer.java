@@ -40,11 +40,10 @@ public class ShortAnswer extends Question {
 
     /**
      * Gives the player a hint to the problem.
-     * @param theAnswer - The correct answer to the problem.
      * @return The first character of the correct answer.
      */
-    protected String getHint(final String theAnswer) {
-        return "The word starts with a \"" + theAnswer.charAt(0) + "\"";
+    protected String getHint() {
+        return "The word starts with a \"" + myAnswer.charAt(0) + "\"";
     }
 
 
