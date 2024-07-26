@@ -1,3 +1,7 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * MultipleChoiceTest.java
+ */
 package model;
 
 import java.util.HashMap;

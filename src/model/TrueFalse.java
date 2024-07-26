@@ -45,13 +45,12 @@ public class TrueFalse extends Question {
 
     /**
      * Gives a user a hint for a true/false question.
-     * @param theAnswer - The correct answer for the question.
      * @return What is not the right answer.
      */
-    protected String getHint(final int theAnswer) {
+    protected String getHint() {
         StringBuilder hint = new StringBuilder();
         hint.append("This question is not ");
-        if (theAnswer == 0) {
+        if (myAnswer == 0) {
             hint.append("true!");
         } else {
             hint.append("false!");

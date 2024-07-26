@@ -1,3 +1,7 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * TriviaTest.java
+ */
 package model;
 
 import static org.junit.jupiter.api.Assertions.*;
