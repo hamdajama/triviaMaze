@@ -206,8 +206,8 @@ public class GUI {
         theFrame.add(rightPanel, BorderLayout.EAST);
 
 
-        final JPanel roomPanel = new JPanel();
-        roomPanel.setBackground(Color.BLUE);
+        final RoomPanel roomPanel = new RoomPanel();
+        roomPanel.setBackground(Color.BLACK);
         roomPanel.setBounds(theHalfWidth,0, theHalfWidth, theHalfHeight);
         rightPanel.add(roomPanel, boxLayout);
 
