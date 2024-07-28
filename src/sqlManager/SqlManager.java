@@ -12,20 +12,66 @@ import java.io.IOException;
 import java.util.Properties;
 import java.io.InputStream;
 
+/**
+ * The {@code SqlManager} class provides a singleton instance to manage SQL
+ * database connections and execute SQL queries. It loads database connection
+ * properties from a configuration file, establishes connections, and provides
+ * methods to execute SQL statements, including updates and queries.
+ * <p>
+ * This class is designed to facilitate interaction with an SQL database,
+ * including creating tables, inserting data, and displaying data from the database.
+ * </p>
+ *
+ * <pre>
+ * Example usage:
+ * {@code
+ * SqlManager sqlManager = SqlManager.getInstance();
+ * sqlManager.executeUpdate("INSERT INTO users (name, email) VALUES (?, ?)", "John Doe", "john.doe@example.com");
+ * ResultSet rs = sqlManager.executeQuery("SELECT * FROM users WHERE email = ?", "john.doe@example.com");
+ * while (rs.next()) {
+ *     System.out.println(rs.getString("name"));
+ * }
+ * }
+ * </pre>
+ *
+ * @author Masumi Yano
+ * @since 1.0
+ */
 public class SqlManager {
+
+    /** The name of the properties file containing database connection details. */
     private static final String PROPERTIES_FILE = "db.properties";
+
+    /** The singleton instance of the SqlManager class. */
     private static SqlManager instance;
+
+    /** The database connection object. */
     private Connection connection;
 
+    /** The database URL. */
     private String url;
+
+    /** The database user. */
     private String user;
+
+    /** The database password. */
     private String password;
 
+    /**
+     * Private constructor to prevent instantiation from other classes.
+     * Initializes the database connection by loading properties and setting up the database.
+     */
     private SqlManager() {
         loadProperties();
         initializeDatabase();
     }
 
+    /**
+     * Returns the singleton instance of the SqlManager class.
+     * If the instance does not exist, it creates a new one.
+     *
+     * @return the singleton instance of SqlManager
+     */
     public static SqlManager getInstance() {
         if (instance == null) {
             instance = new SqlManager();
@@ -33,6 +79,9 @@ public class SqlManager {
         return instance;
     }
 
+    /**
+     * Loads database connection properties from the properties file.
+     */
     private void loadProperties() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             Properties properties = new Properties();
@@ -49,6 +98,9 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Initializes the database by executing SQL scripts to set up initial tables and data.
+     */
     private void initializeDatabase() {
         try (Connection conn = getConnection()) {
             executeSqlFile(conn, "SRS/Triviamaze.sql");
@@ -60,6 +112,12 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Returns a database connection. If the connection is closed or null, it establishes a new connection.
+     *
+     * @return the database connection
+     * @throws SQLException if a database access error occurs
+     */
     private Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(url, user, password);
@@ -67,6 +125,12 @@ public class SqlManager {
         return connection;
     }
 
+    /**
+     * Executes SQL statements from a file.
+     *
+     * @param conn the database connection
+     * @param filePath the path to the SQL file
+     */
     private void executeSqlFile(Connection conn, String filePath) {
         try {
             String content = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -84,6 +148,12 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Executes an update SQL statement with parameters.
+     *
+     * @param query the SQL query
+     * @param params the parameters for the SQL query
+     */
     public void executeUpdate(String query, Object... params) {
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -94,6 +164,13 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Executes a query SQL statement with parameters and returns the result set.
+     *
+     * @param query the SQL query
+     * @param params the parameters for the SQL query
+     * @return the result set of the query
+     */
     public ResultSet executeQuery(String query, Object... params) {
         try {
             Connection conn = getConnection();
@@ -106,12 +183,25 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Sets the parameters for a prepared statement.
+     *
+     * @param pstmt the prepared statement
+     * @param params the parameters to set
+     * @throws SQLException if a database access error occurs
+     */
     private void setParameters(PreparedStatement pstmt, Object... params) throws SQLException {
         for (int i = 0; i < params.length; i++) {
             pstmt.setObject(i + 1, params[i]);
         }
     }
 
+    /**
+     * Executes a SQL statement to create a table.
+     *
+     * @param query the SQL query
+     * @throws SQLException if a database access error occurs
+     */
     public void createTable(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
@@ -123,6 +213,12 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Executes a SQL statement to insert data into a table.
+     *
+     * @param query the SQL query
+     * @throws SQLException if a database access error occurs
+     */
     public void insertData(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
@@ -134,6 +230,12 @@ public class SqlManager {
         }
     }
 
+    /**
+     * Executes a SQL statement to display data from a table.
+     *
+     * @param query the SQL query
+     * @throws SQLException if a database access error occurs
+     */
     public void displayData(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {

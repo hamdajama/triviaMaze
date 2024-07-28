@@ -38,7 +38,7 @@ public class TrueFalse extends Question {
      * @return True if the answer match. False otherwise.
      */
     @Override
-    protected boolean isMatch(final String thePlayerAnswer) {
+    public boolean isMatch(final String thePlayerAnswer) {
         String convertAnswer = convertToTF(myAnswer);
         return thePlayerAnswer.equals(convertAnswer);
     }
