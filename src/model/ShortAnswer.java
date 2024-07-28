@@ -34,7 +34,7 @@ public class ShortAnswer extends Question {
      * @return True if the answer matched. False otherwise.
      */
     @Override
-    protected boolean isMatch(final String thePlayerAnswer) {
+    public boolean isMatch(final String thePlayerAnswer) {
         return thePlayerAnswer.equals(myAnswer);
     }
 

@@ -42,7 +42,7 @@ public abstract class Question {
      * Gets the question to ask the player.
      * @return The question.
      */
-    protected String getQuestion() {
+    public String getQuestion() {
         return myQuestion;
     }
 
@@ -51,6 +51,6 @@ public abstract class Question {
      * @param thePlayerAnswer - The answer given by the player.
      * @return True if the answer matched. False otherwise.
      */
-    protected abstract boolean isMatch(final String thePlayerAnswer);
+    public abstract boolean isMatch(final String thePlayerAnswer);
 
 }

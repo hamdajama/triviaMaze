@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import model.*;
 
 
+
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
  * along with communicating with the model and controller to update the GUI.
@@ -218,12 +219,31 @@ public class GUI {
         Room room = new Room(question);
 
         room.addPropertyChangeListener(roomPanel);
-//        room.closeDoor();
 
 
-        final JPanel questionPanel = new JPanel();
-        questionPanel.setBackground(Color.RED);
+        final QuestionPanel questionPanel = new QuestionPanel();
+        questionPanel.setBackground(Color.BLACK);
         questionPanel.setBounds(theHalfWidth,theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel, boxLayout);
+
+        //Tests multiple choice
+//        Map<String, String> choices = new HashMap<>();
+//        choices.put("A", "Red");
+//        choices.put("B", "Green");
+//        choices.put("C", "Blue");
+//        choices.put("D", "Purple");
+//        Question multipleChoice = new MultipleChoice(42, "What color is Yoda's Lightsaber?", choices, "B");
+//        questionPanel.setQuestion(multipleChoice);
+
+        //Tests ShortAnswer
+//        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
+//        questionPanel.setQuestion(shortAnswer);
+
+        //Tests TrueFalse
+//        Question trueFalse = new TrueFalse(20, "Princess Leia is a Sith",0);
+//        questionPanel.setQuestion(trueFalse);
+
+
+
     }
 }
