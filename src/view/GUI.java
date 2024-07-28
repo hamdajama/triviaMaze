@@ -5,9 +5,14 @@
  */
 package view;
 
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+
+import java.util.Map;
+import java.util.HashMap;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -15,6 +20,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 
 import model.*;
 
@@ -227,13 +233,13 @@ public class GUI {
         rightPanel.add(questionPanel, boxLayout);
 
         //Tests multiple choice
-//        Map<String, String> choices = new HashMap<>();
-//        choices.put("A", "Red");
-//        choices.put("B", "Green");
-//        choices.put("C", "Blue");
-//        choices.put("D", "Purple");
-//        Question multipleChoice = new MultipleChoice(42, "What color is Yoda's Lightsaber?", choices, "B");
-//        questionPanel.setQuestion(multipleChoice);
+        Map<String, String> choices = new HashMap<>();
+        choices.put("A", "Red");
+        choices.put("B", "Green");
+        choices.put("C", "Blue");
+        choices.put("D", "Purple");
+        Question multipleChoice = new MultipleChoice(42, "What color is Yoda's Lightsaber?", choices, "B");
+        questionPanel.setQuestion(multipleChoice);
 
         //Tests ShortAnswer
 //        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
