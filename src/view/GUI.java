@@ -16,6 +16,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import model.*;
+
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -210,6 +212,14 @@ public class GUI {
         roomPanel.setBackground(Color.BLACK);
         roomPanel.setBounds(theHalfWidth,0, theHalfWidth, theHalfHeight);
         rightPanel.add(roomPanel, boxLayout);
+
+        // Random question to check if the closeDoor method works.
+        TrueFalse question = new TrueFalse(1, "Sample question", 1);
+        Room room = new Room(question);
+
+        room.addPropertyChangeListener(roomPanel);
+//        room.closeDoor();
+
 
         final JPanel questionPanel = new JPanel();
         questionPanel.setBackground(Color.RED);

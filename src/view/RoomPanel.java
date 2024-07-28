@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 
 /**
@@ -15,14 +17,39 @@ import javax.swing.JPanel;
  * @author Eric John
  * @version 7/27/2024
  */
-public class RoomPanel extends JPanel {
+public class RoomPanel extends JPanel implements PropertyChangeListener {
+
+    /**
+     * A boolean representing if the north door can be opened.
+     */
+    private boolean myNorthDoor;
+
+    /**
+     * A boolean representing if the south door can be opened.
+     */
+    private boolean mySouthDoor;
+
+    /**
+     * A boolean representing if the east door can be opened.
+     */
+    private boolean myEastDoor;
+
+    /**
+     * A boolean representing if the west door can be opened.
+     */
+    private boolean myWestDoor;
 
     /**
      * Constructor for the room panel.
      */
     public RoomPanel() {
         super();
+        myNorthDoor = false;
+        mySouthDoor = true;
+        myEastDoor = true;
+        myWestDoor = false;
     }
+
 
     /**
      * Paints the text and images on the screen.
@@ -49,9 +76,20 @@ public class RoomPanel extends JPanel {
 
         final int doorSize = 30;
 
-        theGraphics2D.setColor(Color.GREEN);
+
+        theGraphics2D.setColor(myNorthDoor ? Color.GREEN : Color.RED);
+        theGraphics2D.fillRect(width / 2 - roomSize / 2, 10, doorSize, doorSize);
+
+        theGraphics2D.setColor(myEastDoor ? Color.GREEN : Color.RED);
         theGraphics2D.fillRect(width - roomSize, height / 2 - roomSize / 2, doorSize, doorSize);
+
+        theGraphics2D.setColor(mySouthDoor ? Color.GREEN : Color.RED);
         theGraphics2D.fillRect(width / 2 - roomSize / 2, height - roomSize, doorSize, doorSize);
+
+        theGraphics2D.setColor(myWestDoor ? Color.GREEN : Color.RED);
+        theGraphics2D.fillRect(10, height / 2 - roomSize / 2, doorSize, doorSize);
+
+
 
         drawText(theGraphics2D, width, height);
 
@@ -74,6 +112,30 @@ public class RoomPanel extends JPanel {
 
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
         theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
+    }
+
+    /**
+     * The property change methods changes the color of the door from green to red.
+     * @param theEvt - A PropertyChangeEvent object describing the event source
+     *          and the property that has changed.
+     */
+    public void propertyChange(final PropertyChangeEvent theEvt) {
+        switch (theEvt.getPropertyName()) {
+            case "North":
+                myNorthDoor = !(boolean) theEvt.getNewValue();
+                break;
+            case "East":
+                myEastDoor = !(boolean) theEvt.getNewValue();
+                break;
+            case "South":
+                mySouthDoor = !(boolean) theEvt.getNewValue();
+                break;
+            case "West":
+                myWestDoor = !(boolean) theEvt.getNewValue();
+                break;
+        }
+        repaint();
+
     }
 
 
