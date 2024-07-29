@@ -8,6 +8,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -15,7 +17,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import model.MultipleChoice;
+import model.Question;
 import object.PlayerCharacter;
+
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -247,10 +253,17 @@ public class GUI implements Serializable {
         roomPanel.setBounds(theHalfWidth,0, theHalfWidth, theHalfHeight);
         rightPanel.add(roomPanel, boxLayout);
 
-        final JPanel questionPanel = new JPanel();
+        final QuestionPanel questionPanel = new QuestionPanel();
         questionPanel.setBackground(Color.RED);
         questionPanel.setBounds(theHalfWidth,theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel, boxLayout);
+        Map<String, String> choices = new HashMap<>();
+        choices.put("A", "Red");
+        choices.put("B", "Green");
+        choices.put("C", "Blue");
+        choices.put("D", "Purple");
+        Question multipleChoice = new MultipleChoice(42, "What color is Yoda's Lightsaber?", choices, "B");
+        questionPanel.setQuestion(multipleChoice);
     }
 
     /**
