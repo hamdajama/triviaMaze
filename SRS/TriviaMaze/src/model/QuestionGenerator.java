@@ -8,14 +8,30 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-
+/**
+ * The QuestionGenerator class is responsible for generating random questions
+ * from the database for the TriviaMaze game. It fetches questions from
+ * True/False, Short Answer, and Multiple Choice tables.
+ */
 public class QuestionGenerator {
     private Random myRandom;
     private DatabaseConnector myDataConn ;
+    /**
+     * Constructs a new QuestionGenerator with the given DatabaseConnector.
+     *
+     * @param theDBConn The DatabaseConnector object for accessing the database.
+     */
     public QuestionGenerator(DatabaseConnector theDBConn) {
         this.myDataConn = theDBConn;
         this.myRandom = new Random();
     }
+    
+    /**
+     * Retrieves a random question from the database.
+     *
+     * @return A random Question object, or null if no questions are found.
+     * @throws SQLException If an error occurs during database access.
+     */
     public Question getRandomQes () throws SQLException {
         List<Question> questions = new ArrayList<>();
         try(Connection conn = myDataConn.getDataSource().getConnection();
@@ -31,7 +47,14 @@ public class QuestionGenerator {
         }
         return questions.get(myRandom.nextInt(questions.size()));
     }
-
+     /**
+     * Retrieves questions from a specific table and converts them to Question objects.
+     *
+     * @param theStmt The Statement object for executing the query.
+     * @param theTableName The name of the table to query.
+     * @return A list of Question objects.
+     * @throws SQLException If a database access error occurs.
+     */
     private List<Question> getTable(Statement theStmt, String theTableName) throws SQLException {
         Statement stmt = theStmt;
         String table = theTableName;
@@ -54,6 +77,7 @@ public class QuestionGenerator {
                 case "MultipleQuestion" :
                     String correctAnswerMQ = rs.getString("correct_answer");
                     questions.add(new MultipleChoice(id, questionText, choices(id), correctAnswerMQ));
+                    // choices(id) - wrong type List, should be Map
                     break;
                 default:
                     break;
@@ -61,7 +85,12 @@ public class QuestionGenerator {
         }
         return questions;
     }
-
+    /**
+     * Retrieves multiple choice options for a given question ID.
+     *
+     * @param theID The ID of the question.
+     * @return A list of choice strings.
+     */
     private List<String> choices(int theID) {
         int ID = theID;
         List<String> choices = new ArrayList<>();
