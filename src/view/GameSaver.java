@@ -27,6 +27,7 @@ import java.io.ObjectOutputStream;
  * }
  * </pre>
  *
+ * @author Masumi Yano
  * @since 1.0
  */
 public class GameSaver {

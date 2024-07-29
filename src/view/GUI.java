@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -21,7 +22,6 @@ import javax.swing.JPanel;
 import model.MultipleChoice;
 import model.Question;
 import object.PlayerCharacter;
-
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -62,9 +62,9 @@ public class GUI implements Serializable {
         setupMenuBar(frame);
         setupPanels(frame);
 
-        frame.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED) {
+                System.out.println("Key pressed: " + e.getKeyCode()); // Debugging statement
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
@@ -80,8 +80,10 @@ public class GUI implements Serializable {
                         break;
                 }
                 playerCharacter.displayPosition();
+                mazePanel.revalidate();
                 mazePanel.repaint();
             }
+            return false;
         });
 
         frame.setVisible(true);
@@ -231,7 +233,7 @@ public class GUI implements Serializable {
             }
         };
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
-        theFrame.add(mazePanel);
+        theFrame.add(mazePanel, BorderLayout.CENTER);
     }
 
     /**
@@ -242,7 +244,7 @@ public class GUI implements Serializable {
      */
     private void setupRightPanel(JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
         final JPanel rightPanel = new JPanel();
-        rightPanel.setBounds(theHalfWidth,0,theHalfWidth, theFrame.getHeight());
+        rightPanel.setBounds(theHalfWidth, 0, theHalfWidth, theFrame.getHeight());
         final BoxLayout boxLayout = new BoxLayout(rightPanel, BoxLayout.Y_AXIS);
         rightPanel.setLayout(boxLayout);
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
@@ -250,13 +252,13 @@ public class GUI implements Serializable {
 
         final RoomPanel roomPanel = new RoomPanel();
         roomPanel.setBackground(Color.BLACK);
-        roomPanel.setBounds(theHalfWidth,0, theHalfWidth, theHalfHeight);
-        rightPanel.add(roomPanel, boxLayout);
+        roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
+        rightPanel.add(roomPanel);
 
         final QuestionPanel questionPanel = new QuestionPanel();
         questionPanel.setBackground(Color.RED);
-        questionPanel.setBounds(theHalfWidth,theHalfHeight, theHalfWidth, theHalfHeight);
-        rightPanel.add(questionPanel, boxLayout);
+        questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
+        rightPanel.add(questionPanel);
         Map<String, String> choices = new HashMap<>();
         choices.put("A", "Red");
         choices.put("B", "Green");

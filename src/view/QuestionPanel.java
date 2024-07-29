@@ -2,10 +2,12 @@
  * TCSS 360 - Trivia Maze
  * QuestionPanel.java
  */
+
 package view;
 
 import java.awt.*;
-
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.Map;
 
 import javax.swing.ButtonGroup;
@@ -15,8 +17,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-
-
 
 import model.MultipleChoice;
 import model.Question;
@@ -43,7 +43,6 @@ public class QuestionPanel extends JPanel {
      */
     private final JPanel myQuestionPanel;
 
-
     /**
      * Creates the panel for the question. Has a gridLayout(0,1)
      */
@@ -53,8 +52,20 @@ public class QuestionPanel extends JPanel {
         setBackground(Color.BLACK);
         myQuestionPanel = new JPanel(new GridLayout(0, 1));
         add(myQuestionPanel, BorderLayout.SOUTH);
-    }
+        setFocusable(true);
 
+        addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                System.out.println("QuestionPanel gained focus");
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                getParent().requestFocusInWindow(); // Request focus back to the parent frame
+            }
+        });
+    }
 
     /**
      * Sets the question to ask the player
@@ -83,10 +94,8 @@ public class QuestionPanel extends JPanel {
             displayTrueFalse((TrueFalse) myCurrentQuestion);
         }
 
-
         revalidate();
         repaint();
-
     }
 
     /**
@@ -120,8 +129,7 @@ public class QuestionPanel extends JPanel {
         });
 
         myQuestionPanel.add(answerField);
-
-        createSubmitButton(theQuestion);
+        myQuestionPanel.add(submitButton);
     }
 
     /**
@@ -152,6 +160,7 @@ public class QuestionPanel extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
         }
+        getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
     }
 
     /**
@@ -168,6 +177,4 @@ public class QuestionPanel extends JPanel {
 
         myQuestionPanel.add(submitButton);
     }
-
-
 }
