@@ -1,13 +1,13 @@
+/**
+ * TCSS 360 GUI Class
+ * @author - Eric John
+ * Summer 2024
+ */
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.io.Serializable;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -15,8 +15,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import object.PlayerCharacter;
-import view.GameSaver;
+
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -24,19 +23,15 @@ import view.GameSaver;
  * @author Eric John
  * @version 7/13/2024
  */
-public class GUI implements Serializable {
-
-    private static final long serialVersionUID = 2L;
-    private static PlayerCharacter playerCharacter;
-    private static JPanel mazePanel;
+public class GUI {
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
      */
     public GUI() {
         super();
-        playerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
+
     }
 
     /**
@@ -46,6 +41,7 @@ public class GUI implements Serializable {
         final int frameWidth =  800;
         final int frameHeight = 800;
 
+
         final JFrame frame = new JFrame("Trivia Maze");
         frame.setLocationRelativeTo(null);
         frame.setSize(frameWidth, frameHeight);
@@ -53,31 +49,9 @@ public class GUI implements Serializable {
         frame.setLayout(new BorderLayout());
         frame.setResizable(false);
 
+
         setupMenuBar(frame);
         setupPanels(frame);
-
-        frame.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_W:
-                        playerCharacter.moveUp();
-                        break;
-                    case KeyEvent.VK_S:
-                        playerCharacter.moveDown();
-                        break;
-                    case KeyEvent.VK_A:
-                        playerCharacter.moveLeft();
-                        break;
-                    case KeyEvent.VK_D:
-                        playerCharacter.moveRight();
-                        break;
-                }
-                playerCharacter.displayPosition();
-                mazePanel.repaint();
-            }
-        });
-
         frame.setVisible(true);
     }
 
@@ -95,7 +69,10 @@ public class GUI implements Serializable {
         setupMenuFile(menuFile, theFrame);
         setupHelpFile(helpFile, theFrame);
 
+
+
         theFrame.setJMenuBar(menuBar);
+
     }
 
     /**
@@ -104,33 +81,20 @@ public class GUI implements Serializable {
      */
     private static void setupMenuFile(final JMenu theMenuFile, final JFrame theFrame) {
         final JMenuItem saveFileItem = new JMenuItem("Save game");
-        saveFileItem.addActionListener(e -> {
-            try {
-                GameSaver.saveGame(new GUI());
-                JOptionPane.showMessageDialog(theFrame, "Game saved successfully!");
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error saving game: " + ex.getMessage());
-            }
-        });
+        saveFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame, 
+                "Saving the game!"));
         theMenuFile.add(saveFileItem);
 
         final JMenuItem loadFileItem = new JMenuItem("Load game");
-        loadFileItem.addActionListener(e -> {
-            try {
-                GUI loadedGame = GameSaver.loadGame();
-                JOptionPane.showMessageDialog(theFrame, "Game loaded successfully!");
-                // Additional code to update the GUI with the loaded game state
-            } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
-            }
-        });
+        loadFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame, 
+                "Loading saved game!"));
         theMenuFile.add(loadFileItem);
+
 
         final JMenuItem exitFileItem = new JMenuItem("Exit game");
         exitFileItem.addActionListener(e -> System.exit(0));
         theMenuFile.add(exitFileItem);
     }
-
 
     /**
      * Sets up the helpFile for the frame.
@@ -152,17 +116,21 @@ public class GUI implements Serializable {
     private static JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Welcome to Trivia Maze!\n\n" +
-                        "In this game, you start from the entry point and try to get to\n" +
-                        "the exit by answering questions correctly. The questions type will\n"+
-                        "be either multiple choice, short answer, or true/false. When  you\n" +
-                        "get a questions wrong, the door will be locked and you will have to\n"+
-                        "find another way to reach the exit. The game is over when you\n"+
-                        "reached the exit or there are no available paths to the exit.\n\n"+
-                        "Developed by:\n"+
-                        "Eric John\n"+
-                        "Hamnda Jama\n"+
-                        "Masumi Yano",
+                """
+                        Welcome to Trivia Maze!
+                        
+                        In this game, you start from the entry point and try to get to
+                        the exit by answering questions correctly. The question type will
+                        be either multiple choice, short answer, or true/false.  When you
+                        get a question wrong, the door will be locked and you will have to
+                        find another way to reach the exit. The game is over when you
+                        reached the exit or there are no available paths to the exit.
+                        
+                        Developed by:
+                        Eric John
+                        Hamda Jama
+                        Masumi Yano
+                        """,
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -176,19 +144,25 @@ public class GUI implements Serializable {
     private static JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
         final JMenuItem instructionFileItem = new JMenuItem("Instruction");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Instructions:\n\n"+
-                        "In this game, you interact with questions by left clicking the mouse\n"+
-                        "or touchpad. When you think you have the right answer, click on the\n"+
-                        "submit button!\n\n"+
-                        "True/False: You will be given a statement and you would have to decide\n"+
-                        "if the answer is correct or not.\n\n"+
-                        "Multiple Choice: You are given 4 options and you will have to pick the\n"+
-                        "correct one in order to unlock the door.\n\n"+
-                        "Short Answer: When doing a short answer question, respond with only one\n"+
-                        "word in order to unlock the door.",
+                """
+                        Instructions:
+                        
+                        In this game, you interact with questions by left clicking the mouse
+                        or touchpad. When you think you have the right answer, click on the
+                        submit button!
+                        
+                        True/False: You will be given a statement and you would have to decide
+                        if the answer given is correct or not.
+                        
+                        Multiple Choice: You are given 4 options and you will have to pick the
+                        correct one in order to unlock the door.
+                        
+                        Short Answer: When doing a short answer question, respond with only one
+                        word in order to unlock the door.
+                        """,
                 "Trivia Instruction",
                 JOptionPane.INFORMATION_MESSAGE
-        ));
+                ));
         return instructionFileItem;
     }
 
@@ -211,20 +185,8 @@ public class GUI implements Serializable {
      * @param theHalfWidth - Half the width of the given frame.
      */
     private static void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        mazePanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(Color.MAGENTA);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(Color.BLUE);
-                // Simple Character representation
-                int cellSize = 10; // Size of each cell in the grid
-                g.fillRect(playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize);
-                // Update the playerCharacter with the current maze dimensions
-                playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
-            }
-        };
+        final JPanel mazePanel = new JPanel();
+        mazePanel.setBackground(Color.MAGENTA);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(mazePanel);
     }
@@ -242,6 +204,7 @@ public class GUI implements Serializable {
         rightPanel.setLayout(boxLayout);
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
+
 
         final RoomPanel roomPanel = new RoomPanel();
         roomPanel.setBackground(Color.BLACK);
