@@ -82,7 +82,7 @@ public class MultipleChoice extends Question{
      * Gets the choices of the question.
      * @return The choices of the question.
      */
-    protected Map<String, String> getChoices() {
+    public Map<String, String> getChoices() {
         return myChoices;
     }
 
@@ -100,7 +100,7 @@ public class MultipleChoice extends Question{
      * @return True if the answer matched. False otherwise.
      */
     @Override
-    protected boolean isMatch(final String thePlayerAnswer) {
+    public boolean isMatch(final String thePlayerAnswer) {
         return thePlayerAnswer.equals(myRightAnswer);
     }
 }

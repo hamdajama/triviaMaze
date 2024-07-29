@@ -16,6 +16,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import object.PlayerCharacter;
+import view.GameSaver;
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -27,8 +28,7 @@ public class GUI implements Serializable {
 
     private static final long serialVersionUID = 2L;
     private static PlayerCharacter playerCharacter;
-    private static transient JFrame frame;
-    private static transient JPanel mazePanel;
+    private static JPanel mazePanel;
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -42,11 +42,11 @@ public class GUI implements Serializable {
     /**
      * Sets up the frame for the GUI.
      */
-    private void setupFrame() {
+    private static void setupFrame() {
         final int frameWidth =  800;
         final int frameHeight = 800;
 
-        frame = new JFrame("Trivia Maze");
+        final JFrame frame = new JFrame("Trivia Maze");
         frame.setLocationRelativeTo(null);
         frame.setSize(frameWidth, frameHeight);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -118,8 +118,8 @@ public class GUI implements Serializable {
         loadFileItem.addActionListener(e -> {
             try {
                 GUI loadedGame = GameSaver.loadGame();
-                loadedGame.reinitializeGUI();
                 JOptionPane.showMessageDialog(theFrame, "Game loaded successfully!");
+                // Additional code to update the GUI with the loaded game state
             } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
             }
@@ -130,6 +130,7 @@ public class GUI implements Serializable {
         exitFileItem.addActionListener(e -> System.exit(0));
         theMenuFile.add(exitFileItem);
     }
+
 
     /**
      * Sets up the helpFile for the frame.
@@ -251,13 +252,5 @@ public class GUI implements Serializable {
         questionPanel.setBackground(Color.RED);
         questionPanel.setBounds(theHalfWidth,theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel, boxLayout);
-    }
-
-    /**
-     * Reinitialize the GUI after loading the game state.
-     */
-    private void reinitializeGUI() {
-        setupFrame();
-        mazePanel.repaint();
     }
 }
