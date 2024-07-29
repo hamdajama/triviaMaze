@@ -26,9 +26,9 @@ import object.PlayerCharacter;
 public class GUI implements Serializable {
 
     private static final long serialVersionUID = 2L;
-    private static PlayerCharacter playerCharacter;
-    private static transient JFrame frame;
-    private static transient JPanel mazePanel;
+    private PlayerCharacter playerCharacter;
+    private transient JFrame frame;
+    private transient JPanel mazePanel;
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -119,7 +119,7 @@ public class GUI implements Serializable {
             try {
                 GUI loadedGame = GameSaver.loadGame();
                 loadedGame.reinitializeGUI();
-                JOptionPane.showMessageDialog(theFrame, "Game loaded successfully!");
+                frame.dispose(); // Dispose of the current frame
             } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
             }
