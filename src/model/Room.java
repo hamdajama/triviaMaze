@@ -125,13 +125,4 @@ public class Room {
         }
         return true;
     }
-
-
-    /**
-     * Adds a property change listener so that this class can communicate with the view classes.
-     * @param theListener - The object to add the listener to.
-     */
-    public void addPropertyChangeListener(final PropertyChangeListener theListener) {
-        this.myPcs.addPropertyChangeListener(theListener);
-    }
 }

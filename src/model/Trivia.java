@@ -122,7 +122,7 @@ public class Trivia {
      * @param theRightAnswer - The right answer of the question.
      * @return - True if the player answered correctly. False otherwise.
      */
-    protected boolean isRightAnswer(final String theGivenAnswer,final String theRightAnswer) {
+    protected boolean isRightAnswer(final String theGivenAnswer, final String theRightAnswer) {
         return theGivenAnswer.equals(theRightAnswer);
     }
 

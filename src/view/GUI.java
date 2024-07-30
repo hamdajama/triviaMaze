@@ -5,12 +5,15 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -19,8 +22,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import model.MultipleChoice;
-import model.Question;
+import model.*;
+
+
 import object.PlayerCharacter;
 
 /**
@@ -31,8 +35,9 @@ import object.PlayerCharacter;
  */
 public class GUI implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 2L;
-    private PlayerCharacter playerCharacter;
+    private final PlayerCharacter playerCharacter;
     private transient JFrame frame;
     private transient JPanel mazePanel;
 
@@ -159,17 +164,20 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Welcome to Trivia Maze!\n\n" +
-                        "In this game, you start from the entry point and try to get to\n" +
-                        "the exit by answering questions correctly. The questions type will\n"+
-                        "be either multiple choice, short answer, or true/false. When  you\n" +
-                        "get a questions wrong, the door will be locked and you will have to\n"+
-                        "find another way to reach the exit. The game is over when you\n"+
-                        "reached the exit or there are no available paths to the exit.\n\n"+
-                        "Developed by:\n"+
-                        "Eric John\n"+
-                        "Hamnda Jama\n"+
-                        "Masumi Yano",
+                """
+                        Welcome to Trivia Maze!
+
+                        In this game, you start from the entry point and try to get to
+                        the exit by answering questions correctly. The questions type will
+                        be either multiple choice, short answer, or true/false. When  you
+                        get a questions wrong, the door will be locked and you will have to
+                        find another way to reach the exit. The game is over when you
+                        reached the exit or there are no available paths to the exit.
+
+                        Developed by:
+                        Eric John
+                        Hamda Jama
+                        Masumi Yano""",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -183,16 +191,21 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
         final JMenuItem instructionFileItem = new JMenuItem("Instruction");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Instructions:\n\n"+
-                        "In this game, you interact with questions by left clicking the mouse\n"+
-                        "or touchpad. When you think you have the right answer, click on the\n"+
-                        "submit button!\n\n"+
-                        "True/False: You will be given a statement and you would have to decide\n"+
-                        "if the answer is correct or not.\n\n"+
-                        "Multiple Choice: You are given 4 options and you will have to pick the\n"+
-                        "correct one in order to unlock the door.\n\n"+
-                        "Short Answer: When doing a short answer question, respond with only one\n"+
-                        "word in order to unlock the door.",
+                """
+                        Instructions:
+
+                        In this game, you interact with questions by left clicking the mouse
+                        or touchpad. When you think you have the right answer, click on the
+                        submit button!
+
+                        True/False: You will be given a statement and you would have to decide
+                        if the answer is correct or not.
+
+                        Multiple Choice: You are given 4 options and you will have to pick the
+                        correct one in order to unlock the door.
+
+                        Short Answer: When doing a short answer question, respond with only one
+                        word in order to unlock the door.""",
                 "Trivia Instruction",
                 JOptionPane.INFORMATION_MESSAGE
         ));
@@ -259,6 +272,9 @@ public class GUI implements Serializable {
         questionPanel.setBackground(Color.RED);
         questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel);
+
+        //Multiple choice
+
         Map<String, String> choices = new HashMap<>();
         choices.put("A", "Red");
         choices.put("B", "Green");
@@ -266,6 +282,14 @@ public class GUI implements Serializable {
         choices.put("D", "Purple");
         Question multipleChoice = new MultipleChoice(42, "What color is Yoda's Lightsaber?", choices, "B");
         questionPanel.setQuestion(multipleChoice);
+
+        //Short Answer
+//        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
+//        questionPanel.setQuestion(shortAnswer);
+
+        //True False
+//        Question trueFalse = new TrueFalse(2, "Darth Vader is Luke Skywalkers father", 1);
+//        questionPanel.setQuestion(trueFalse);
     }
 
     /**
