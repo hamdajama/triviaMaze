@@ -11,7 +11,6 @@ import java.sql.Statement;
  * DatabaseConnector is a class responsible for setting up and managing the SQLite database
  * used in the TriviaMaze game. It creates tables, inserts initial data, and provides
  * methods for querying the database.
- * 
  */
 public class DatabaseConnector {
     private final String myDS_url = "jdbc:sqlite:TriviaMaze.db";
@@ -195,7 +194,3 @@ public class DatabaseConnector {
         }
     }
 }
-
-
-
-

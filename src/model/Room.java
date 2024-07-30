@@ -5,6 +5,8 @@ package model;
  */
 
 import model.Door;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -23,6 +25,12 @@ public class Room {
      * The trivia question associated with the room.
      */
     private Question myTrivia;
+
+    /**
+     * A property change support object that helps changes the state in other classes.
+     */
+    private final PropertyChangeSupport myPcs = new PropertyChangeSupport(this);
+
     /**
      * Constructs a new Room with the given trivia question.
      * Initializes the doors in the room.
@@ -36,6 +44,10 @@ public class Room {
         myRoom.put("East", new Door());
         myRoom.put("South", new Door());
         myRoom.put("West", new Door());
+
+        //Since starting at the first door, make sure the east door and south door are open.
+        myRoom.get("East").open();
+        myRoom.get("South").open();
 
     }
     /**
@@ -95,6 +107,7 @@ public class Room {
             Door randDoor = myRoom.get(randDir);
             if (!randDoor.isClosed()) {
                 randDoor.close();
+                myPcs.firePropertyChange(randDir, null, randDoor.isClosed());
                 closed =true;
             }
         }
@@ -112,5 +125,4 @@ public class Room {
         }
         return true;
     }
-    
 }
