@@ -3,37 +3,44 @@ package model;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.sql.SQLException;
+
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
  * It handles the setup of rooms with questions, player movement, and game state events.
+ * @author Hamda Jama
  */
 public class Maze {
     private int mySize = 5;
     private Room[][] myMap;
     private int myEndX, myEndY;
+    private int myCurrentX, myCurrentY;
     private PropertyChangeSupport mySupport;
     private DatabaseConnector myDBConn;
     private QuestionGenerator myQesGen;
-/**
+
+    /**
      * Constructs a new Maze, initializing the game grid and questions.
      *
      * @param theDBConn The DatabaseConnector object for accessing the question database.
      * @throws SQLException If an error occurs during database access.
      */
-    public Maze(DatabaseConnector theDBConn ) throws SQLException {
+    public Maze(DatabaseConnector theDBConn) throws SQLException {
         this.myDBConn = theDBConn;
-       this.myQesGen = new QuestionGenerator(theDBConn);
+        this.myQesGen = new QuestionGenerator(theDBConn);
         this.mySupport = new PropertyChangeSupport(this);
         this.myMap = new Room[mySize][mySize];
         buildMap();
         setEnd();
+        myCurrentX = 0;
+        myCurrentY = 0;
     }
+
     /**
      * Builds the map with rooms, each containing a randomly assigned question.
      *
      * @throws SQLException If an error occurs during question retrieval from the database.
      */
-    public void buildMap() throws SQLException {
+    private void buildMap() throws SQLException {
         for (int i = 0; i < mySize; i++) {
             for (int j = 0; j < mySize; j++) {
                 Question question = myQesGen.getRandomQes();
@@ -41,6 +48,7 @@ public class Maze {
             }
         }
     }
+
     /**
      * Adds a PropertyChangeListener to listen for property changes in the game state.
      *
@@ -49,7 +57,8 @@ public class Maze {
     public void addPropertyChangeListener(PropertyChangeListener theListener) {
         mySupport.addPropertyChangeListener(theListener);
     }
-    **
+
+    /**
      * Removes a PropertyChangeListener from the listener list.
      *
      * @param theListener The PropertyChangeListener to remove.
@@ -57,13 +66,15 @@ public class Maze {
     public void removePropertyChangeListener(PropertyChangeListener theListener) {
         mySupport.removePropertyChangeListener(theListener);
     }
+
     /**
      * Sets the end point of the maze to the bottom-right corner.
      */
-    private void setEnd( ){
+    private void setEnd() {
         myEndX = mySize - 1;
         myEndY = mySize - 1;
     }
+
     /**
      * Retrieves the room at the specified coordinates.
      *
@@ -72,64 +83,55 @@ public class Maze {
      * @return The Room object at the specified coordinates, or null if out of bounds.
      */
     public Room getRoom(int theX, int theY) {
-        int x = theX, y = theX
-        if (x >= 0 && x < mySize && y >= 0 && y < mySize) {
-            return myMap[x][y];
+        if (theX >= 0 && theX < mySize && theY >= 0 && theY < mySize) {
+            return myMap[theX][theY];
         }
         return null;
     }
+
     /**
      * Starts the game by placing the player at the starting position.
-     *
-     * @param player The Player object.
      */
-    public void startGame(Player player) {
-        player.setCurrentRoom(myMap[0][0]);
-        mySupport.firePropertyChange("start game", null, player);
+    public void startGame() {
+        myCurrentX = 0;
+        myCurrentY = 0;
+        mySupport.firePropertyChange("start game", null, getCurrentRoom());
     }
+
     /**
      * Processes the player's answer and updates the game state accordingly.
      *
-     * @param thePlayer The Player object.
      * @param theAnswer The answer provided by the player.
      */
-    public void winOrLose (Player thePlayer, String TheAnswer) {
-        Room currentRoom = thePlayer.getCurrentRoom();
+    public void processAnswer(String theAnswer) {
+        Room currentRoom = getCurrentRoom();
         if (!currentRoom.answerQuestion(theAnswer)) {
             currentRoom.wrongAnswer(theAnswer);
             if (currentRoom.allClosed()) {
-                mySupport.firePropertyChange("gamer over", null, thePlayer);
+                mySupport.firePropertyChange("game over", null, getCurrentRoom());
             }
         } else {
-            mySupport.firePropertyChange("correct answer", null, thePlayer);
+            mySupport.firePropertyChange("correct answer", null, getCurrentRoom());
         }
     }
+
     /**
      * Checks if the player has reached the end of the maze.
      *
-     * @param thePlayer The Player object.
      * @return True if the player is at the end of the maze, false otherwise.
      */
-    private boolean isPlayerAtEnd(Player thePlayer) {
-        Player player = thePlayer
-        Room currentRoom = player.getCurrentRoom();
-        return currentRoom.getCoordinates()[0] == myEndX && currentRoom.getCoordinates()[1] == myEndY;
+    public boolean isAtEnd() {
+        return myCurrentX == myEndX && myCurrentY == myEndY;
     }
-    /**
-     * Determines the next room based on the player's current position and the direction moved.
-     *
-     * @param player The player object.
-     * @param direction The direction in which the player wishes to move (e.g., "North", "South").
-     * @return The next Room object, or null if the move is invalid.
-     */
-    public Room getNextRoom(Player thePlayer, String theDirection) {
-        Player player  =thePlayer;
-        String direction =  theDirection;
-        int currentX = player.getCurrentRoomX();
-        int currentY = player.getCurrentRoomY();
-        int newX = currentX, newY = currentY;
 
-        switch (direction.toUpperCase()) {
+    /**
+     * Moves the player in the specified direction, if possible.
+     *
+     * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
+     */
+    public void move(String theDirection) {
+        int newX = myCurrentX, newY = myCurrentY;
+        switch (theDirection.toUpperCase()) {
             case "NORTH":
                 newX--;
                 break;
@@ -143,13 +145,22 @@ public class Maze {
                 newY--;
                 break;
             default:
-                return null;
+                return;
         }
-        // Check if the new position is within bounds
-        if (newX >= 0 && newX < SIZE && newY >= 0 && newY < SIZE) {
-            return map[newX][newY];
+
+        if (newX >= 0 && newX < mySize && newY >= 0 && newY < mySize) {
+            myCurrentX = newX;
+            myCurrentY = newY;
+            mySupport.firePropertyChange("move", null, getCurrentRoom());
         }
-        return null; // Out of bounds
     }
 
+    /**
+     * Retrieves the current room where the player is located.
+     *
+     * @return The current Room object.
+     */
+    public Room getCurrentRoom() {
+        return getRoom(myCurrentX, myCurrentY);
+    }
 }
