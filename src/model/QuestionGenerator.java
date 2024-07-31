@@ -77,7 +77,6 @@ public class QuestionGenerator {
                 case "MultipleQuestion" :
                     String correctAnswerMQ = rs.getString("correct_answer");
                     questions.add(new MultipleChoice(id, questionText, choices(id), correctAnswerMQ));
-                    // choices(id) - wrong type List, should be Map
                     break;
                 default:
                     break;
@@ -85,22 +84,24 @@ public class QuestionGenerator {
         }
         return questions;
     }
-    /**
+   /**
      * Retrieves multiple choice options for a given question ID.
      *
      * @param theID The ID of the question.
-     * @return A list of choice strings.
+     * @return A map of choice, to choice_text.
      */
-    private List<String> choices(int theID) {
+    private Map<String, String> choices(int theID) {
         int ID = theID;
-        List<String> choices = new ArrayList<>();
-        String query = "SELECT choice_text FROM MultipleChoice WHERE question_id = " + ID;
+        Map<String,String> choices = new HashMap<>();
+        String query = "SELECT choice, choice_text FROM MultipleChoice WHERE question_id = " + ID;
 
         try(Connection conn  = myDataConn.getDataSource().getConnection();
            Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                choices.add(rs.getString("choice_text"));
+                String choice = rs.getString("choice"); // - A, B, C, D
+                String choice_Text = rs.getString("choice_text"); 
+                choices.put(choice,choice_Text);
             }
         } catch (SQLException e) {
             e.printStackTrace();
