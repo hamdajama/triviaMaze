@@ -6,6 +6,7 @@ import java.sql.SQLException;
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
  * It handles the setup of rooms with questions, player movement, and game state events.
+ * @author hamda Jama
  */
 public class Maze {
     private int mySize = 5;
