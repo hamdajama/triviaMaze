@@ -1,4 +1,4 @@
-package object;
+package model;
 
 /**
  * The {@code PlayerCharacter} class represents a player character within a game
@@ -48,7 +48,7 @@ public final class PlayerCharacter extends GameObject {
      * @param mazeWidth the width of the maze
      * @param mazeHeight the height of the maze
      */
-    public void setMazeDimensions(int mazeWidth, int mazeHeight) {
+    public final void setMazeDimensions(int mazeWidth, int mazeHeight) {
         this.mazeWidth = mazeWidth;
         this.mazeHeight = mazeHeight;
     }
@@ -56,7 +56,7 @@ public final class PlayerCharacter extends GameObject {
     /**
      * Moves the player character up by one unit if it is not at the top edge of the maze.
      */
-    public void moveUp() {
+    public final void moveUp() {
         if (y > 0) {
             y--;
         }
@@ -65,7 +65,7 @@ public final class PlayerCharacter extends GameObject {
     /**
      * Moves the player character down by one unit if it is not at the bottom edge of the maze.
      */
-    public void moveDown() {
+    public final void moveDown() {
         if (y < mazeHeight - 1) {
             y++;
         }
@@ -74,7 +74,7 @@ public final class PlayerCharacter extends GameObject {
     /**
      * Moves the player character left by one unit if it is not at the left edge of the maze.
      */
-    public void moveLeft() {
+    public final void moveLeft() {
         if (x > 0) {
             x--;
         }
@@ -83,7 +83,7 @@ public final class PlayerCharacter extends GameObject {
     /**
      * Moves the player character right by one unit if it is not at the right edge of the maze.
      */
-    public void moveRight() {
+    public final void moveRight() {
         if (x < mazeWidth - 1) {
             x++;
         }
@@ -94,7 +94,7 @@ public final class PlayerCharacter extends GameObject {
      * {@code PlayerCharacter is at (x, y)}.
      */
     @Override
-    public void displayPosition() {
+    public final void displayPosition() {
         System.out.println("PlayerCharacter is at (" + x + ", " + y + ")");
     }
 }

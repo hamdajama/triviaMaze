@@ -1,4 +1,6 @@
-package view;
+package controller;
+
+import view.GUI;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,9 +30,9 @@ import java.io.ObjectOutputStream;
  * </pre>
  *
  * @author Masumi Yano
- * @since 1.0
+ * @version 25/07/2024
  */
-public class GameSaver {
+public final class GameSaver {
 
     /** The file name for saving the game state. */
     private static final String SAVE_FILE = "game_state.ser";
@@ -41,7 +43,7 @@ public class GameSaver {
      * @param gameState the current game state to be saved
      * @throws IOException if an I/O error occurs while saving the game state
      */
-    public static void saveGame(GUI gameState) throws IOException {
+    public final static void saveGame(GUI gameState) throws IOException {
         try (FileOutputStream fileOut = new FileOutputStream(SAVE_FILE);
              ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
             out.writeObject(gameState);
@@ -55,7 +57,7 @@ public class GameSaver {
      * @throws IOException if an I/O error occurs while loading the game state
      * @throws ClassNotFoundException if the class of the serialized object cannot be found
      */
-    public static GUI loadGame() throws IOException, ClassNotFoundException {
+    public final static GUI loadGame() throws IOException, ClassNotFoundException {
         try (FileInputStream fileIn = new FileInputStream(SAVE_FILE);
              ObjectInputStream in = new ObjectInputStream(fileIn)) {
             return (GUI) in.readObject();

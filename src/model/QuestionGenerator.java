@@ -4,10 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
 /**
  * The QuestionGenerator class is responsible for generating random questions
  * from the database for the TriviaMaze game. It fetches questions from
