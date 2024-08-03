@@ -1,4 +1,4 @@
-package sqlManager;
+package controller;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -43,7 +43,7 @@ public class SqlManager {
     private static final String PROPERTIES_FILE = "db.properties";
 
     /** The singleton instance of the SqlManager class. */
-    private static SqlManager instance;
+    private static  SqlManager instance;
 
     /** The database connection object. */
     private Connection connection;
@@ -72,7 +72,7 @@ public class SqlManager {
      *
      * @return the singleton instance of SqlManager
      */
-    public static SqlManager getInstance() {
+    public final static SqlManager getInstance() {
         if (instance == null) {
             instance = new SqlManager();
         }
@@ -82,7 +82,7 @@ public class SqlManager {
     /**
      * Loads database connection properties from the properties file.
      */
-    private void loadProperties() {
+    private final void loadProperties() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             Properties properties = new Properties();
             if (input == null) {
@@ -101,7 +101,7 @@ public class SqlManager {
     /**
      * Initializes the database by executing SQL scripts to set up initial tables and data.
      */
-    private void initializeDatabase() {
+    private final void initializeDatabase() {
         try (Connection conn = getConnection()) {
             executeSqlFile(conn, "SRS/Triviamaze.sql");
             executeSqlFile(conn, "SRS/insertMultipleChoice.sql");
@@ -118,7 +118,7 @@ public class SqlManager {
      * @return the database connection
      * @throws SQLException if a database access error occurs
      */
-    private Connection getConnection() throws SQLException {
+    private final Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(url, user, password);
         }
@@ -131,7 +131,7 @@ public class SqlManager {
      * @param conn the database connection
      * @param filePath the path to the SQL file
      */
-    private void executeSqlFile(Connection conn, String filePath) {
+    private final void executeSqlFile(Connection conn, String filePath) {
         try {
             String content = new String(Files.readAllBytes(Paths.get(filePath)));
             String[] queries = content.split(";");
@@ -154,7 +154,7 @@ public class SqlManager {
      * @param query the SQL query
      * @param params the parameters for the SQL query
      */
-    public void executeUpdate(String query, Object... params) {
+    public final void executeUpdate(String query, Object... params) {
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             setParameters(pstmt, params);
@@ -171,7 +171,7 @@ public class SqlManager {
      * @param params the parameters for the SQL query
      * @return the result set of the query
      */
-    public ResultSet executeQuery(String query, Object... params) {
+    public final ResultSet executeQuery(String query, Object... params) {
         try {
             Connection conn = getConnection();
             PreparedStatement pstmt = conn.prepareStatement(query);
@@ -190,7 +190,7 @@ public class SqlManager {
      * @param params the parameters to set
      * @throws SQLException if a database access error occurs
      */
-    private void setParameters(PreparedStatement pstmt, Object... params) throws SQLException {
+    private final void setParameters(PreparedStatement pstmt, Object... params) throws SQLException {
         for (int i = 0; i < params.length; i++) {
             pstmt.setObject(i + 1, params[i]);
         }
@@ -202,7 +202,7 @@ public class SqlManager {
      * @param query the SQL query
      * @throws SQLException if a database access error occurs
      */
-    public void createTable(String query) throws SQLException {
+    public final void createTable(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             int rv = stmt.executeUpdate(query);
@@ -219,7 +219,7 @@ public class SqlManager {
      * @param query the SQL query
      * @throws SQLException if a database access error occurs
      */
-    public void insertData(String query) throws SQLException {
+    public final void insertData(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             int rv = stmt.executeUpdate(query);
@@ -236,7 +236,7 @@ public class SqlManager {
      * @param query the SQL query
      * @throws SQLException if a database access error occurs
      */
-    public void displayData(String query) throws SQLException {
+    public final void displayData(String query) throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
