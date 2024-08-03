@@ -10,22 +10,15 @@ package model;
  * @version 7/20/2024
  */
 public class ShortAnswer extends Question {
-    /**
-     * The correct answer for the short answer from the sql file.
-     */
-    private final String myAnswer;
-
 
     /**
      * Creates a short answer question that displays it to the player.
-     * @param theID - The ID of the question.
      * @param theQuestion - The question to ask the player.
      * @param theAnswer - The correct answer for the question.
      */
-    public ShortAnswer(final int theID, final String theQuestion,
+    public ShortAnswer(final String theQuestion,
                        final String theAnswer) {
-        super(theID, theQuestion);
-        myAnswer = theAnswer;
+        super(theQuestion, theAnswer);
     }
 
     /**
@@ -35,7 +28,7 @@ public class ShortAnswer extends Question {
      */
     @Override
     public boolean isMatch(final String thePlayerAnswer) {
-        return thePlayerAnswer.equals(myAnswer);
+        return thePlayerAnswer.equals(getAnswer());
     }
 
     /**
@@ -43,15 +36,7 @@ public class ShortAnswer extends Question {
      * @return The first character of the correct answer.
      */
     protected String getHint() {
-        return "The word starts with a \"" + myAnswer.charAt(0) + "\"";
+        return "The word starts with a \"" + getAnswer().charAt(0) + "\"";
     }
 
-
-    /**
-     * Gets the correct answer for the question.
-     * @return The correct answer.
-     */
-    protected String getAnswer() {
-        return myAnswer;
-    }
 }

@@ -65,16 +65,16 @@ public class QuestionGenerator {
             String questionText = rs.getString("question");
             switch (table) {
                 case "TrueFalse":
-                    int correctAnswerTF = rs.getInt("correct_answer");
-                    questions.add(new TrueFalse(id, questionText, correctAnswerTF));
+                    String correctAnswerTF = rs.getString("correct_answer");
+                    questions.add(new TrueFalse(questionText, correctAnswerTF));
                     break;
                 case "shortAnswer" :
                     String correctAnsSA = rs.getString("correct_answer");
-                    questions.add(new ShortAnswer(id, questionText, correctAnsSA));
+                    questions.add(new ShortAnswer(questionText, correctAnsSA));
                     break;
                 case "MultipleQuestion" :
                     String correctAnswerMQ = rs.getString("correct_answer");
-                    questions.add(new MultipleChoice(id, questionText, choices(id), correctAnswerMQ));
+                    questions.add(new MultipleChoice(questionText, choices(id), correctAnswerMQ));
                     break;
                 default:
                     break;

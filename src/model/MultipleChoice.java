@@ -21,25 +21,19 @@ public class MultipleChoice extends Question{
      */
     private final Map<String, String> myChoices;
 
-    /**
-     * The correct answer among the 4 choices from the sql file.
-     */
-    private final String myRightAnswer;
 
 
     /**
      * The constructor for a multiple choice question.
-     * @param theQuestionID - The question ID from the sql file.
      * @param theQuestion - The question from the sql file.
      * @param theChoices - The possible choices from the sql file.
      * @param theAnswer - The correct answer from the sql file.
      */
-    public MultipleChoice(final int theQuestionID, final String theQuestion,
+    public MultipleChoice(final String theQuestion,
                           final Map<String, String> theChoices, final String theAnswer) {
 
-        super(theQuestionID, theQuestion);
+        super(theQuestion, theAnswer);
         myChoices = new HashMap<>(theChoices);
-        myRightAnswer = theAnswer;
     }
 
     /**
@@ -54,7 +48,7 @@ public class MultipleChoice extends Question{
 
         //Separate the correct choice from the wrong choice.
         for (Map.Entry<String, String> entry : myChoices.entrySet()) {
-            if (!entry.getKey().equals(myRightAnswer)) {
+            if (!entry.getKey().equals(getAnswer())) {
                 wrongChoices.put(entry.getKey(), entry.getValue());
             } else {
                 correctChoice.put(entry.getKey(), entry.getValue());
@@ -86,13 +80,6 @@ public class MultipleChoice extends Question{
         return myChoices;
     }
 
-    /**
-     * Gets the answer of the question.
-     * @return The answer of the question.
-     */
-    protected String getAnswer() {
-        return myRightAnswer;
-    }
 
     /**
      * Checks if the user answer is the same as the right answer.
@@ -101,6 +88,6 @@ public class MultipleChoice extends Question{
      */
     @Override
     public boolean isMatch(final String thePlayerAnswer) {
-        return thePlayerAnswer.equals(myRightAnswer);
+        return thePlayerAnswer.equals(getAnswer());
     }
 }

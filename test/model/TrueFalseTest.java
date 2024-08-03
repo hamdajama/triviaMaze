@@ -11,12 +11,6 @@ import org.junit.jupiter.api.Test;
 
 
 public class TrueFalseTest {
-
-    /**
-     * The question ID from the sql file.
-     */
-    private static final int QUESTION_ID = 8;
-
     /**
      * The question that comes with questionID 8
      */
@@ -25,28 +19,17 @@ public class TrueFalseTest {
     /**
      * The answer to the question.
      */
-    private static final int ANSWER = 1;
+    private static final String ANSWER = "1";
 
     /**
      * Tests the constructor of the true false class.
      */
     @Test
     public void testTrueFalseConstructor() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertAll("Three argument constructor test.",
-                () -> assertEquals(QUESTION_ID,  Question8.getID(), "The ID does not match"),
                 () -> assertEquals(QUESTION, Question8.getQuestion(), "The question does not match"),
                 () -> assertEquals(ANSWER, Question8.getAnswer(), "The answer does not match"));
-    }
-
-    /**
-     * Tests if the class gets the correct question ID.
-     */
-    @Test
-    public void testGetID() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
-        assertEquals(QUESTION_ID, Question8.getID(), "The method doesn't get the correct " +
-                "ID number");
     }
 
     /**
@@ -54,7 +37,7 @@ public class TrueFalseTest {
      */
     @Test
     public void testGetQuestion() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertEquals(QUESTION, Question8.getQuestion(), "The question being displayed is " +
                 "not the same as the one in the db.");
     }
@@ -64,7 +47,7 @@ public class TrueFalseTest {
      */
     @Test
     public void testGetAnswer() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertEquals(ANSWER, Question8.getAnswer(), "The answer being received is not " +
                 "the same as the one in the db");
 
@@ -75,7 +58,7 @@ public class TrueFalseTest {
      */
     @Test
     public void testWrongAnswer() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertFalse(Question8.isMatch("F"), "This test should return false");
     }
 
@@ -84,7 +67,7 @@ public class TrueFalseTest {
      */
     @Test
     public void testCorrectAnswer() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertTrue(Question8.isMatch("True"), "This test should return true");
     }
 
@@ -93,7 +76,7 @@ public class TrueFalseTest {
      */
     @Test
     public void testGetHint() {
-        final TrueFalse Question8 = new TrueFalse(QUESTION_ID, QUESTION, ANSWER);
+        final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertEquals("This question is not false!", Question8.getHint(), "The output is " +
                 "displayed incorrectly");
     }
