@@ -78,7 +78,7 @@ public class ShortAnswerTest {
     @Test
     public void testGetHint() {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
-        assertEquals("The word starts with a \"W\"", Question26.getHint(),"The first character is wrong");
+        assertEquals("The word starts with a \"W\"", Question26.getHint(),"The first resources.character is wrong");
     }
 
 
