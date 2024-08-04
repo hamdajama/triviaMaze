@@ -1,12 +1,12 @@
 package model;
 
 /**
- * The {@code PlayerCharacter} class represents a player character within a game
+ * The {@code PlayerCharacter} class represents a player resources.character within a game
  * that can move around a maze. This class extends the {@link GameObject} class to
  * inherit its position properties and methods, and adds functionality to move
  * within specified maze dimensions.
  * <p>
- * This class provides methods to set the maze dimensions and move the player character
+ * This class provides methods to set the maze dimensions and move the player resources.character
  * up, down, left, or right within the bounds of the maze.
  * </p>
  *
@@ -26,24 +26,24 @@ package model;
  */
 public final class PlayerCharacter extends GameObject {
 
-    /** The width of the maze in which the player character can move. */
+    /** The width of the maze in which the player resources.character can move. */
     private int mazeWidth;
 
-    /** The height of the maze in which the player character can move. */
+    /** The height of the maze in which the player resources.character can move. */
     private int mazeHeight;
 
     /**
      * Constructs a {@code PlayerCharacter} with the specified initial position.
      *
-     * @param x the initial x-coordinate of the player character
-     * @param y the initial y-coordinate of the player character
+     * @param x the initial x-coordinate of the player resources.character
+     * @param y the initial y-coordinate of the player resources.character
      */
     public PlayerCharacter(int x, int y) {
         super(x, y);
     }
 
     /**
-     * Sets the dimensions of the maze in which the player character can move.
+     * Sets the dimensions of the maze in which the player resources.character can move.
      *
      * @param mazeWidth the width of the maze
      * @param mazeHeight the height of the maze
@@ -54,7 +54,7 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Moves the player character up by one unit if it is not at the top edge of the maze.
+     * Moves the player resources.character up by one unit if it is not at the top edge of the maze.
      */
     public final void moveUp() {
         if (y > 0) {
@@ -63,7 +63,7 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Moves the player character down by one unit if it is not at the bottom edge of the maze.
+     * Moves the player resources.character down by one unit if it is not at the bottom edge of the maze.
      */
     public final void moveDown() {
         if (y < mazeHeight - 1) {
@@ -72,7 +72,7 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Moves the player character left by one unit if it is not at the left edge of the maze.
+     * Moves the player resources.character left by one unit if it is not at the left edge of the maze.
      */
     public final void moveLeft() {
         if (x > 0) {
@@ -81,7 +81,7 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Moves the player character right by one unit if it is not at the right edge of the maze.
+     * Moves the player resources.character right by one unit if it is not at the right edge of the maze.
      */
     public final void moveRight() {
         if (x < mazeWidth - 1) {
@@ -90,7 +90,7 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Displays the position of the player character in the format:
+     * Displays the position of the player resources.character in the format:
      * {@code PlayerCharacter is at (x, y)}.
      */
     @Override

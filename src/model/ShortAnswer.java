@@ -33,7 +33,7 @@ public class ShortAnswer extends Question {
 
     /**
      * Gives the player a hint to the problem.
-     * @return The first character of the correct answer.
+     * @return The first resources.character of the correct answer.
      */
     protected String getHint() {
         return "The word starts with a \"" + getAnswer().charAt(0) + "\"";

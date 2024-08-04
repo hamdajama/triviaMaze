@@ -6,12 +6,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
-
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.Serializable;
+import javax.imageio.ImageIO;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -24,7 +26,6 @@ import javax.swing.JPanel;
 import controller.GameSaver;
 import model.*;
 
-
 import model.PlayerCharacter;
 
 /**
@@ -35,11 +36,19 @@ import model.PlayerCharacter;
  */
 public class GUI implements Serializable {
 
-
     private static final long serialVersionUID = 2L;
     private final PlayerCharacter playerCharacter;
     private transient JFrame frame;
     private transient JPanel mazePanel;
+
+    // Directional constants
+    private static final String UP = "up";
+    private static final String RIGHT = "right";
+    private static final String DOWN = "down";
+    private static final String LEFT = "left";
+    private String currentDirection = DOWN;
+    private int frameIndex = 0; // To cycle through 0, 1, 2 for animation.
+    private Map<String, BufferedImage[]> characterImages; // Image map for storing directional images.
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -47,8 +56,41 @@ public class GUI implements Serializable {
     public GUI() {
         super();
         playerCharacter = new PlayerCharacter(0, 0);
+        loadCharacterImages();
         setupFrame();
     }
+
+    /**
+     * Loads the character images for the player character.
+     */
+    private void loadCharacterImages() {
+        characterImages = new HashMap<>();
+        try {
+            characterImages.put(UP, new BufferedImage[]{
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_2.png"))),
+            });
+            characterImages.put(RIGHT, new BufferedImage[]{
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_2.png"))),
+            });
+            characterImages.put(DOWN, new BufferedImage[]{
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_2.png"))),
+            });
+            characterImages.put(LEFT, new BufferedImage[]{
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_2.png"))),
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Sets up the frame for the GUI.
@@ -73,17 +115,22 @@ public class GUI implements Serializable {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
+                        currentDirection = UP;
                         break;
                     case KeyEvent.VK_S:
                         playerCharacter.moveDown();
+                        currentDirection = DOWN;
                         break;
                     case KeyEvent.VK_A:
                         playerCharacter.moveLeft();
+                        currentDirection = LEFT;
                         break;
                     case KeyEvent.VK_D:
                         playerCharacter.moveRight();
+                        currentDirection = RIGHT;
                         break;
                 }
+                frameIndex = (frameIndex + 1) % 3; // Cycle through 0, 1, 2 for animation.
                 playerCharacter.displayPosition();
                 mazePanel.revalidate();
                 mazePanel.repaint();
@@ -232,7 +279,8 @@ public class GUI implements Serializable {
                 g.setColor(Color.BLUE);
                 // Simple Character representation
                 int cellSize = 10; // Size of each cell in the grid
-                g.fillRect(playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize);
+                BufferedImage currentImage = characterImages.get(currentDirection)[frameIndex];
+                g.drawImage(currentImage, playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize, null);
                 // Update the playerCharacter with the current maze dimensions
                 playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
             }
