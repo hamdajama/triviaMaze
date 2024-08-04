@@ -167,20 +167,17 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                """
-                        Welcome to Trivia Maze!
-
-                        In this game, you start from the entry point and try to get to
-                        the exit by answering questions correctly. The questions type will
-                        be either multiple choice, short answer, or true/false. When  you
-                        get a questions wrong, the door will be locked and you will have to
-                        find another way to reach the exit. The game is over when you
-                        reached the exit or there are no available paths to the exit.
-
-                        Developed by:
-                        Eric John
-                        Hamnda Jama
-                        Masumi Yano""",
+                "Welcome to Trivia Maze!\n\n" +
+                        "In this game, you start from the entry point and try to get to\n" +
+                        "the exit by answering questions correctly. The questions type will\n"+
+                        "be either multiple choice, short answer, or true/false. When  you\n" +
+                        "get a questions wrong, the door will be locked and you will have to\n"+
+                        "find another way to reach the exit. The game is over when you\n"+
+                        "reached the exit or there are no available paths to the exit.\n\n"+
+                        "Developed by:\n"+
+                        "Eric John\n"+
+                        "Hamnda Jama\n"+
+                        "Masumi Yano",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -194,21 +191,16 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
         final JMenuItem instructionFileItem = new JMenuItem("Instruction");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                """
-                        Instructions:
-
-                        In this game, you interact with questions by left clicking the mouse
-                        or touchpad. When you think you have the right answer, click on the
-                        submit button!
-
-                        True/False: You will be given a statement and you would have to decide
-                        if the answer is correct or not.
-
-                        Multiple Choice: You are given 4 options and you will have to pick the
-                        correct one in order to unlock the door.
-
-                        Short Answer: When doing a short answer question, respond with only one
-                        word in order to unlock the door.""",
+                "Instructions:\n\n"+
+                        "In this game, you interact with questions by left clicking the mouse\n"+
+                        "or touchpad. When you think you have the right answer, click on the\n"+
+                        "submit button!\n\n"+
+                        "True/False: You will be given a statement and you would have to decide\n"+
+                        "if the answer is correct or not.\n\n"+
+                        "Multiple Choice: You are given 4 options and you will have to pick the\n"+
+                        "correct one in order to unlock the door.\n\n"+
+                        "Short Answer: When doing a short answer question, respond with only one\n"+
+                        "word in order to unlock the door.",
                 "Trivia Instruction",
                 JOptionPane.INFORMATION_MESSAGE
         ));
