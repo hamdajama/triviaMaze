@@ -163,4 +163,13 @@ public class Maze {
     public Room getCurrentRoom() {
         return getRoom(myCurrentX, myCurrentY);
     }
+
+    /**
+     * Gets how big the maze will be.
+     * @return An int representing the n x n for the size of the maze
+     */
+    public int getRoomSize() {
+        return mySize;
+    }
+
 }

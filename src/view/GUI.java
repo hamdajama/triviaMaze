@@ -11,6 +11,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import java.io.Serializable;
+
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +28,7 @@ import javax.swing.JPanel;
 import controller.GameSaver;
 import model.*;
 
+
 import model.PlayerCharacter;
 
 /**
@@ -40,6 +43,7 @@ public class GUI implements Serializable {
     private final PlayerCharacter playerCharacter;
     private transient JFrame frame;
     private transient JPanel mazePanel;
+    private transient final Maze myMaze;
 
     // Directional constants
     private static final String UP = "up";
@@ -53,8 +57,9 @@ public class GUI implements Serializable {
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
      */
-    public GUI() {
+    public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
+        myMaze = new Maze(theDBConnector);
         playerCharacter = new PlayerCharacter(0, 0);
         loadCharacterImages();
         setupFrame();
@@ -115,22 +120,17 @@ public class GUI implements Serializable {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
-                        currentDirection = UP;
                         break;
                     case KeyEvent.VK_S:
                         playerCharacter.moveDown();
-                        currentDirection = DOWN;
                         break;
                     case KeyEvent.VK_A:
                         playerCharacter.moveLeft();
-                        currentDirection = LEFT;
                         break;
                     case KeyEvent.VK_D:
                         playerCharacter.moveRight();
-                        currentDirection = RIGHT;
                         break;
                 }
-                frameIndex = (frameIndex + 1) % 3; // Cycle through 0, 1, 2 for animation.
                 playerCharacter.displayPosition();
                 mazePanel.revalidate();
                 mazePanel.repaint();
@@ -211,17 +211,20 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Welcome to Trivia Maze!\n\n" +
-                        "In this game, you start from the entry point and try to get to\n" +
-                        "the exit by answering questions correctly. The questions type will\n"+
-                        "be either multiple choice, short answer, or true/false. When  you\n" +
-                        "get a questions wrong, the door will be locked and you will have to\n"+
-                        "find another way to reach the exit. The game is over when you\n"+
-                        "reached the exit or there are no available paths to the exit.\n\n"+
-                        "Developed by:\n"+
-                        "Eric John\n"+
-                        "Hamnda Jama\n"+
-                        "Masumi Yano",
+                """
+                        Welcome to Trivia Maze!
+
+                        In this game, you start from the entry point and try to get to
+                        the exit by answering questions correctly. The questions type will
+                        be either multiple choice, short answer, or true/false. When  you
+                        get a questions wrong, the door will be locked and you will have to
+                        find another way to reach the exit. The game is over when you
+                        reached the exit or there are no available paths to the exit.
+
+                        Developed by:
+                        Eric John
+                        Hamnda Jama
+                        Masumi Yano""",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -285,6 +288,8 @@ public class GUI implements Serializable {
                 playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
             }
         };
+        mazePanel = new MazePanel(myMaze, playerCharacter);
+        mazePanel.setBackground(Color.BLACK);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(mazePanel, BorderLayout.CENTER);
     }

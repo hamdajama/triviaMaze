@@ -109,7 +109,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener {
 
         theGraphics2D.drawString("Move North", (theWidth / 2) - 40, 50);
         theGraphics2D.drawString("Move East", theWidth - 100, theHeight / 2);
-        theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 325);
+        theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 250);
         theGraphics2D.drawString("Move West", theWidth - 350, theHeight / 2);
 
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
