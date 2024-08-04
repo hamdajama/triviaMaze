@@ -32,6 +32,11 @@ public class Room {
     private final PropertyChangeSupport myPcs = new PropertyChangeSupport(this);
 
     /**
+     * A boolean that checks if the answer for the room has been answered or not.
+     */
+    private boolean isAnswered;
+
+    /**
      * Constructs a new Room with the given trivia question.
      * Initializes the doors in the room.
      *
@@ -48,6 +53,8 @@ public class Room {
         //Since starting at the first door, make sure the east door and south door are open.
         myRoom.get("East").open();
         myRoom.get("South").open();
+
+        isAnswered = false;
 
     }
     /**
@@ -125,4 +132,21 @@ public class Room {
         }
         return true;
     }
+
+    /**
+     * Checks if the current room's question has been answered.
+     * @return True if the question has been answered. False if not.
+     */
+    public boolean isAnswered() {
+        return isAnswered;
+    }
+
+    /**
+     * Changes the state of the boolean depending on if the question has been answered.
+     * @param answered - The state to change the isAnswered boolean to.
+     */
+    public void setAnswered(boolean answered) {
+        isAnswered = answered;
+    }
+
 }

@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,12 +41,14 @@ public class GUI implements Serializable {
     private final PlayerCharacter playerCharacter;
     private transient JFrame frame;
     private transient JPanel mazePanel;
+    private transient final Maze myMaze;
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
      */
-    public GUI() {
+    public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
+        myMaze = new Maze(theDBConnector);
         playerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
     }
@@ -231,20 +234,8 @@ public class GUI implements Serializable {
      * @param theHalfWidth - Half the width of the given frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        mazePanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(Color.MAGENTA);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(Color.BLUE);
-                // Simple Character representation
-                int cellSize = 10; // Size of each cell in the grid
-                g.fillRect(playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize);
-                // Update the playerCharacter with the current maze dimensions
-                playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
-            }
-        };
+        mazePanel = new MazePanel(myMaze, playerCharacter);
+        mazePanel.setBackground(Color.BLACK);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(mazePanel, BorderLayout.CENTER);
     }
@@ -269,7 +260,7 @@ public class GUI implements Serializable {
         rightPanel.add(roomPanel);
 
         final QuestionPanel questionPanel = new QuestionPanel();
-        questionPanel.setBackground(Color.RED);
+        questionPanel.setBackground(Color.BLACK);
         questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel);
 
