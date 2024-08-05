@@ -120,15 +120,19 @@ public class GUI implements Serializable {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
+                        currentDirection = UP;
                         break;
                     case KeyEvent.VK_S:
                         playerCharacter.moveDown();
+                        currentDirection = DOWN;
                         break;
                     case KeyEvent.VK_A:
                         playerCharacter.moveLeft();
+                        currentDirection = LEFT;
                         break;
                     case KeyEvent.VK_D:
                         playerCharacter.moveRight();
+                        currentDirection = RIGHT;
                         break;
                 }
                 playerCharacter.displayPosition();
@@ -278,14 +282,14 @@ public class GUI implements Serializable {
                 g.fillRect(0, 0, getWidth(), getHeight());
                 g.setColor(Color.BLUE);
                 // Simple Character representation
-                int cellSize = 10; // Size of each cell in the grid
+                int cellSize = 30; // Size of each cell in the grid
                 BufferedImage currentImage = characterImages.get(currentDirection)[frameIndex];
                 g.drawImage(currentImage, playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize, null);
                 // Update the playerCharacter with the current maze dimensions
                 playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
             }
         };
-        mazePanel = new MazePanel(myMaze, playerCharacter);
+//        mazePanel = new MazePanel(myMaze, playerCharacter);
         mazePanel.setBackground(Color.BLACK);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(mazePanel, BorderLayout.CENTER);
