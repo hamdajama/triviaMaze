@@ -211,20 +211,17 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                """
-                        Welcome to Trivia Maze!
-
-                        In this game, you start from the entry point and try to get to
-                        the exit by answering questions correctly. The questions type will
-                        be either multiple choice, short answer, or true/false. When  you
-                        get a questions wrong, the door will be locked and you will have to
-                        find another way to reach the exit. The game is over when you
-                        reached the exit or there are no available paths to the exit.
-
-                        Developed by:
-                        Eric John
-                        Hamnda Jama
-                        Masumi Yano""",
+                "Welcome to Trivia Maze!\n\n" +
+                        "In this game, you start from the entry point and try to get to\n" +
+                        "the exit by answering questions correctly. The questions type will\n"+
+                        "be either multiple choice, short answer, or true/false. When  you\n" +
+                        "get a questions wrong, the door will be locked and you will have to\n"+
+                        "find another way to reach the exit. The game is over when you\n"+
+                        "reached the exit or there are no available paths to the exit.\n\n"+
+                        "Developed by:\n"+
+                        "Eric John\n"+
+                        "Hamnda Jama\n"+
+                        "Masumi Yano",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
