@@ -8,12 +8,15 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.sql.SQLException;
+import javax.imageio.ImageIO;
+
 import java.io.Serializable;
+
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.imageio.ImageIO;
+
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -24,6 +27,7 @@ import javax.swing.JPanel;
 
 import controller.GameSaver;
 import model.*;
+
 
 import model.PlayerCharacter;
 
@@ -92,6 +96,7 @@ public class GUI implements Serializable {
         }
     }
 
+
     /**
      * Sets up the frame for the GUI.
      */
@@ -115,22 +120,17 @@ public class GUI implements Serializable {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
-                        currentDirection = UP;
                         break;
                     case KeyEvent.VK_S:
                         playerCharacter.moveDown();
-                        currentDirection = DOWN;
                         break;
                     case KeyEvent.VK_A:
                         playerCharacter.moveLeft();
-                        currentDirection = LEFT;
                         break;
                     case KeyEvent.VK_D:
                         playerCharacter.moveRight();
-                        currentDirection = RIGHT;
                         break;
                 }
-                frameIndex = (frameIndex + 1) % 3; // Cycle through 0, 1, 2 for animation.
                 playerCharacter.displayPosition();
                 mazePanel.revalidate();
                 mazePanel.repaint();
@@ -285,6 +285,7 @@ public class GUI implements Serializable {
                 playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
             }
         };
+        mazePanel = new MazePanel(myMaze, playerCharacter);
         mazePanel.setBackground(Color.BLACK);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(mazePanel, BorderLayout.CENTER);
@@ -310,43 +311,28 @@ public class GUI implements Serializable {
         rightPanel.add(roomPanel);
 
         final QuestionPanel questionPanel = new QuestionPanel();
-        questionPanel.setBackground(Color.BLACK);
+        questionPanel.setBackground(Color.RED);
         questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel);
-        // display the current rooms question
-        displayCurrentRoomQuestion(questionPanel);
-        myMaze.addPropertyChangeListener(evt -> {
-            if ("move".equals(evt.getPropertyName())) {
-                displayCurrentRoomQuestion(questionPanel);
-            }
-        });
 
-    }
-    private void displayCurrentRoomQuestion(QuestionPanel questionPanel) {
-        Room currentRoom = myMaze.getCurrentRoom();
-        questionPanel.setQuestion(currentRoom.getTrivia());
-    }
+        //Multiple choice
 
+        Map<String, String> choices = new HashMap<>();
+        choices.put("A", "Red");
+        choices.put("B", "Green");
+        choices.put("C", "Blue");
+        choices.put("D", "Purple");
+        Question multipleChoice = new MultipleChoice( "What color is Yoda's Lightsaber?", choices, "B");
+        questionPanel.setQuestion(multipleChoice);
 
-
-    //Multiple choice
-
-    // Map<String, String> choices = new HashMap<>();
-    // choices.put("A", "Red");
-    // choices.put("B", "Green");
-    //  choices.put("C", "Blue");
-    //  choices.put("D", "Purple");
-    //  Question multipleChoice = new MultipleChoice( 42,"What color is Yoda's Lightsaber?", choices, "B");
-    //questionPanel.setQuestion(multipleChoice);
-
-    //Short Answer
+        //Short Answer
 //        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
 //        questionPanel.setQuestion(shortAnswer);
 
-    //True False
+        //True False
 //        Question trueFalse = new TrueFalse(2, "Darth Vader is Luke Skywalkers father", 1);
 //        questionPanel.setQuestion(trueFalse);
-    //}
+    }
 
     /**
      * Reinitialize the GUI after loading the game state.
