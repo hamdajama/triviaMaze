@@ -7,9 +7,8 @@ package model;
 import model.Door;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+
 /**
  * The Room class represents a room in the trivia maze.
  * Each room contains a set of doors and a trivia question.
@@ -57,6 +56,13 @@ public class Room {
         isAnswered = false;
 
     }
+    public void addPropertyChangeListener(PropertyChangeListener theListener) {
+        myPcs.addPropertyChangeListener(theListener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener theListener) {
+        myPcs.removePropertyChangeListener(theListener);
+    }
     /**
      * Retrieves the door in the specified direction.
      *
@@ -67,6 +73,7 @@ public class Room {
     public Door getDoor(String theDirection) {
         return myRoom.get(theDirection);
     }
+
     /**
      * get all doors for the room.
      * @return all the doors in the room.
@@ -102,28 +109,22 @@ public class Room {
         if (!answerQuestion(theAnswer)) {
             closeDoor();
         }
-        else {
-            //we can choose a door and go into the room.
-            // Logic to move to another room will be handled in TriviaMaze class
-            Door door = new Door();
-            door.open();
-        }
     }
     /**
      * Closes a random open door in the room.
      */
     public void closeDoor() {
-        Random rand  = new Random();
-        Object[] dir = myRoom.keySet().toArray();
-        boolean closed = false;
-        while (!closed) {
-            String randDir = (String) dir[rand.nextInt(dir.length)];
-            Door randDoor = myRoom.get(randDir);
-            if (!randDoor.isClosed()) {
-                randDoor.close();
-                myPcs.firePropertyChange(randDir, null, randDoor.isClosed());
-                closed =true;
+        Random rand = new Random();
+        List<String> openDoors = new ArrayList<>();
+        for (Map.Entry<String, Door> entry : myRoom.entrySet()) {
+            if (!entry.getValue().isClosed()) {
+                openDoors.add(entry.getKey());
             }
+        }
+        if (!openDoors.isEmpty()) {
+            String randomOpenDoor = openDoors.get(rand.nextInt(openDoors.size()));
+            myRoom.get(randomOpenDoor).close();
+            myPcs.firePropertyChange(randomOpenDoor, false, true);
         }
     }
     /**
