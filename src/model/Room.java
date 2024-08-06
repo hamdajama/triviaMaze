@@ -68,6 +68,13 @@ public class Room {
         return myRoom.get(theDirection);
     }
     /**
+     * get all doors for the room.
+     * @return all the doors in the room.
+     */
+    public Map<String, Door> getDoors() {
+        return myRoom;
+    }
+    /**
      * Retrieves the trivia question associated with the room.
      *
      * @return The trivia question.
