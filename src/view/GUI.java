@@ -263,16 +263,31 @@ public class GUI implements Serializable {
         questionPanel.setBackground(Color.BLACK);
         questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel);
+                // display the current rooms question
+        displayCurrentRoomQuestion(questionPanel);
+        myMaze.addPropertyChangeListener(evt -> {
+        if ("move".equals(evt.getPropertyName())) {
+            displayCurrentRoomQuestion(questionPanel);
+        }
+        });
 
-        //Multiple choice
+    }
+    private void displayCurrentRoomQuestion(QuestionPanel questionPanel) {
+        Room currentRoom = myMaze.getCurrentRoom();
+        questionPanel.setQuestion(currentRoom.getTrivia());
+    }
 
-        Map<String, String> choices = new HashMap<>();
-        choices.put("A", "Red");
-        choices.put("B", "Green");
-        choices.put("C", "Blue");
-        choices.put("D", "Purple");
-        Question multipleChoice = new MultipleChoice( "What color is Yoda's Lightsaber?", choices, "B");
-        questionPanel.setQuestion(multipleChoice);
+
+
+    //Multiple choice
+
+       // Map<String, String> choices = new HashMap<>();
+       // choices.put("A", "Red");
+       // choices.put("B", "Green");
+      //  choices.put("C", "Blue");
+      //  choices.put("D", "Purple");
+      //  Question multipleChoice = new MultipleChoice( 42,"What color is Yoda's Lightsaber?", choices, "B");
+        //questionPanel.setQuestion(multipleChoice);
 
         //Short Answer
 //        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
@@ -281,7 +296,7 @@ public class GUI implements Serializable {
         //True False
 //        Question trueFalse = new TrueFalse(2, "Darth Vader is Luke Skywalkers father", 1);
 //        questionPanel.setQuestion(trueFalse);
-    }
+    //}
 
     /**
      * Reinitialize the GUI after loading the game state.
@@ -291,3 +306,4 @@ public class GUI implements Serializable {
         mazePanel.repaint();
     }
 }
+
