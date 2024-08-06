@@ -24,6 +24,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import controller.GameSaver;
 import model.*;
@@ -53,6 +56,7 @@ public class GUI implements Serializable {
     private String currentDirection = DOWN;
     private int frameIndex = 0; // To cycle through 0, 1, 2 for animation.
     private Map<String, BufferedImage[]> characterImages; // Image map for storing directional images.
+    private transient Timer myAnimationTimer;
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -63,6 +67,7 @@ public class GUI implements Serializable {
         playerCharacter = new PlayerCharacter(0, 0);
         loadCharacterImages();
         setupFrame();
+        setupAnimationTimer();
     }
 
     /**
@@ -139,6 +144,20 @@ public class GUI implements Serializable {
         });
 
         frame.setVisible(true);
+    }
+
+    /**
+     * Sets up the animation timer.
+     */
+    private void setupAnimationTimer() {
+        myAnimationTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frameIndex = (frameIndex + 1) % 3;
+                mazePanel.repaint();
+            }
+        });
+        myAnimationTimer.start();
     }
 
     /**
