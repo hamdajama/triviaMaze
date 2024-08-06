@@ -121,7 +121,6 @@ public class GUI implements Serializable {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
-                System.out.println("Key pressed: " + e.getKeyCode()); // Debugging statement
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
