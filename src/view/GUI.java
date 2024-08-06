@@ -6,16 +6,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -24,9 +21,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.Timer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import controller.GameSaver;
 import model.*;
@@ -42,21 +36,12 @@ import model.PlayerCharacter;
  */
 public class GUI implements Serializable {
 
+
     private static final long serialVersionUID = 2L;
     private final PlayerCharacter playerCharacter;
     private transient JFrame frame;
     private transient JPanel mazePanel;
     private transient final Maze myMaze;
-
-    // Directional constants
-    private static final String UP = "up";
-    private static final String RIGHT = "right";
-    private static final String DOWN = "down";
-    private static final String LEFT = "left";
-    private String currentDirection = DOWN;
-    private int frameIndex = 0; // To cycle through 0, 1, 2 for animation.
-    private Map<String, BufferedImage[]> characterImages; // Image map for storing directional images.
-    private transient Timer myAnimationTimer;
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -65,42 +50,8 @@ public class GUI implements Serializable {
         super();
         myMaze = new Maze(theDBConnector);
         playerCharacter = new PlayerCharacter(0, 0);
-        loadCharacterImages();
         setupFrame();
-        setupAnimationTimer();
     }
-
-    /**
-     * Loads the character images for the player character.
-     */
-    private void loadCharacterImages() {
-        characterImages = new HashMap<>();
-        try {
-            characterImages.put(UP, new BufferedImage[]{
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_2.png"))),
-            });
-            characterImages.put(RIGHT, new BufferedImage[]{
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_2.png"))),
-            });
-            characterImages.put(DOWN, new BufferedImage[]{
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_2.png"))),
-            });
-            characterImages.put(LEFT, new BufferedImage[]{
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_2.png"))),
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * Sets up the frame for the GUI.
@@ -121,6 +72,7 @@ public class GUI implements Serializable {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
+                System.out.println("Key pressed: " + e.getKeyCode()); // Debugging statement
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         playerCharacter.moveUp();
@@ -143,20 +95,6 @@ public class GUI implements Serializable {
         });
 
         frame.setVisible(true);
-    }
-
-    /**
-     * Sets up the animation timer.
-     */
-    private void setupAnimationTimer() {
-        myAnimationTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frameIndex = (frameIndex + 1) % 3;
-                mazePanel.repaint();
-            }
-        });
-        myAnimationTimer.start();
     }
 
     /**
@@ -229,17 +167,20 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Welcome to Trivia Maze!\n\n" +
-                        "In this game, you start from the entry point and try to get to\n" +
-                        "the exit by answering questions correctly. The questions type will\n"+
-                        "be either multiple choice, short answer, or true/false. When  you\n" +
-                        "get a questions wrong, the door will be locked and you will have to\n"+
-                        "find another way to reach the exit. The game is over when you\n"+
-                        "reached the exit or there are no available paths to the exit.\n\n"+
-                        "Developed by:\n"+
-                        "Eric John\n"+
-                        "Hamnda Jama\n"+
-                        "Masumi Yano",
+                """
+                        Welcome to Trivia Maze!
+
+                        In this game, you start from the entry point and try to get to
+                        the exit by answering questions correctly. The questions type will
+                        be either multiple choice, short answer, or true/false. When  you
+                        get a questions wrong, the door will be locked and you will have to
+                        find another way to reach the exit. The game is over when you
+                        reached the exit or there are no available paths to the exit.
+
+                        Developed by:
+                        Eric John
+                        Hamnda Jama
+                        Masumi Yano""",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -253,16 +194,21 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
         final JMenuItem instructionFileItem = new JMenuItem("Instruction");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                "Instructions:\n\n"+
-                        "In this game, you interact with questions by left clicking the mouse\n"+
-                        "or touchpad. When you think you have the right answer, click on the\n"+
-                        "submit button!\n\n"+
-                        "True/False: You will be given a statement and you would have to decide\n"+
-                        "if the answer is correct or not.\n\n"+
-                        "Multiple Choice: You are given 4 options and you will have to pick the\n"+
-                        "correct one in order to unlock the door.\n\n"+
-                        "Short Answer: When doing a short answer question, respond with only one\n"+
-                        "word in order to unlock the door.",
+                """
+                        Instructions:
+
+                        In this game, you interact with questions by left clicking the mouse
+                        or touchpad. When you think you have the right answer, click on the
+                        submit button!
+
+                        True/False: You will be given a statement and you would have to decide
+                        if the answer is correct or not.
+
+                        Multiple Choice: You are given 4 options and you will have to pick the
+                        correct one in order to unlock the door.
+
+                        Short Answer: When doing a short answer question, respond with only one
+                        word in order to unlock the door.""",
                 "Trivia Instruction",
                 JOptionPane.INFORMATION_MESSAGE
         ));
@@ -288,21 +234,6 @@ public class GUI implements Serializable {
      * @param theHalfWidth - Half the width of the given frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        mazePanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(Color.MAGENTA);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(Color.BLUE);
-                // Simple Character representation
-                int cellSize = 10; // Size of each cell in the grid
-                BufferedImage currentImage = characterImages.get(currentDirection)[frameIndex];
-                g.drawImage(currentImage, playerCharacter.getX() * cellSize, playerCharacter.getY() * cellSize, cellSize, cellSize, null);
-                // Update the playerCharacter with the current maze dimensions
-                playerCharacter.setMazeDimensions(getWidth() / cellSize, getHeight() / cellSize);
-            }
-        };
         mazePanel = new MazePanel(myMaze, playerCharacter);
         mazePanel.setBackground(Color.BLACK);
         mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
@@ -329,7 +260,7 @@ public class GUI implements Serializable {
         rightPanel.add(roomPanel);
 
         final QuestionPanel questionPanel = new QuestionPanel();
-        questionPanel.setBackground(Color.RED);
+        questionPanel.setBackground(Color.BLACK);
         questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(questionPanel);
 
