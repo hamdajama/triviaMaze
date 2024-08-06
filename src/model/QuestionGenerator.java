@@ -23,7 +23,7 @@ public class QuestionGenerator {
         this.myDataConn = theDBConn;
         this.myRandom = new Random();
     }
-    
+
     /**
      * Retrieves a random question from the database.
      *
@@ -98,7 +98,7 @@ public class QuestionGenerator {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 String choice = rs.getString("choice"); // - A, B, C, D
-                String choice_Text = rs.getString("choice_text"); 
+                String choice_Text = rs.getString("choice_text");
                 choices.put(choice,choice_Text);
             }
         } catch (SQLException e) {
