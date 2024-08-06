@@ -105,13 +105,18 @@ public class Maze {
      */
     public void processAnswer(String theAnswer) {
         Room currentRoom = getCurrentRoom();
-        if (!currentRoom.answerQuestion(theAnswer)) {
-            currentRoom.wrongAnswer(theAnswer);
+        if ("correct answer".equals(theAnswer)) {
+            currentRoom.setAnswered(true);
+            // logic to open doors, opens all doors in the room.
+            for (Door door : currentRoom.getDoors().values()) {
+                door.open();
+            }
+            mySupport.firePropertyChange("correct answer", null, currentRoom);
             if (currentRoom.allClosed()) {
-                mySupport.firePropertyChange("game over", null, getCurrentRoom());
+                mySupport.firePropertyChange("game over", null, currentRoom);
             }
         } else {
-            mySupport.firePropertyChange("correct answer", null, getCurrentRoom());
+            mySupport.firePropertyChange("wrong answer", null, currentRoom);
         }
     }
 
