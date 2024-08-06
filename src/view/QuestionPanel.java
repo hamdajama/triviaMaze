@@ -158,7 +158,10 @@ public class QuestionPanel extends JPanel {
      */
     private void handleAnswer(boolean isCorrect) {
         if (isCorrect) {
-            JOptionPane.showMessageDialog(this, "Correct answer!");
+         // notify the maze when the answer is correct
+            Room currentRoom = myMaze.getCurrentRoom();
+            currentRoom.setAnswered(true);
+            myMaze.processAnswer("correct answer");
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
         }
