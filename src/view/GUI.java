@@ -6,13 +6,16 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -24,6 +27,11 @@ import javax.swing.JPanel;
 import model.*;
 import controller.GameSaver;
 import model.PlayerCharacter;
+
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Objects;
 
 /**
  * Created a GUI class for user interactions. It will handle keyboard events
@@ -38,6 +46,15 @@ public class GUI implements Serializable {
     private transient JFrame myFrame;
     private transient JPanel myMazePanel;
     private final transient Maze myMaze;
+    private static final String UP = "up";
+    private static final String RIGHT = "right";
+    private static final String DOWN = "down";
+    private static final String LEFT = "left";
+    private String currentDirection = DOWN;
+    private int frameIndex = 0;
+    private Map<String, BufferedImage[]> characterImages;
+    private transient Timer animationTimer;
+
 
     /**
      * Creates a new GUI instance and initializes the File and Help menu of the game.
@@ -47,6 +64,7 @@ public class GUI implements Serializable {
         myMaze = new Maze(theDBConnector);
         myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
+        setupAnimationTimer();
     }
 
     /**
@@ -68,19 +86,22 @@ public class GUI implements Serializable {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
-                System.out.println("Key pressed: " + e.getKeyCode()); // Debugging statement
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_W:
                         myPlayerCharacter.moveUp();
+                        currentDirection = UP;
                         break;
                     case KeyEvent.VK_S:
                         myPlayerCharacter.moveDown();
+                        currentDirection = DOWN;
                         break;
                     case KeyEvent.VK_A:
                         myPlayerCharacter.moveLeft();
+                        currentDirection = LEFT;
                         break;
                     case KeyEvent.VK_D:
                         myPlayerCharacter.moveRight();
+                        currentDirection = RIGHT;
                         break;
                 }
                 myPlayerCharacter.displayPosition();
@@ -91,6 +112,48 @@ public class GUI implements Serializable {
         });
 
         myFrame.setVisible(true);
+    }
+
+    /**
+     * Loads the character images for the player character.
+     * */
+    private void loadCharacterImages() {
+        characterImages = new HashMap<>();
+        try {
+            characterImages.put(UP, new BufferedImage[] {
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_2.png"))),
+            });
+            characterImages.put(RIGHT, new BufferedImage[] {
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_2.png"))),
+            });
+            characterImages.put(DOWN, new BufferedImage[] {
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_2.png"))),
+            });
+            characterImages.put(LEFT, new BufferedImage[] {
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_0.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_1.png"))),
+                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_2.png"))),
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setupAnimationTimer() {
+        animationTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frameIndex = (frameIndex + 1) % 3;
+                myMazePanel.repaint();
+            }
+        });
+        animationTimer.start();
     }
 
     /**
