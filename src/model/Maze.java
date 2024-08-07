@@ -3,17 +3,20 @@ package model;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.sql.SQLException;
+import java.util.Random;
 
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
  * It handles the setup of rooms with questions, player movement, and game state events.
- * @author Hamda Jama
+ *
+ * @version 8/7/2024
  */
 public class Maze {
-    private int mySize = 5;
+    private static final int MAZE_SIZE = 5;
     private Room[][] myMap;
     private int myEndX, myEndY;
     private int myCurrentX, myCurrentY;
+    private boolean movementAllowed;
     private PropertyChangeSupport mySupport;
     private DatabaseConnector myDBConn;
     private QuestionGenerator myQesGen;
@@ -28,11 +31,12 @@ public class Maze {
         this.myDBConn = theDBConn;
         this.myQesGen = new QuestionGenerator(theDBConn);
         this.mySupport = new PropertyChangeSupport(this);
-        this.myMap = new Room[mySize][mySize];
+        this.myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         buildMap();
         setEnd();
         myCurrentX = 0;
         myCurrentY = 0;
+        movementAllowed = false; // Initially, movement is not allowed until the first question is answered correctly
     }
 
     /**
@@ -41,8 +45,8 @@ public class Maze {
      * @throws SQLException If an error occurs during question retrieval from the database.
      */
     private void buildMap() throws SQLException {
-        for (int i = 0; i < mySize; i++) {
-            for (int j = 0; j < mySize; j++) {
+        for (int i = 0; i < MAZE_SIZE; i++) {
+            for (int j = 0; j < MAZE_SIZE; j++) {
                 Question question = myQesGen.getRandomQes();
                 myMap[i][j] = new Room(question);
             }
@@ -71,8 +75,8 @@ public class Maze {
      * Sets the end point of the maze to the bottom-right corner.
      */
     private void setEnd() {
-        myEndX = mySize - 1;
-        myEndY = mySize - 1;
+        myEndX = MAZE_SIZE - 1;
+        myEndY = MAZE_SIZE - 1;
     }
 
     /**
@@ -83,7 +87,7 @@ public class Maze {
      * @return The Room object at the specified coordinates, or null if out of bounds.
      */
     public Room getRoom(int theX, int theY) {
-        if (theX >= 0 && theX < mySize && theY >= 0 && theY < mySize) {
+        if (theX >= 0 && theX < MAZE_SIZE && theY >= 0 && theY < MAZE_SIZE) {
             return myMap[theX][theY];
         }
         return null;
@@ -101,22 +105,25 @@ public class Maze {
     /**
      * Processes the player's answer and updates the game state accordingly.
      *
-     * @param theAnswer The answer provided by the player.
+     * @param answerType The type of answer provided by the player ("correct answer" or "wrong answer").
      */
-    public void processAnswer(String theAnswer) {
+    public void processAnswer(String answerType) {
         Room currentRoom = getCurrentRoom();
-        if ("correct answer".equals(theAnswer)) {
+        if ("correct answer".equals(answerType)) {
             currentRoom.setAnswered(true);
-            // logic to open doors, opens all doors in the room.
+            movementAllowed = true;
             for (Door door : currentRoom.getDoors().values()) {
                 door.open();
             }
             mySupport.firePropertyChange("correct answer", null, currentRoom);
+        } else {
+            movementAllowed = false;
+            currentRoom.wrongAnswer(answerType);
+            mySupport.firePropertyChange("wrong answer", null, currentRoom);
             if (currentRoom.allClosed()) {
                 mySupport.firePropertyChange("game over", null, currentRoom);
             }
-        } else {
-            mySupport.firePropertyChange("wrong answer", null, currentRoom);
+
         }
     }
 
@@ -138,24 +145,25 @@ public class Maze {
         int newX = myCurrentX, newY = myCurrentY;
         switch (theDirection.toUpperCase()) {
             case "NORTH":
-                newX--;
+                newY--;
                 break;
             case "SOUTH":
-                newX++;
-                break;
-            case "EAST":
                 newY++;
                 break;
+            case "EAST":
+                newX++;
+                break;
             case "WEST":
-                newY--;
+                newX--;
                 break;
             default:
                 return;
         }
 
-        if (newX >= 0 && newX < mySize && newY >= 0 && newY < mySize) {
+        if (newX >= 0 && newX < MAZE_SIZE && newY >= 0 && newY < MAZE_SIZE) {
             myCurrentX = newX;
             myCurrentY = newY;
+            movementAllowed = false;
             mySupport.firePropertyChange("move", null, getCurrentRoom());
         }
     }
@@ -170,11 +178,20 @@ public class Maze {
     }
 
     /**
-     * Gets how big the maze will be.
-     * @return An int representing the n x n for the size of the maze
+     * Gets the size of the maze.
+     *
+     * @return The size of the maze.
      */
     public int getRoomSize() {
-        return mySize;
+        return MAZE_SIZE;
     }
 
+    /**
+     * Checks if the player movement is allowed.
+     *
+     * @return True if movement is allowed, false otherwise.
+     */
+    public boolean isMovementAllowed() {
+        return movementAllowed;
+    }
 }

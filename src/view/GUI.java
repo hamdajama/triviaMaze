@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -26,7 +27,11 @@ import javax.swing.JPanel;
 
 import model.*;
 import controller.GameSaver;
+import controller.GameSaver;
+import model.DatabaseConnector;
+import model.Maze;
 import model.PlayerCharacter;
+import model.Room;
 
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
@@ -34,8 +39,17 @@ import java.awt.event.ActionListener;
 import java.util.Objects;
 
 /**
- * Created a GUI class for user interactions. It will handle keyboard events
- * along with communicating with the model and controller to update the GUI.
+ * The GUI class is responsible for creating and managing the graphical user interface
+ * of the Trivia Maze game. It handles user interactions, displays the maze, and shows
+ * the current question and room status.
+ *
+ * <p>This class sets up the main game window, including the menu bar, maze panel, and
+ * question panel. It also handles keyboard input for player movement and updates the
+ * game state based on user actions.</p>
+ *
+ * <p>The GUI class implements Serializable to allow the game state to be saved and
+ * loaded.</p>
+ *
  * @author Eric John
  * @version 7/13/2024
  */
@@ -55,34 +69,44 @@ public class GUI implements Serializable {
     private Map<String, BufferedImage[]> characterImages;
     private transient Timer animationTimer;
 
+    private static final long serialVersionUID = 2L;
+    private final PlayerCharacter playerCharacter;
+    private transient JFrame frame;
+    private transient JPanel mazePanel;
+    private final Maze myMaze;
+    private RoomPanel myRoomPanel;
+    private QuestionPanel myQuestionPanel;
 
     /**
-     * Creates a new GUI instance and initializes the File and Help menu of the game.
+     * Creates a new GUI instance and initializes the game.
+     *
+     * @param theDBConnector The DatabaseConnector object for accessing the question database.
+     * @throws SQLException If an error occurs during database access.
      */
-    public GUI(final DatabaseConnector theDBConnector) throws SQLException {
+    public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
         myMaze = new Maze(theDBConnector);
-        myPlayerCharacter = new PlayerCharacter(0, 0);
+        playerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
     }
 
     /**
-     * Sets up the frame for the GUI.
+     * Sets up the main game window and its components.
      */
     private void setupFrame() {
-        final int frameWidth =  800;
+        final int frameWidth = 800;
         final int frameHeight = 800;
 
-        myFrame = new JFrame("Trivia Maze");
-        myFrame.setLocationRelativeTo(null);
-        myFrame.setSize(frameWidth, frameHeight);
-        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        myFrame.setLayout(new BorderLayout());
-        myFrame.setResizable(false);
+        frame = new JFrame("Trivia Maze");
+        frame.setLocationRelativeTo(null);
+        frame.setSize(frameWidth, frameHeight);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        frame.setResizable(false);
 
-        setupMenuBar(myFrame);
-        setupPanels(myFrame);
+        setupMenuBar(frame);
+        setupPanels(frame);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
@@ -107,6 +131,27 @@ public class GUI implements Serializable {
                 myPlayerCharacter.displayPosition();
                 myMazePanel.revalidate();
                 myMazePanel.repaint();
+                if (myMaze.isMovementAllowed()) {
+                    System.out.println("Key pressed: " + e.getKeyCode());
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_W:
+                            myMaze.move("NORTH");
+                            break;
+                        case KeyEvent.VK_S:
+                            myMaze.move("SOUTH");
+                            break;
+                        case KeyEvent.VK_A:
+                            myMaze.move("WEST");
+                            break;
+                        case KeyEvent.VK_D:
+                            myMaze.move("EAST");
+                            break;
+                    }
+                    playerCharacter.displayPosition();
+                    mazePanel.revalidate();
+                    mazePanel.repaint();
+                    displayCurrentRoomQuestion(myQuestionPanel);
+                }
             }
             return false;
         });
@@ -157,8 +202,9 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Sets up the menu bar.
-     * @param theFrame - The frame to display it to.
+     * Sets up the menu bar for the main game window.
+     *
+     * @param theFrame The main game window frame.
      */
     private void setupMenuBar(final JFrame theFrame) {
         final JMenuBar menuBar = new JMenuBar();
@@ -174,8 +220,10 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Sets up the menuFile for the frame.
-     * @param theMenuFile - The JMenu for the frame.
+     * Sets up the File menu and its items.
+     *
+     * @param theMenuFile The File menu.
+     * @param theFrame    The main game window frame.
      */
     private void setupMenuFile(final JMenu theMenuFile, final JFrame theFrame) {
         final JMenuItem saveFileItem = new JMenuItem("Save game");
@@ -194,7 +242,7 @@ public class GUI implements Serializable {
             try {
                 GUI loadedGame = GameSaver.loadGame();
                 loadedGame.reinitializeGUI();
-                myFrame.dispose(); // Dispose of the current frame
+                frame.dispose(); // Dispose of the current frame
             } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
             }
@@ -207,8 +255,10 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Sets up the helpFile for the frame.
-     * @param theHelpFile - The JMenu for the frame.
+     * Sets up the Help menu and its items.
+     *
+     * @param theHelpFile The Help menu.
+     * @param theFrame    The main game window frame.
      */
     private void setupHelpFile(final JMenu theHelpFile, final JFrame theFrame) {
         final JMenuItem aboutFileItem = getJMenuAboutItem(theFrame);
@@ -219,9 +269,10 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Creates a JOptionPane for the about menu file.
-     * @param theFrame - The frame to send it to.
-     * @return A message when a user clicks on about.
+     * Creates a JOptionPane for the About menu item.
+     *
+     * @param theFrame The main game window frame.
+     * @return A JMenuItem for the About menu item.
      */
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
@@ -246,12 +297,13 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Creates a JOptionPane for the instruction file menu.
-     * @param theFrame - The frame to send it to.
-     * @return A message when the user clicks on the information menu.
+     * Creates a JOptionPane for the Instructions menu item.
+     *
+     * @param theFrame The main game window frame.
+     * @return A JMenuItem for the Instructions menu item.
      */
     private JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
-        final JMenuItem instructionFileItem = new JMenuItem("Instruction");
+        final JMenuItem instructionFileItem = new JMenuItem("Instructions");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
                 """
                         Instructions:
@@ -268,16 +320,16 @@ public class GUI implements Serializable {
 
                         Short Answer: When doing a short answer question, respond with only one
                         word in order to unlock the door.""",
-                "Trivia Instruction",
+                "Trivia Instructions",
                 JOptionPane.INFORMATION_MESSAGE
         ));
         return instructionFileItem;
     }
 
     /**
-     * Creates the panels for the Trivia maze. In this method, it calls setupMazePanel
-     * and setupRightPanel
-     * @param theFrame - The frame for the window.
+     * Sets up the panels for the main game window.
+     *
+     * @param theFrame The main game window frame.
      */
     private void setupPanels(final JFrame theFrame) {
         final int halfWidth = (int) Math.floor(theFrame.getWidth() * 0.5);
@@ -288,22 +340,24 @@ public class GUI implements Serializable {
     }
 
     /**
-     * Sets up the left panel that contains the maze.
-     * @param theFrame - The frame for the window.
-     * @param theHalfWidth - Half the width of the given frame.
+     * Sets up the maze panel.
+     *
+     * @param theFrame    The main game window frame.
+     * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter);
-        myMazePanel.setBackground(Color.BLACK);
-        myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
-        theFrame.add(myMazePanel, BorderLayout.CENTER);
+        mazePanel = new MazePanel(myMaze, playerCharacter);
+        mazePanel.setBackground(Color.BLACK);
+        mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
+        theFrame.add(mazePanel, BorderLayout.CENTER);
     }
 
     /**
-     * Sets up the right panel that contains the maze.
-     * @param theFrame - The frame for the window.
-     * @param theHalfWidth - Half the width of the given frame.
-     * @param theHalfHeight - Half the height of the given frame.
+     * Sets up the right panel containing the room panel and question panel.
+     *
+     * @param theFrame     The main game window frame.
+     * @param theHalfWidth  Half the width of the main game window frame.
+     * @param theHalfHeight Half the height of the main game window frame.
      */
     private void setupRightPanel(JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
         final JPanel rightPanel = new JPanel();
@@ -318,28 +372,40 @@ public class GUI implements Serializable {
         roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(roomPanel);
 
-        final QuestionPanel questionPanel = new QuestionPanel();
-        questionPanel.setBackground(Color.BLACK);
-        questionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
-        rightPanel.add(questionPanel);
+        myQuestionPanel = new QuestionPanel(myMaze);
+        myQuestionPanel.setBackground(Color.BLACK);
+        myQuestionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
+        rightPanel.add(myQuestionPanel);
 
-        //Multiple choice
+        // Display the current room's question
+        displayCurrentRoomQuestion(myQuestionPanel);
+        myMaze.addPropertyChangeListener(evt -> {
+            if ("move".equals(evt.getPropertyName())) {
+                displayCurrentRoomQuestion(myQuestionPanel);
+                updateRoomPanel(myMaze.getCurrentRoom());
+            } else if ("correct answer".equals(evt.getPropertyName()) || "wrong answer".equals(evt.getPropertyName())) {
+                updateRoomPanel(myMaze.getCurrentRoom());
+            }
+        });
+    }
 
-        Map<String, String> choices = new HashMap<>();
-        choices.put("A", "Red");
-        choices.put("B", "Green");
-        choices.put("C", "Blue");
-        choices.put("D", "Purple");
-        Question multipleChoice = new MultipleChoice( "What color is Yoda's Lightsaber?", choices, "B");
-        questionPanel.setQuestion(multipleChoice);
+    /**
+     * Displays the current room's question in the question panel.
+     *
+     * @param questionPanel The question panel.
+     */
+    private void displayCurrentRoomQuestion(QuestionPanel questionPanel) {
+        Room currentRoom = myMaze.getCurrentRoom();
+        questionPanel.setQuestion(currentRoom.getTrivia());
+    }
 
-        //Short Answer
-//        Question shortAnswer = new ShortAnswer(22, "Who is Luke Skywalkers sister?", "Leia");
-//        questionPanel.setQuestion(shortAnswer);
-
-        //True False
-//        Question trueFalse = new TrueFalse(2, "Darth Vader is Luke Skywalkers father", 1);
-//        questionPanel.setQuestion(trueFalse);
+    /**
+     * Updates the room panel with the current room's door statuses.
+     *
+     * @param theRoom The current room.
+     */
+    private void updateRoomPanel(Room theRoom) {
+        myRoomPanel.updateRoomPanel(theRoom);
     }
 
     /**
@@ -347,6 +413,7 @@ public class GUI implements Serializable {
      */
     private void reinitializeGUI() {
         setupFrame();
-        myMazePanel.repaint();
+        mazePanel.repaint();
     }
 }
+

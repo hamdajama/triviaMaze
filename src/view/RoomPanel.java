@@ -4,6 +4,8 @@
  */
 package view;
 
+import model.Room;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -114,6 +116,13 @@ public class RoomPanel extends JPanel implements PropertyChangeListener {
 
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
         theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
+    }
+    public void updateRoomPanel(Room theRoom) {
+        this.myNorthDoor = !theRoom.getDoor("North").isClosed();
+        this.mySouthDoor = !theRoom.getDoor("South").isClosed();
+        this.myEastDoor = !theRoom.getDoor("East").isClosed();
+        this.myWestDoor = !theRoom.getDoor("West").isClosed();
+        repaint();
     }
 
     /**
