@@ -1,3 +1,4 @@
+
 package model;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -58,10 +59,9 @@ public class QuestionGenerator implements Serializable{
              Statement stmt = conn.createStatement()) {
              ResultSet rs = stmt.executeQuery(query) ;
             if (rs.next()) {
-                int id = rs.getInt("id");
                 String question = rs.getString("question");
                 int correctAnswer = rs.getInt("correct_answer");
-                return new TrueFalse(id, question, correctAnswer);
+                return new TrueFalse( question, correctAnswer);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,7 +97,7 @@ public class QuestionGenerator implements Serializable{
                     }
                 }
 
-                return new MultipleChoice(id, question, choices, correctAnswer);
+                return new MultipleChoice( question, choices, correctAnswer);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,10 +117,9 @@ public class QuestionGenerator implements Serializable{
              Statement stmt = conn.createStatement()) {
              ResultSet rs = stmt.executeQuery(query);
             if (rs.next()) {
-                int id = rs.getInt("id");
                 String question = rs.getString("question");
                 String correctAnswer = rs.getString("correct_answer");
-                return new ShortAnswer(id, question, correctAnswer);
+                return new ShortAnswer(question, correctAnswer);
             }
         } catch (SQLException e) {
             e.printStackTrace();
