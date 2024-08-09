@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -11,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 
-import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +23,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import model.*;
-import controller.GameSaver;
 import controller.GameSaver;
 import model.DatabaseConnector;
 import model.Maze;
@@ -56,9 +52,7 @@ import java.util.Objects;
 public class GUI implements Serializable {
 
 
-    private final PlayerCharacter myPlayerCharacter;
-    private transient JFrame myFrame;
-    private transient JPanel myMazePanel;
+
     private final transient Maze myMaze;
     private static final String UP = "up";
     private static final String RIGHT = "right";
@@ -70,10 +64,9 @@ public class GUI implements Serializable {
     private transient Timer animationTimer;
 
     private static final long serialVersionUID = 2L;
-    private final PlayerCharacter playerCharacter;
-    private transient JFrame frame;
-    private transient JPanel mazePanel;
-    private final Maze myMaze;
+    private final PlayerCharacter myPlayerCharacter;
+    private transient JFrame myFrame;
+    private transient JPanel myMazePanel;
     private RoomPanel myRoomPanel;
     private QuestionPanel myQuestionPanel;
 
@@ -86,9 +79,10 @@ public class GUI implements Serializable {
     public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
         myMaze = new Maze(theDBConnector);
-        playerCharacter = new PlayerCharacter(0, 0);
+        myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
+        loadCharacterImages();
     }
 
     /**
@@ -98,15 +92,15 @@ public class GUI implements Serializable {
         final int frameWidth = 800;
         final int frameHeight = 800;
 
-        frame = new JFrame("Trivia Maze");
-        frame.setLocationRelativeTo(null);
-        frame.setSize(frameWidth, frameHeight);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setResizable(false);
+        myFrame = new JFrame("Trivia Maze");
+        myFrame.setLocationRelativeTo(null);
+        myFrame.setSize(frameWidth, frameHeight);
+        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        myFrame.setLayout(new BorderLayout());
+        myFrame.setResizable(false);
 
-        setupMenuBar(frame);
-        setupPanels(frame);
+        setupMenuBar(myFrame);
+        setupPanels(myFrame);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
@@ -147,9 +141,9 @@ public class GUI implements Serializable {
                             myMaze.move("EAST");
                             break;
                     }
-                    playerCharacter.displayPosition();
-                    mazePanel.revalidate();
-                    mazePanel.repaint();
+                    myPlayerCharacter.displayPosition();
+                    myMazePanel.revalidate();
+                    myMazePanel.repaint();
                     displayCurrentRoomQuestion(myQuestionPanel);
                 }
             }
@@ -242,7 +236,7 @@ public class GUI implements Serializable {
             try {
                 GUI loadedGame = GameSaver.loadGame();
                 loadedGame.reinitializeGUI();
-                frame.dispose(); // Dispose of the current frame
+                myFrame.dispose(); // Dispose of the current frame
             } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
             }
@@ -346,10 +340,10 @@ public class GUI implements Serializable {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        mazePanel = new MazePanel(myMaze, playerCharacter);
-        mazePanel.setBackground(Color.BLACK);
-        mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
-        theFrame.add(mazePanel, BorderLayout.CENTER);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, characterImages);
+        myMazePanel.setBackground(Color.BLACK);
+        myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
+        theFrame.add(myMazePanel, BorderLayout.CENTER);
     }
 
     /**
@@ -367,10 +361,10 @@ public class GUI implements Serializable {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        final RoomPanel roomPanel = new RoomPanel();
-        roomPanel.setBackground(Color.BLACK);
-        roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
-        rightPanel.add(roomPanel);
+        myRoomPanel = new RoomPanel();
+        myRoomPanel.setBackground(Color.BLACK);
+        myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
+        rightPanel.add(myRoomPanel);
 
         myQuestionPanel = new QuestionPanel(myMaze);
         myQuestionPanel.setBackground(Color.BLACK);
@@ -413,7 +407,7 @@ public class GUI implements Serializable {
      */
     private void reinitializeGUI() {
         setupFrame();
-        mazePanel.repaint();
+        myMazePanel.repaint();
     }
 }
 

@@ -117,6 +117,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener {
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
         theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
     }
+
     public void updateRoomPanel(Room theRoom) {
         this.myNorthDoor = !theRoom.getDoor("North").isClosed();
         this.mySouthDoor = !theRoom.getDoor("South").isClosed();

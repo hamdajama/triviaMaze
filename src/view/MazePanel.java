@@ -1,6 +1,8 @@
 package view;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -24,6 +26,8 @@ public class MazePanel extends JPanel {
      */
     private final PlayerCharacter myPlayerCharacter;
 
+    private final Map<String, BufferedImage[]> myPlayerImage;
+
     /**
      * How big the cell sizes should be.
      */
@@ -34,9 +38,10 @@ public class MazePanel extends JPanel {
      * @param theMaze - The maze for the game.
      * @param thePlayerCharacter - The character for the game.
      */
-    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter) {
+    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter, Map<String, BufferedImage[]> thePlayerImage) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
+        myPlayerImage = thePlayerImage;
         myMaze.addPropertyChangeListener(e -> repaint());
     }
 
@@ -57,8 +62,8 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics for the game.
      */
     private void drawMaze(Graphics theG) {
-        //TEMPORARY CALL TO CHECK IF THE ROOM CHANGES COLOR
-        myMaze.getRoom(0,0).setAnswered(true);
+//        //TEMPORARY CALL TO CHECK IF THE ROOM CHANGES COLOR
+//        myMaze.getRoom(0,0).setAnswered(true);
         for (int x = 0; x < myMaze.getRoomSize(); x++) {
             for (int y = 0; y < myMaze.getRoomSize(); y++) {
                 if (myMaze.getRoom(x,y).isAnswered()) {
@@ -82,7 +87,7 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics of the game.
      */
     private void drawPlayer(Graphics theG) {
-        theG.setColor(Color.BLUE);
+        //theG.setColor(Color.BLUE);
         myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
         theG.fillRect(myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize, cellSize,cellSize);
     }
