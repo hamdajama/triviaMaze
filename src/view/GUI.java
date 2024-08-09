@@ -32,7 +32,7 @@ import model.DatabaseConnector;
 import model.Maze;
 import model.PlayerCharacter;
 import model.Room;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
+//import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
 
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
