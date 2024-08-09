@@ -82,7 +82,6 @@ public class GUI implements Serializable {
         myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
-        loadCharacterImages();
     }
 
     /**
@@ -340,7 +339,7 @@ public class GUI implements Serializable {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, characterImages);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter);
         myMazePanel.setBackground(Color.BLACK);
         myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(myMazePanel, BorderLayout.CENTER);

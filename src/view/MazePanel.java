@@ -26,7 +26,6 @@ public class MazePanel extends JPanel {
      */
     private final PlayerCharacter myPlayerCharacter;
 
-    private final Map<String, BufferedImage[]> myPlayerImage;
 
     /**
      * How big the cell sizes should be.
@@ -38,10 +37,9 @@ public class MazePanel extends JPanel {
      * @param theMaze - The maze for the game.
      * @param thePlayerCharacter - The character for the game.
      */
-    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter, Map<String, BufferedImage[]> thePlayerImage) {
+    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
-        myPlayerImage = thePlayerImage;
         myMaze.addPropertyChangeListener(e -> repaint());
     }
 
@@ -87,7 +85,7 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics of the game.
      */
     private void drawPlayer(Graphics theG) {
-        //theG.setColor(Color.BLUE);
+        theG.setColor(Color.BLUE);
         myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
         theG.fillRect(myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize, cellSize,cellSize);
     }
