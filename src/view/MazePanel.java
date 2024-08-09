@@ -32,14 +32,19 @@ public class MazePanel extends JPanel {
      */
     private final int cellSize = 75;
 
+    private String myCurrentDirection;
+    private int myFrameIndex;
+
     /**
      * Creates the maze panel for the game.
      * @param theMaze - The maze for the game.
      * @param thePlayerCharacter - The character for the game.
      */
-    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter) {
+    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter, String theDirection, int theFrameIndex) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
+        myCurrentDirection = theDirection;
+        myFrameIndex = theFrameIndex;
         myMaze.addPropertyChangeListener(e -> repaint());
     }
 
@@ -85,8 +90,14 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics of the game.
      */
     private void drawPlayer(Graphics theG) {
-        theG.setColor(Color.BLUE);
-        myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
-        theG.fillRect(myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize, cellSize,cellSize);
+        BufferedImage[] images = myPlayerCharacter.getCharacterImages(myCurrentDirection);
+        BufferedImage currentImage = images[myFrameIndex];
+        theG.drawImage(currentImage, myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY() * cellSize, this);
+    }
+
+    public void updateDirectionAndFrame(final String theNewDirection, final int theNewFrameIndex) {
+        myCurrentDirection = theNewDirection;
+        myFrameIndex = theNewFrameIndex;
+        repaint();
     }
 }

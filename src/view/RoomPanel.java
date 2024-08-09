@@ -4,6 +4,7 @@
  */
 package view;
 
+import model.PlayerCharacter;
 import model.Room;
 
 import java.awt.Color;
@@ -11,6 +12,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
@@ -45,15 +47,22 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      */
     private boolean myWestDoor;
 
+    private PlayerCharacter myPlayerCharacter;
+    private String myDirection;
+    private int myFrameIndex;
+
     /**
      * Constructor for the room panel.
      */
-    public RoomPanel() {
+    public RoomPanel(PlayerCharacter thePlayerCharacter, String theDirection, int theFrameIndex) {
         super();
         myNorthDoor = false;
         mySouthDoor = true;
         myEastDoor = true;
         myWestDoor = false;
+        myPlayerCharacter = thePlayerCharacter;
+        myDirection = theDirection;
+        myFrameIndex = theFrameIndex;
     }
 
 
@@ -108,6 +117,11 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theHeight - The height of the panel.
      */
     private void drawText(final Graphics2D theGraphics2D, final int theWidth, final int theHeight) {
+        BufferedImage[] images = myPlayerCharacter.getCharacterImages(myDirection);
+        BufferedImage currentImage = images[myFrameIndex];
+
+        theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20, 40, 40, this);
+
         theGraphics2D.setColor(Color.WHITE);
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 10));
 
@@ -115,10 +129,15 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         theGraphics2D.drawString("Move East", theWidth - 100, theHeight / 2);
         theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 250);
         theGraphics2D.drawString("Move West", theWidth - 350, theHeight / 2);
-
-        theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
-        theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
     }
+
+
+    public void updateDirectionAndFrame(String newDirection, int newFrameIndex) {
+        myDirection = newDirection;
+        myFrameIndex = newFrameIndex;
+        repaint();
+    }
+
 
     public void updateRoomPanel(Room theRoom) {
         this.myNorthDoor = !theRoom.getDoor("North").isClosed();
