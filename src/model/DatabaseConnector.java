@@ -3,6 +3,7 @@ package model;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteException;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,9 +13,10 @@ import java.sql.Statement;
  * used in the TriviaMaze game. It creates tables, inserts initial data, and provides
  * methods for querying the database.
  */
-public class DatabaseConnector {
+public class DatabaseConnector implements Serializable {
+    private final static long serialVersionUID = 7L;
     private final String myDS_url = "jdbc:sqlite:TriviaMaze.db";
-    private SQLiteDataSource myDS;
+    private transient SQLiteDataSource myDS;
     /**
      * Constructs a new DatabaseConnector, initializing the SQLiteDataSource
      * and setting up the database.

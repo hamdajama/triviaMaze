@@ -7,6 +7,7 @@ package model;
 import model.Door;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -15,7 +16,8 @@ import java.util.*;
  * @author Hamda Jama
  * @version 7/21/2024
  */
-public class Room {
+public class Room implements Serializable {
+    private static final long serialVersionUID = 2L;
     /**
      * A map of doors in the room, keyed by direction (e.g., "North", "East", "South", "West").
      */

@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.io.Serializable;
+
 /**
  * A True/False class to ask a true or false question.
  */

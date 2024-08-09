@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -10,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,11 +25,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import model.*;
+import controller.GameSaver;
 import controller.GameSaver;
 import model.DatabaseConnector;
 import model.Maze;
 import model.PlayerCharacter;
 import model.Room;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
 
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
@@ -49,11 +54,13 @@ import java.util.Objects;
  * @author Eric John
  * @version 7/13/2024
  */
-public class GUI implements Serializable {
+public class GUI {
 
 
-
-    private final transient Maze myMaze;
+    private PlayerCharacter myPlayerCharacter;
+    private transient JFrame myFrame;
+    private transient JPanel myMazePanel;
+    private transient Maze myMaze;
     private static final String UP = "up";
     private static final String RIGHT = "right";
     private static final String DOWN = "down";
@@ -64,11 +71,10 @@ public class GUI implements Serializable {
     private transient Timer animationTimer;
 
     private static final long serialVersionUID = 2L;
-    private final PlayerCharacter myPlayerCharacter;
-    private transient JFrame myFrame;
-    private transient JPanel myMazePanel;
+
     private RoomPanel myRoomPanel;
     private QuestionPanel myQuestionPanel;
+    private boolean isKeyDispatcherAdded = false;
 
     /**
      * Creates a new GUI instance and initializes the game.
@@ -92,7 +98,6 @@ public class GUI implements Serializable {
         final int frameHeight = 800;
 
         myFrame = new JFrame("Trivia Maze");
-        myFrame.setLocationRelativeTo(null);
         myFrame.setSize(frameWidth, frameHeight);
         myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         myFrame.setLayout(new BorderLayout());
@@ -101,56 +106,65 @@ public class GUI implements Serializable {
         setupMenuBar(myFrame);
         setupPanels(myFrame);
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_W:
-                        myPlayerCharacter.moveUp();
-                        currentDirection = UP;
-                        break;
-                    case KeyEvent.VK_S:
-                        myPlayerCharacter.moveDown();
-                        currentDirection = DOWN;
-                        break;
-                    case KeyEvent.VK_A:
-                        myPlayerCharacter.moveLeft();
-                        currentDirection = LEFT;
-                        break;
-                    case KeyEvent.VK_D:
-                        myPlayerCharacter.moveRight();
-                        currentDirection = RIGHT;
-                        break;
-                }
-                myPlayerCharacter.displayPosition();
-                myMazePanel.revalidate();
-                myMazePanel.repaint();
-                if (myMaze.isMovementAllowed()) {
-                    System.out.println("Key pressed: " + e.getKeyCode());
+        addKeyEventDispatcher();
+
+        myFrame.setVisible(true);
+    }
+
+    private void addKeyEventDispatcher() {
+        if (!isKeyDispatcherAdded) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_W:
-                            myMaze.move("NORTH");
+                            myPlayerCharacter.moveUp();
+                            currentDirection = UP;
                             break;
                         case KeyEvent.VK_S:
-                            myMaze.move("SOUTH");
+                            myPlayerCharacter.moveDown();
+                            currentDirection = DOWN;
                             break;
                         case KeyEvent.VK_A:
-                            myMaze.move("WEST");
+                            myPlayerCharacter.moveLeft();
+                            currentDirection = LEFT;
                             break;
                         case KeyEvent.VK_D:
-                            myMaze.move("EAST");
+                            myPlayerCharacter.moveRight();
+                            currentDirection = RIGHT;
                             break;
                     }
                     myPlayerCharacter.displayPosition();
                     myMazePanel.revalidate();
                     myMazePanel.repaint();
-                    displayCurrentRoomQuestion(myQuestionPanel);
+                    if (myMaze.isMovementAllowed()) {
+                        switch (e.getKeyCode()) {
+                            case KeyEvent.VK_W:
+                                myMaze.move("NORTH");
+                                break;
+                            case KeyEvent.VK_S:
+                                myMaze.move("SOUTH");
+                                break;
+                            case KeyEvent.VK_A:
+                                myMaze.move("WEST");
+                                break;
+                            case KeyEvent.VK_D:
+                                myMaze.move("EAST");
+                                break;
+                        }
+                        myPlayerCharacter.displayPosition();
+                        myMazePanel.revalidate();
+                        myMazePanel.repaint();
+                        displayCurrentRoomQuestion(myQuestionPanel);
+                    }
                 }
-            }
-            return false;
-        });
-
-        myFrame.setVisible(true);
+                return false;
+            });
+            isKeyDispatcherAdded = true;
+        }
     }
+
+
+
 
     /**
      * Loads the character images for the player character.
@@ -220,25 +234,12 @@ public class GUI implements Serializable {
      */
     private void setupMenuFile(final JMenu theMenuFile, final JFrame theFrame) {
         final JMenuItem saveFileItem = new JMenuItem("Save game");
-        saveFileItem.addActionListener(e -> {
-            try {
-                GameSaver.saveGame(GUI.this); // Save the current instance
-                JOptionPane.showMessageDialog(theFrame, "Game saved successfully!");
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error saving game: " + ex.getMessage());
-            }
-        });
+        saveFileItem.addActionListener(e -> saveGameState());
         theMenuFile.add(saveFileItem);
 
         final JMenuItem loadFileItem = new JMenuItem("Load game");
         loadFileItem.addActionListener(e -> {
-            try {
-                GUI loadedGame = GameSaver.loadGame();
-                loadedGame.reinitializeGUI();
-                myFrame.dispose(); // Dispose of the current frame
-            } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
-            }
+            loadGameState();
         });
         theMenuFile.add(loadFileItem);
 
@@ -246,6 +247,40 @@ public class GUI implements Serializable {
         exitFileItem.addActionListener(e -> System.exit(0));
         theMenuFile.add(exitFileItem);
     }
+
+
+    private void saveGameState() {
+        try {
+            GameSaver.save(myPlayerCharacter, "player_character.ser");
+            GameSaver.save(myMaze, "maze.ser");
+            GameSaver.save(myRoomPanel, "room_panel.ser");
+            JOptionPane.showMessageDialog(myFrame, "Game saved successfully!!");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(myFrame, "Error saving game state: " + e.getMessage());
+        }
+    }
+
+    private void loadGameState() {
+        try {
+            PlayerCharacter loadedPlayer = GameSaver.load("player_character.ser");
+            Maze loadedMaze = GameSaver.load("maze.ser");
+            RoomPanel loadedRoomPanel = GameSaver.load("room_panel.ser");
+
+            DatabaseConnector dbConnector = new DatabaseConnector();
+            loadedMaze.reinitializeDatabaseConnector(dbConnector);
+
+            this.myPlayerCharacter = loadedPlayer;
+            this.myMaze = loadedMaze;
+            this.myRoomPanel = loadedRoomPanel;
+
+            reinitializeGUI();
+
+            JOptionPane.showMessageDialog(myFrame, "Game loaded successfully!");
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(myFrame, "Error loading game: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Sets up the Help menu and its items.
@@ -360,10 +395,10 @@ public class GUI implements Serializable {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        myRoomPanel = new RoomPanel();
-        myRoomPanel.setBackground(Color.BLACK);
-        myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
-        rightPanel.add(myRoomPanel);
+        final RoomPanel roomPanel = new RoomPanel();
+        roomPanel.setBackground(Color.BLACK);
+        roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
+        rightPanel.add(roomPanel);
 
         myQuestionPanel = new QuestionPanel(myMaze);
         myQuestionPanel.setBackground(Color.BLACK);
@@ -405,8 +440,20 @@ public class GUI implements Serializable {
      * Reinitialize the GUI after loading the game state.
      */
     private void reinitializeGUI() {
+        if (myFrame != null) {
+            myFrame.dispose();
+        }
+
         setupFrame();
-        myMazePanel.repaint();
+
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        setupAnimationTimer();
+
+        myFrame.revalidate();
+        myFrame.repaint();
     }
+
 }
 

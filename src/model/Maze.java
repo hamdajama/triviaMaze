@@ -1,7 +1,9 @@
 package model;
 
+import javax.xml.crypto.Data;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -11,14 +13,15 @@ import java.util.Random;
  *
  * @version 8/7/2024
  */
-public class Maze {
+public class Maze implements Serializable {
+    private static final long serialVersionUID = 1l;
     private static final int MAZE_SIZE = 5;
     private Room[][] myMap;
     private int myEndX, myEndY;
     private int myCurrentX, myCurrentY;
     private boolean movementAllowed;
     private PropertyChangeSupport mySupport;
-    private DatabaseConnector myDBConn;
+    private transient DatabaseConnector myDBConn;
     private QuestionGenerator myQesGen;
 
     /**
@@ -193,5 +196,10 @@ public class Maze {
      */
     public boolean isMovementAllowed() {
         return movementAllowed;
+    }
+
+    public void reinitializeDatabaseConnector(final DatabaseConnector theDbConnector) {
+        this.myDBConn = theDbConnector;
+        this.myQesGen = new QuestionGenerator(theDbConnector);
     }
 }
