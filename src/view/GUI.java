@@ -32,6 +32,7 @@ import model.DatabaseConnector;
 import model.Maze;
 import model.PlayerCharacter;
 import model.Room;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
 
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
@@ -53,13 +54,13 @@ import java.util.Objects;
  * @author Eric John
  * @version 7/13/2024
  */
-public class GUI implements Serializable {
+public class GUI {
 
 
-    private final PlayerCharacter myPlayerCharacter;
+    private PlayerCharacter myPlayerCharacter;
     private transient JFrame myFrame;
     private transient JPanel myMazePanel;
-    private final transient Maze myMaze;
+    private transient Maze myMaze;
     private static final String UP = "up";
     private static final String RIGHT = "right";
     private static final String DOWN = "down";
@@ -68,14 +69,9 @@ public class GUI implements Serializable {
     private int frameIndex = 0;
     private Map<String, BufferedImage[]> characterImages;
     private transient Timer animationTimer;
-
-    private static final long serialVersionUID = 2L;
-    private final PlayerCharacter playerCharacter;
-    private transient JFrame frame;
-    private transient JPanel mazePanel;
-    private final Maze myMaze;
     private RoomPanel myRoomPanel;
     private QuestionPanel myQuestionPanel;
+    private boolean isKeyDispatcherAdded = false;
 
     /**
      * Creates a new GUI instance and initializes the game.
@@ -86,7 +82,7 @@ public class GUI implements Serializable {
     public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
         myMaze = new Maze(theDBConnector);
-        playerCharacter = new PlayerCharacter(0, 0);
+        myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
     }
@@ -98,66 +94,74 @@ public class GUI implements Serializable {
         final int frameWidth = 800;
         final int frameHeight = 800;
 
-        frame = new JFrame("Trivia Maze");
-        frame.setLocationRelativeTo(null);
-        frame.setSize(frameWidth, frameHeight);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setResizable(false);
+        myFrame = new JFrame("Trivia Maze");
+        myFrame.setSize(frameWidth, frameHeight);
+        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        myFrame.setLayout(new BorderLayout());
+        myFrame.setResizable(false);
 
-        setupMenuBar(frame);
-        setupPanels(frame);
+        setupMenuBar(myFrame);
+        setupPanels(myFrame);
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_W:
-                        myPlayerCharacter.moveUp();
-                        currentDirection = UP;
-                        break;
-                    case KeyEvent.VK_S:
-                        myPlayerCharacter.moveDown();
-                        currentDirection = DOWN;
-                        break;
-                    case KeyEvent.VK_A:
-                        myPlayerCharacter.moveLeft();
-                        currentDirection = LEFT;
-                        break;
-                    case KeyEvent.VK_D:
-                        myPlayerCharacter.moveRight();
-                        currentDirection = RIGHT;
-                        break;
-                }
-                myPlayerCharacter.displayPosition();
-                myMazePanel.revalidate();
-                myMazePanel.repaint();
-                if (myMaze.isMovementAllowed()) {
-                    System.out.println("Key pressed: " + e.getKeyCode());
-                    switch (e.getKeyCode()) {
-                        case KeyEvent.VK_W:
-                            myMaze.move("NORTH");
-                            break;
-                        case KeyEvent.VK_S:
-                            myMaze.move("SOUTH");
-                            break;
-                        case KeyEvent.VK_A:
-                            myMaze.move("WEST");
-                            break;
-                        case KeyEvent.VK_D:
-                            myMaze.move("EAST");
-                            break;
-                    }
-                    playerCharacter.displayPosition();
-                    mazePanel.revalidate();
-                    mazePanel.repaint();
-                    displayCurrentRoomQuestion(myQuestionPanel);
-                }
-            }
-            return false;
-        });
+        addKeyEventDispatcher();
 
         myFrame.setVisible(true);
     }
+
+    private void addKeyEventDispatcher() {
+        if (!isKeyDispatcherAdded) {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_W:
+                            myPlayerCharacter.moveUp();
+                            currentDirection = UP;
+                            break;
+                        case KeyEvent.VK_S:
+                            myPlayerCharacter.moveDown();
+                            currentDirection = DOWN;
+                            break;
+                        case KeyEvent.VK_A:
+                            myPlayerCharacter.moveLeft();
+                            currentDirection = LEFT;
+                            break;
+                        case KeyEvent.VK_D:
+                            myPlayerCharacter.moveRight();
+                            currentDirection = RIGHT;
+                            break;
+                    }
+                    myPlayerCharacter.displayPosition();
+                    myMazePanel.revalidate();
+                    myMazePanel.repaint();
+                    if (myMaze.isMovementAllowed()) {
+                        switch (e.getKeyCode()) {
+                            case KeyEvent.VK_W:
+                                myMaze.move("NORTH");
+                                break;
+                            case KeyEvent.VK_S:
+                                myMaze.move("SOUTH");
+                                break;
+                            case KeyEvent.VK_A:
+                                myMaze.move("WEST");
+                                break;
+                            case KeyEvent.VK_D:
+                                myMaze.move("EAST");
+                                break;
+                        }
+                        myPlayerCharacter.displayPosition();
+                        myMazePanel.revalidate();
+                        myMazePanel.repaint();
+                        displayCurrentRoomQuestion(myQuestionPanel);
+                    }
+                }
+                return false;
+            });
+            isKeyDispatcherAdded = true;
+        }
+    }
+
+
+
 
     /**
      * Loads the character images for the player character.
@@ -227,25 +231,12 @@ public class GUI implements Serializable {
      */
     private void setupMenuFile(final JMenu theMenuFile, final JFrame theFrame) {
         final JMenuItem saveFileItem = new JMenuItem("Save game");
-        saveFileItem.addActionListener(e -> {
-            try {
-                GameSaver.saveGame(GUI.this); // Save the current instance
-                JOptionPane.showMessageDialog(theFrame, "Game saved successfully!");
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error saving game: " + ex.getMessage());
-            }
-        });
+        saveFileItem.addActionListener(e -> saveGameState());
         theMenuFile.add(saveFileItem);
 
         final JMenuItem loadFileItem = new JMenuItem("Load game");
         loadFileItem.addActionListener(e -> {
-            try {
-                GUI loadedGame = GameSaver.loadGame();
-                loadedGame.reinitializeGUI();
-                frame.dispose(); // Dispose of the current frame
-            } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(theFrame, "Error loading game: " + ex.getMessage());
-            }
+            loadGameState();
         });
         theMenuFile.add(loadFileItem);
 
@@ -253,6 +244,40 @@ public class GUI implements Serializable {
         exitFileItem.addActionListener(e -> System.exit(0));
         theMenuFile.add(exitFileItem);
     }
+
+
+    private void saveGameState() {
+        try {
+            GameSaver.save(myPlayerCharacter, "player_character.ser");
+            GameSaver.save(myMaze, "maze.ser");
+            GameSaver.save(myRoomPanel, "room_panel.ser");
+            JOptionPane.showMessageDialog(myFrame, "Game saved successfully!!");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(myFrame, "Error saving game state: " + e.getMessage());
+        }
+    }
+
+    private void loadGameState() {
+        try {
+            PlayerCharacter loadedPlayer = GameSaver.load("player_character.ser");
+            Maze loadedMaze = GameSaver.load("maze.ser");
+            RoomPanel loadedRoomPanel = GameSaver.load("room_panel.ser");
+
+            DatabaseConnector dbConnector = new DatabaseConnector();
+            loadedMaze.reinitializeDatabaseConnector(dbConnector);
+
+            this.myPlayerCharacter = loadedPlayer;
+            this.myMaze = loadedMaze;
+            this.myRoomPanel = loadedRoomPanel;
+
+            reinitializeGUI();
+
+            JOptionPane.showMessageDialog(myFrame, "Game loaded successfully!");
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(myFrame, "Error loading game: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Sets up the Help menu and its items.
@@ -277,20 +302,17 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuAboutItem(final JFrame theFrame) {
         final JMenuItem aboutFileItem = new JMenuItem("About");
         aboutFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                """
-                        Welcome to Trivia Maze!
-
-                        In this game, you start from the entry point and try to get to
-                        the exit by answering questions correctly. The questions type will
-                        be either multiple choice, short answer, or true/false. When  you
-                        get a questions wrong, the door will be locked and you will have to
-                        find another way to reach the exit. The game is over when you
-                        reached the exit or there are no available paths to the exit.
-
-                        Developed by:
-                        Eric John
-                        Hamnda Jama
-                        Masumi Yano""",
+                "Welcome to Trivia Maze!\n\n" +
+                        "In this game, you start from the entry point and try to get to\n" +
+                        "the exit by answering questions correctly. The questions type will\n"+
+                        "be either multiple choice, short answer, or true/false. When  you\n" +
+                        "get a questions wrong, the door will be locked and you will have to\n"+
+                        "find another way to reach the exit. The game is over when you\n"+
+                        "reached the exit or there are no available paths to the exit.\n\n"+
+                        "Developed by:\n"+
+                        "Eric John\n"+
+                        "Hamnda Jama\n"+
+                        "Masumi Yano",
                 "AboutGame",
                 JOptionPane.INFORMATION_MESSAGE));
         return aboutFileItem;
@@ -305,22 +327,17 @@ public class GUI implements Serializable {
     private JMenuItem getJMenuInstructionItem(final JFrame theFrame) {
         final JMenuItem instructionFileItem = new JMenuItem("Instructions");
         instructionFileItem.addActionListener(e -> JOptionPane.showMessageDialog(theFrame,
-                """
-                        Instructions:
-
-                        In this game, you interact with questions by left clicking the mouse
-                        or touchpad. When you think you have the right answer, click on the
-                        submit button!
-
-                        True/False: You will be given a statement and you would have to decide
-                        if the answer is correct or not.
-
-                        Multiple Choice: You are given 4 options and you will have to pick the
-                        correct one in order to unlock the door.
-
-                        Short Answer: When doing a short answer question, respond with only one
-                        word in order to unlock the door.""",
-                "Trivia Instructions",
+                "Instructions:\n\n"+
+                        "In this game, you interact with questions by left clicking the mouse\n"+
+                        "or touchpad. When you think you have the right answer, click on the\n"+
+                        "submit button!\n\n"+
+                        "True/False: You will be given a statement and you would have to decide\n"+
+                        "if the answer is correct or not.\n\n"+
+                        "Multiple Choice: You are given 4 options and you will have to pick the\n"+
+                        "correct one in order to unlock the door.\n\n"+
+                        "Short Answer: When doing a short answer question, respond with only one\n"+
+                        "word in order to unlock the door.",
+                "Trivia Instruction",
                 JOptionPane.INFORMATION_MESSAGE
         ));
         return instructionFileItem;
@@ -346,10 +363,10 @@ public class GUI implements Serializable {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        mazePanel = new MazePanel(myMaze, playerCharacter);
-        mazePanel.setBackground(Color.BLACK);
-        mazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
-        theFrame.add(mazePanel, BorderLayout.CENTER);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter);
+        myMazePanel.setBackground(Color.BLACK);
+        myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
+        theFrame.add(myMazePanel, BorderLayout.CENTER);
     }
 
     /**
@@ -412,8 +429,20 @@ public class GUI implements Serializable {
      * Reinitialize the GUI after loading the game state.
      */
     private void reinitializeGUI() {
+        if (myFrame != null) {
+            myFrame.dispose();
+        }
+
         setupFrame();
-        mazePanel.repaint();
+
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        setupAnimationTimer();
+
+        myFrame.revalidate();
+        myFrame.repaint();
     }
+
 }
 

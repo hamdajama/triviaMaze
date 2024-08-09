@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,7 +12,8 @@ import java.util.*;
  * from the database for the TriviaMaze game. It fetches questions from
  * True/False, Short Answer, and Multiple Choice tables.
  */
-public class QuestionGenerator {
+public class QuestionGenerator implements Serializable {
+    private static final long serialVersionUID = 6L;
     private Random myRandom;
     private DatabaseConnector myDataConn ;
     /**

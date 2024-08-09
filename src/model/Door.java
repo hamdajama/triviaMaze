@@ -3,13 +3,17 @@
  * Door.java
  */
 package model;
+
+import java.io.Serializable;
+
 /**
  * The Door class represents a door in a room of the trivia maze.
  * A door can be either open or closed.
  * @author hamda jama
  * @version 7/21/2024
  */
-public class Door {
+public class Door implements Serializable {
+    private static final long serialVersionUID = 4L;
     /**
      * Indicates whether the door is closed.
      */

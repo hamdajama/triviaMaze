@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 
 import javax.swing.JPanel;
 
@@ -21,7 +22,8 @@ import javax.swing.JPanel;
  * @author Eric John
  * @version 7/27/2024
  */
-public class RoomPanel extends JPanel implements PropertyChangeListener {
+public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
+    private static final long serialVersionUID = 3L;
 
     /**
      * A boolean representing if the north door can be opened.
