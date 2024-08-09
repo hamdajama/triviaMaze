@@ -17,8 +17,8 @@ public class TrueFalse extends Question {
      * @param theAnswer - The correct answer of the question. NOTE: 0 means FALSE
      *                    and 1 means TRUE.
      */
-    public TrueFalse(final String theQuestion, final String theAnswer) {
-        super(theQuestion, theAnswer);
+    public TrueFalse(final String theQuestion, final int theAnswer) {
+        super(theQuestion, String.valueOf(theAnswer));
     }
 
     /**
