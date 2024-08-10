@@ -1,8 +1,4 @@
 package model;
-/**
- * TCSS 360 - Trivia Maze
- * Room.java
- */
 
 import model.Door;
 import java.beans.PropertyChangeListener;
@@ -21,16 +17,20 @@ public class Room implements Serializable {
     /**
      * A map of doors in the room, keyed by direction (e.g., "North", "East", "South", "West").
      */
-    private Map<String, Door> myRoom;
+    private Map<Direction, Door> myDoors;
+    private Map<Direction,Question> myQuestions;
+    private Map<Direction,Room> myAdjacentRooms;
+
     /**
      * The trivia question associated with the room.
      */
     private Question myTrivia;
 
+
     /**
      * A property change support object that helps changes the state in other classes.
      */
-    private final PropertyChangeSupport myPcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport myPcs;
 
     /**
      * A boolean that checks if the answer for the room has been answered or not.
@@ -41,101 +41,123 @@ public class Room implements Serializable {
      * Constructs a new Room with the given trivia question.
      * Initializes the doors in the room.
      *
-     * @param theTrivia The trivia question for the room.
+     * @param theDoorQues The trivia question for each door.
      */
-    public Room(Question theTrivia) {
-        this.myTrivia = theTrivia;
-        myRoom = new HashMap<>();
-        myRoom.put("North", new Door());
-        myRoom.put("East", new Door());
-        myRoom.put("South", new Door());
-        myRoom.put("West", new Door());
-
+    public Room(Map<Direction, Question> theDoorQues) {
+        myDoors = new EnumMap<>(Direction.class);
+        myQuestions = new EnumMap<>(theDoorQues);
+        myAdjacentRooms = new EnumMap<>(Direction.class);
+        myPcs = new PropertyChangeSupport(this);
+        for (Direction direction : Direction.values()) {
+            myDoors.put(direction, new Door(direction));
+        }
         //Since starting at the first door, make sure the east door and south door are open.
-        myRoom.get("East").open();
-        myRoom.get("South").open();
+        // myRoom.get("East").open();
+        // myRoom.get("South").open();
 
-        isAnswered = false;
 
     }
     public void addPropertyChangeListener(PropertyChangeListener theListener) {
         myPcs.addPropertyChangeListener(theListener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener theListener) {
-        myPcs.removePropertyChangeListener(theListener);
-    }
+    // public void removePropertyChangeListener(PropertyChangeListener theListener) {
+    //   myPcs.removePropertyChangeListener(theListener);
+    //}
     /**
      * Retrieves the door in the specified direction.
      *
-     * @param theDirection The direction of the door (e.g., "North").
+
      * @return The door in the specified direction.
      */
 
-    public Door getDoor(String theDirection) {
-        return myRoom.get(theDirection);
+    public Door getDoor(Direction theDirection) {
+        return myDoors.get(theDirection);
+    }
+    /**
+     * Retrieves the question associated with the door in the specified direction.
+     *
+     * @param thedirection The direction of the door.
+     * @return The question associated with the door in that direction.
+     */
+    public Question getQuesDoor (Direction thedirection) {
+        return myQuestions.get(thedirection);
+    }
+    /**
+     * Sets the adjacent room in a specific direction.
+     *
+     * @param theDirection The direction of the adjacent room.
+     * @param theRoom  The adjacent Room object.
+     */
+    public void setAdjacentRooms(Direction theDirection, Room theRoom) {
+        myAdjacentRooms.put(theDirection,theRoom);
     }
 
     /**
      * get all doors for the room.
      * @return all the doors in the room.
      */
-    public Map<String, Door> getDoors() {
-        return myRoom;
-    }
-    /**
-     * Retrieves the trivia question associated with the room.
-     *
-     * @return The trivia question.
-     */
-    public Question getTrivia () {
-        return myTrivia;
-    }
+    // public Map<String, Door> getDoors() {
+    //   return myRoom;
+    // }
     /**
      * Checks if the player's answer matches the correct answer to the trivia question.
      *
-     * @param theAnswer The answer given by the player.
-     * @return True if the answer matches, false otherwise.
-     */
-    public boolean answerQuestion(String theAnswer) {
-        return myTrivia.isMatch(theAnswer);
-    }
-    /**
-     * Handles the player's wrong answer. If the answer is incorrect, closes a random door.
-     * Otherwise, allows the player to choose a door and move to the next room.
-     *
+
      * @param theAnswer The answer given by the player.
      */
 
-    public void wrongAnswer(String theAnswer) {
-        if (!answerQuestion(theAnswer)) {
-            closeDoor();
-        }
-    }
+    // public void wrongAnswer(String theAnswer) {
+    //   if (!answerQuestion(theAnswer)) {
+    //     closeDoor();
+    //    } else {
+    //      Door door =  new Door();
+    //    door.open();
+    //    }
+    // }
     /**
-     * Closes a random open door in the room.
+     * permanetly closes the door in the current Room and that door in a adjacent room.
+     * @param theDirection the direction of the door to close.
      */
-    public void closeDoor() {
-        Random rand = new Random();
-        List<String> openDoors = new ArrayList<>();
-        for (Map.Entry<String, Door> entry : myRoom.entrySet()) {
-            if (!entry.getValue().isClosed()) {
-                openDoors.add(entry.getKey());
+    public void closeDoor(Direction theDirection) {
+        Door door = myDoors.get(theDirection);
+        if (door != null && !door.isClosed() ) {
+            door.close();
+            myPcs.firePropertyChange(theDirection.name(),true,false);
+            Room adjacent = myAdjacentRooms.get(theDirection);
+            if (adjacent != null) {
+                Direction opposite =getOpposite(theDirection);
+                adjacent.getDoor(opposite).close();
+                adjacent.myPcs.firePropertyChange(opposite.name(),true, false);
             }
         }
-        if (!openDoors.isEmpty()) {
-            String randomOpenDoor = openDoors.get(rand.nextInt(openDoors.size()));
-            myRoom.get(randomOpenDoor).close();
-            myPcs.firePropertyChange(randomOpenDoor, false, true);
+
+    }
+    /**
+     * Determines the opposite direction of a door.
+     * @param theDirection the initial direction.
+     * @return the opposite direction.
+     */
+    private Direction getOpposite(Direction theDirection) {
+        switch (theDirection) {
+            case NORTH:
+                return Direction.SOUTH;
+            case SOUTH:
+                return Direction.NORTH;
+            case EAST:
+                return Direction.WEST;
+            case WEST:
+                return Direction.EAST;
+            default:
+                throw new IllegalStateException("invalid Direction");
         }
     }
     /**
-     * Checks if all doors in the room are closed.
-     *
+
      * @return True if all doors are closed, false otherwise.
      */
     public boolean allClosed() {
-        for (Door D : myRoom.values() ) {
+        for (Door D : myDoors.values() ) {
             if (!D.isClosed()) {
                 return false;
             }
