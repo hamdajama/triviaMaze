@@ -4,6 +4,7 @@
  */
 package view;
 
+import model.Direction;
 import model.Room;
 
 import java.awt.Color;
@@ -121,10 +122,10 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     }
 
     public void updateRoomPanel(Room theRoom) {
-        this.myNorthDoor = !theRoom.getDoor("North").isClosed();
-        this.mySouthDoor = !theRoom.getDoor("South").isClosed();
-        this.myEastDoor = !theRoom.getDoor("East").isClosed();
-        this.myWestDoor = !theRoom.getDoor("West").isClosed();
+        this.myNorthDoor = !theRoom.getDoor(Direction.valueOf("NORTH")).isClosed();
+        this.mySouthDoor = !theRoom.getDoor(Direction.valueOf("SOUTH")).isClosed();
+        this.myEastDoor = !theRoom.getDoor(Direction.valueOf("EAST")).isClosed();
+        this.myWestDoor = !theRoom.getDoor(Direction.valueOf("WEST")).isClosed();
         repaint();
     }
 

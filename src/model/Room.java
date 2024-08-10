@@ -83,6 +83,7 @@ public class Room implements Serializable {
     public Question getQuesDoor (Direction thedirection) {
         return myQuestions.get(thedirection);
     }
+
     /**
      * Sets the adjacent room in a specific direction.
      *

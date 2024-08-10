@@ -65,11 +65,11 @@ public class QuestionPanel extends JPanel {
         myQuestionPanel.add(questionLabel);
 
         if (myCurrentQuestion instanceof MultipleChoice) {
-            displayMultipleChoice((MultipleChoice) myCurrentQuestion);
+            displayMultipleChoice((MultipleChoice) myCurrentQuestion, myDirection);
         } else if (myCurrentQuestion instanceof ShortAnswer) {
-            displayShortAnswer((ShortAnswer) myCurrentQuestion);
+            displayShortAnswer((ShortAnswer) myCurrentQuestion, myDirection);
         } else if (myCurrentQuestion instanceof TrueFalse) {
-            displayTrueFalse((TrueFalse) myCurrentQuestion);
+            displayTrueFalse((TrueFalse) myCurrentQuestion, myDirection);
         }
 
         revalidate();
@@ -81,7 +81,7 @@ public class QuestionPanel extends JPanel {
      *
      * @param theQuestion The MultipleChoice object to be displayed.
      */
-    private void displayMultipleChoice(final MultipleChoice theQuestion) {
+    private void displayMultipleChoice(final MultipleChoice theQuestion, final Direction theDirection) {
         Map<String, String> choices = theQuestion.getChoices();
         for (Map.Entry<String, String> entry : choices.entrySet()) {
             JRadioButton optionButton = new JRadioButton(entry.getValue());
@@ -90,7 +90,7 @@ public class QuestionPanel extends JPanel {
             myQuestionPanel.add(optionButton);
         }
 
-        createSubmitButton(theQuestion);
+        createSubmitButton(theQuestion, theDirection);
     }
 
     /**
@@ -98,14 +98,14 @@ public class QuestionPanel extends JPanel {
      *
      * @param theQuestion The ShortAnswer object to be displayed.
      */
-    private void displayShortAnswer(final ShortAnswer theQuestion) {
+    private void displayShortAnswer(final ShortAnswer theQuestion, final Direction theDirection) {
         JTextField answerField = new JTextField();
 
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(e -> {
             String selectedChoice = answerField.getText();
             boolean isCorrect = theQuestion.isMatch(selectedChoice);
-            handleAnswer(isCorrect);
+            handleAnswer(isCorrect, theDirection);
         });
 
         myQuestionPanel.add(answerField);
@@ -117,7 +117,7 @@ public class QuestionPanel extends JPanel {
      *
      * @param theQuestion The TrueFalse object to be displayed.
      */
-    private void displayTrueFalse(final TrueFalse theQuestion) {
+    private void displayTrueFalse(final TrueFalse theQuestion, final Direction theDirection) {
         JRadioButton trueButton = new JRadioButton("True");
         trueButton.setActionCommand("True");
         JRadioButton falseButton = new JRadioButton("False");
@@ -128,7 +128,7 @@ public class QuestionPanel extends JPanel {
         myQuestionPanel.add(trueButton);
         myQuestionPanel.add(falseButton);
 
-        createSubmitButton(theQuestion);
+        createSubmitButton(theQuestion, theDirection);
     }
 
     /**
@@ -136,13 +136,13 @@ public class QuestionPanel extends JPanel {
      *
      * @param isCorrect Whether the player's answer is correct.
      */
-    private void handleAnswer(boolean isCorrect) {
+    private void handleAnswer(boolean isCorrect, Direction theDirection) {
         if (isCorrect) {
             JOptionPane.showMessageDialog(this, "Correct answer!");
-            myMaze.processAnswer("correct answer");
+            myMaze.processAnswer("correct answer", theDirection);
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
-            myMaze.processAnswer("wrong answer");
+            myMaze.processAnswer("wrong answer", theDirection);
             if (myMaze.getCurrentRoom().allClosed()) {
                 JOptionPane.showMessageDialog(this, "Game Over!");
             }
@@ -155,12 +155,12 @@ public class QuestionPanel extends JPanel {
      *
      * @param theQuestion The Question object for which the submit button is created.
      */
-    private void createSubmitButton(final Question theQuestion) {
+    private void createSubmitButton(final Question theQuestion, final Direction theDirection) {
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(e -> {
             String selectedChoice = myButtonGroup.getSelection().getActionCommand();
             boolean isCorrect = theQuestion.isMatch(selectedChoice);
-            handleAnswer(isCorrect);
+            handleAnswer(isCorrect, theDirection);
         });
 
         myQuestionPanel.add(submitButton);

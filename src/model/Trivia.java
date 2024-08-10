@@ -68,7 +68,7 @@ public class Trivia {
      * Gets the amount of tries for the player.
      * @return The number of tries left.
      */
-    protected int getTrys() {
+    public int getTrys() {
         return myTrys;
     }
 
@@ -90,7 +90,7 @@ public class Trivia {
      * Gets the count of how many questions the player got right.
      * @return The right answer.
      */
-    protected int getRightAnswer() {
+    public int getRightAnswer() {
         return myRightAnswer;
     }
 
@@ -105,7 +105,7 @@ public class Trivia {
      * Gets the count of how many questions the player got wrong.
      * @return The wrong answer.
      */
-    protected int getWrongAnswer() {
+    public int getWrongAnswer() {
         return myWrongAnswer;
     }
 
@@ -136,7 +136,7 @@ public class Trivia {
     /**
      * When the timer stops, this method calculates the time from starting to stopping.
      */
-    protected void stopTimer() {
+    public void stopTimer() {
         if (myStartTime != 0) {
             myTotalTime += System.currentTimeMillis() - myStartTime;
             myStartTime = 0;
@@ -147,7 +147,7 @@ public class Trivia {
      * Gets the time.
      * @return The total time it takes.
      */
-    protected long getTime() {
+    public long getTime() {
         return myTotalTime;
     }
 }

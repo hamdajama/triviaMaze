@@ -405,10 +405,10 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        final RoomPanel roomPanel = new RoomPanel();
-        roomPanel.setBackground(Color.BLACK);
-        roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
-        rightPanel.add(roomPanel);
+        myRoomPanel = new RoomPanel();
+        myRoomPanel.setBackground(Color.BLACK);
+        myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
+        rightPanel.add(myRoomPanel);
 
         myQuestionPanel = new QuestionPanel(myMaze);
         myQuestionPanel.setBackground(Color.BLACK);
