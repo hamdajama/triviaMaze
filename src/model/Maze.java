@@ -1,11 +1,13 @@
 package model;
 
-import javax.xml.crypto.Data;
+import view.GUI;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.EnumMap;
+import java.util.Map;
+import java.io.Serializable;
 
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
@@ -15,14 +17,16 @@ import java.util.Random;
  */
 public class Maze implements Serializable {
     private static final long serialVersionUID = 1l;
-    private static final int MAZE_SIZE = 5;
+    private static final int mySize = 5;
     private Room[][] myMap;
     private int myEndX, myEndY;
     private int myCurrentX, myCurrentY;
-    private boolean movementAllowed;
+    private boolean myMovementAllowed;
     private PropertyChangeSupport mySupport;
-    private transient DatabaseConnector myDBConn;
+    private DatabaseConnector myDBConn;
     private QuestionGenerator myQesGen;
+    private Trivia myTrivia;
+    private GUI myGui;
 
     /**
      * Constructs a new Maze, initializing the game grid and questions.
@@ -32,26 +36,52 @@ public class Maze implements Serializable {
      */
     public Maze(DatabaseConnector theDBConn) throws SQLException {
         this.myDBConn = theDBConn;
-        this.myQesGen = new QuestionGenerator(theDBConn);
+        this.myQesGen = new QuestionGenerator(myDBConn);
         this.mySupport = new PropertyChangeSupport(this);
-        this.myMap = new Room[MAZE_SIZE][MAZE_SIZE];
-        buildMap();
+        this.myMap = new Room[mySize][mySize];
+        map();
         setEnd();
         myCurrentX = 0;
         myCurrentY = 0;
-        movementAllowed = false; // Initially, movement is not allowed until the first question is answered correctly
+        //this.movementAllowed = false; // Initially, movement is not allowed until the first question is answered correctly
+        myTrivia = new Trivia("Player");
+        myTrivia.startTimer();
     }
 
     /**
-     * Builds the map with rooms, each containing a randomly assigned question.
+     * Builds the map with rooms, each containing a randomly assigned question for each door.
      *
      * @throws SQLException If an error occurs during question retrieval from the database.
      */
-    private void buildMap() throws SQLException {
-        for (int i = 0; i < MAZE_SIZE; i++) {
-            for (int j = 0; j < MAZE_SIZE; j++) {
-                Question question = myQesGen.getRandomQes();
-                myMap[i][j] = new Room(question);
+    private void map() throws SQLException {
+        for (int i = 0; i < mySize; i++) {
+            for (int j = 0; j < mySize; j++) {
+                Map<Direction,Question> questions = new EnumMap<>(Direction.class);
+                for (Direction direction : Direction.values()) {
+                    questions.put(direction, myQesGen.getRandomQes());
+                }
+                myMap[i][j] = new Room(questions);
+            }
+        }
+        setAdjacent();
+    }
+
+    private void setAdjacent() {
+        for (int i = 0 ; i < mySize; i++) {
+            for (int j = 0; j <mySize; j++) {
+                Room room  = myMap[i][j];
+                if (i > 0 ) {
+                    room.setAdjacentRooms(Direction.NORTH, myMap[i-1][j]);
+                }
+                if ( i < mySize - 1) {
+                    room.setAdjacentRooms(Direction.SOUTH, myMap[i+1][j]);
+                }
+                if ( j > 0) {
+                    room.setAdjacentRooms(Direction.WEST, myMap[i][j-1]);
+                }
+                if ( j < mySize - 1) {
+                    room.setAdjacentRooms(Direction.EAST, myMap[i][j+1]);
+                }
             }
         }
     }
@@ -78,55 +108,36 @@ public class Maze implements Serializable {
      * Sets the end point of the maze to the bottom-right corner.
      */
     private void setEnd() {
-        myEndX = MAZE_SIZE - 1;
-        myEndY = MAZE_SIZE - 1;
+        myEndX = mySize - 1;
+        myEndY = mySize - 1;
     }
-
-    /**
-     * Retrieves the room at the specified coordinates.
-     *
-     * @param theX The X-coordinate of the room.
-     * @param theY The Y-coordinate of the room.
-     * @return The Room object at the specified coordinates, or null if out of bounds.
-     */
-    public Room getRoom(int theX, int theY) {
-        if (theX >= 0 && theX < MAZE_SIZE && theY >= 0 && theY < MAZE_SIZE) {
-            return myMap[theX][theY];
-        }
-        return null;
-    }
-
-    /**
-     * Starts the game by placing the player at the starting position.
-     */
-    public void startGame() {
-        myCurrentX = 0;
-        myCurrentY = 0;
-        mySupport.firePropertyChange("start game", null, getCurrentRoom());
-    }
-
     /**
      * Processes the player's answer and updates the game state accordingly.
      *
-     * @param answerType The type of answer provided by the player ("correct answer" or "wrong answer").
+     * @param theAnswer The type of answer provided by the player ("correct answer" or "wrong answer").
+     * @param theDirection the direction the player intends to move to.
      */
-    public void processAnswer(String answerType) {
+    public void processAnswer(String theAnswer, Direction theDirection) {
         Room currentRoom = getCurrentRoom();
-        if ("correct answer".equals(answerType)) {
-            currentRoom.setAnswered(true);
-            movementAllowed = true;
-            for (Door door : currentRoom.getDoors().values()) {
-                door.open();
+        Question quesDoor = currentRoom.getQuesDoor(theDirection);
+        boolean isCorrect = myTrivia.isRightAnswer(theAnswer, quesDoor.getAnswer() );
+        if (isCorrect) {
+            move(theDirection);
+            setMovementAllowed(true);
+            mySupport.firePropertyChange("correct answer", null, currentRoom) ;
+            if(isAtEnd()) {
+                gameOver(true);
             }
-            mySupport.firePropertyChange("correct answer", null, currentRoom);
-        } else {
-            movementAllowed = false;
-            currentRoom.wrongAnswer(answerType);
-            checkGameOver();
+        }else  {
+            currentRoom.closeDoor(theDirection);
+            setMovementAllowed(false);
             mySupport.firePropertyChange("wrong answer", null, currentRoom);
-
+            if (currentRoom.allClosed() || isMazeBlocked()) {
+                gameOver(false);
+            }
         }
     }
+
 
     /**
      * Checks if the player has reached the end of the maze.
@@ -142,31 +153,48 @@ public class Maze implements Serializable {
      *
      * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
      */
-    public void move(String theDirection) {
+    public void move(Direction theDirection) {
+
         int newX = myCurrentX, newY = myCurrentY;
-        switch (theDirection.toUpperCase()) {
-            case "NORTH":
+        switch (theDirection) {
+            case NORTH:
                 newY--;
                 break;
-            case "SOUTH":
+            case SOUTH:
                 newY++;
                 break;
-            case "EAST":
+            case EAST:
                 newX++;
                 break;
-            case "WEST":
+            case WEST:
                 newX--;
                 break;
             default:
                 return;
         }
 
-        if (newX >= 0 && newX < MAZE_SIZE && newY >= 0 && newY < MAZE_SIZE) {
-            myCurrentX = newX;
-            myCurrentY = newY;
-            movementAllowed = false;
-            mySupport.firePropertyChange("move", null, getCurrentRoom());
+        if (newX >= 0 && newX < mySize && newY >= 0 && newY < mySize) {
+            Room nextRoom = getRoom(newX,newY);
+            if (!nextRoom.allClosed()) {
+                myCurrentX = newX;
+                myCurrentY = newY;
+                mySupport.firePropertyChange("move", null, nextRoom);
+            }
         }
+    }
+
+    /**
+     * Retrieves the room at the specified coordinates.
+     *
+     * @param theX The X-coordinate of the room.
+     * @param theY The Y-coordinate of the room.
+     * @return The Room object at the specified coordinates, or null if out of bounds.
+     */
+    public Room getRoom(int theX, int theY) {
+        if (theX >= 0 && theX < mySize && theY >= 0 && theY < mySize) {
+            return myMap[theX][theY];
+        }
+        return null;
     }
 
     /**
@@ -184,70 +212,57 @@ public class Maze implements Serializable {
      * @return The size of the maze.
      */
     public int getRoomSize() {
-        return MAZE_SIZE;
+        return mySize;
     }
 
+    /**
+     * sets whether the player movement is allowed.
+     *
+     * @param theMovement  True if movement is allowed, false otherwise.
+     */
+    public void setMovementAllowed(boolean theMovement) {
+        this.myMovementAllowed = theMovement;
+    }
     /**
      * Checks if the player movement is allowed.
      *
      * @return True if movement is allowed, false otherwise.
      */
     public boolean isMovementAllowed() {
-        return movementAllowed;
+        return myMovementAllowed;
     }
 
     public void reinitializeDatabaseConnector(final DatabaseConnector theDbConnector) {
         this.myDBConn = theDbConnector;
         this.myQesGen = new QuestionGenerator(theDbConnector);
     }
-
     /**
-     * Checks if the player can't reach the exit.
+     * Checks if the maze is blocked (i.e., there is no way to reach the exit).
+     *
+     * @return True if the maze is blocked, false otherwise.
      */
-    public void checkGameOver() {
-        boolean[][] visited = new boolean[MAZE_SIZE][MAZE_SIZE];
-        if (!canReachExit(myCurrentX, myCurrentY, visited)) {
-            System.out.println("Game is over");
-            mySupport.firePropertyChange("game over", null, getCurrentRoom());
-        }
+    private boolean isMazeBlocked() {
+        // Implement a pathfinding algorithm like DFS or BFS to check if the exit is reachable
+        return false; // Placeholder: implement this based on your maze traversal logic
+    }
+    /**
+     * Ends the game with a win or lose state.
+     *
+     * @param theWin True if the game is won, false if lost.
+     */
+    private void gameOver(boolean theWin) {
+        myTrivia.stopTimer();
+        mySupport.firePropertyChange(theWin ? "win" : "lose", null, null);
     }
 
     /**
-     * Checks if the player can reach the exit.
-     * @param theXCoordinate - Current x coordinate the player is in.
-     * @param theYCoordinate - Current y coordinate the player is in.
-     * @param theVisitedRoom - A true/false value that determines if the player can still win the game.
-     * @return True if the player can still reach the exit. False otherwise.
+     * Gets the trivia object for the game.
+     *
+     * @return The trivia object.
      */
-    private boolean canReachExit(int theXCoordinate, int theYCoordinate, boolean[][] theVisitedRoom) {
-        if (theXCoordinate < 0 || theXCoordinate >= MAZE_SIZE || theYCoordinate < 0
-                || theYCoordinate >= MAZE_SIZE || theVisitedRoom[theXCoordinate][theYCoordinate]) {
-            return false;
-        }
-
-        theVisitedRoom[theXCoordinate][theYCoordinate] = true;
-
-        String[] directions = {"North", "South", "West", "East"};
-        int[] xdirection = {-1, 1, 0, 0};
-        int[] ydirection = {0, 0, -1, 1};
-
-        boolean nearbyDoors = false;
-
-        for (int i = 0; i < 4; i++) {
-            int newX = theXCoordinate + xdirection[i];
-            int newY = theYCoordinate + ydirection[i];
-
-            Room currentRoom = myMap[theXCoordinate][theYCoordinate];
-            Door connectingDoor = currentRoom.getDoor(directions[i]);
-
-            if (connectingDoor != null && !connectingDoor.isClosed()) {
-                nearbyDoors = true;
-                if (canReachExit(newX, newY, theVisitedRoom)) {
-                    return true;
-                }
-            }
-        }
-        return nearbyDoors;
+    public Trivia getTrivia() {
+        return myTrivia;
     }
+}
 
 }
