@@ -59,7 +59,7 @@ public class GUI {
 
     private PlayerCharacter myPlayerCharacter;
     private transient JFrame myFrame;
-    private transient JPanel myMazePanel;
+    private transient MazePanel myMazePanel;
     private transient Maze myMaze;
     private static final String UP = "up";
     private static final String RIGHT = "right";
@@ -86,6 +86,7 @@ public class GUI {
         super();
         myMaze = new Maze(theDBConnector);
         myPlayerCharacter = new PlayerCharacter(0, 0);
+        loadCharacterImages();
         setupFrame();
         setupAnimationTimer();
     }
@@ -103,10 +104,12 @@ public class GUI {
         myFrame.setLayout(new BorderLayout());
         myFrame.setResizable(false);
 
-        setupMenuBar(myFrame);
-        setupPanels(myFrame);
+
 
         addKeyEventDispatcher();
+
+        setupMenuBar(myFrame);
+        setupPanels(myFrame);
 
         myFrame.setVisible(true);
     }
@@ -134,8 +137,12 @@ public class GUI {
                             break;
                     }
                     myPlayerCharacter.displayPosition();
+                    myMazePanel.updateDirectionAndFrame(currentDirection, frameIndex);
                     myMazePanel.revalidate();
                     myMazePanel.repaint();
+                    myRoomPanel.updateDirectionAndFrame(currentDirection, frameIndex);
+                    myRoomPanel.revalidate();
+                    myRoomPanel.repaint();
                     if (myMaze.isMovementAllowed()) {
                         switch (e.getKeyCode()) {
                             case KeyEvent.VK_W:
@@ -374,7 +381,7 @@ public class GUI {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, currentDirection, frameIndex, characterImages );
         myMazePanel.setBackground(Color.BLACK);
         myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(myMazePanel, BorderLayout.CENTER);
@@ -395,7 +402,7 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        final RoomPanel roomPanel = new RoomPanel();
+        final RoomPanel roomPanel = new RoomPanel(myPlayerCharacter, currentDirection, frameIndex, characterImages);
         roomPanel.setBackground(Color.BLACK);
         roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(roomPanel);

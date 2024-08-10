@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 
+import java.util.Map;
+
 import javax.swing.JPanel;
 
 /**
@@ -51,10 +53,13 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     private String myDirection;
     private int myFrameIndex;
 
+    private final Map<String, BufferedImage[]> myCharacterImage;
+
     /**
      * Constructor for the room panel.
      */
-    public RoomPanel(PlayerCharacter thePlayerCharacter, String theDirection, int theFrameIndex) {
+    public RoomPanel(PlayerCharacter thePlayerCharacter, String theDirection, int theFrameIndex,
+                     Map<String, BufferedImage[]> theCharacterImage) {
         super();
         myNorthDoor = false;
         mySouthDoor = true;
@@ -63,6 +68,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         myPlayerCharacter = thePlayerCharacter;
         myDirection = theDirection;
         myFrameIndex = theFrameIndex;
+        myCharacterImage = theCharacterImage;
     }
 
 
@@ -117,7 +123,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theHeight - The height of the panel.
      */
     private void drawText(final Graphics2D theGraphics2D, final int theWidth, final int theHeight) {
-        BufferedImage[] images = myPlayerCharacter.getCharacterImages(myDirection);
+        BufferedImage[] images = myCharacterImage.get(myDirection);
         BufferedImage currentImage = images[myFrameIndex];
 
         theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20, 40, 40, this);
