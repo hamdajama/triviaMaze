@@ -4,39 +4,31 @@
  */
 package model;
 
+import java.io.Serializable;
+
 /**
  * An abstract class that is given to the Multiple choice, short answer, and T/F classes.
  */
-public abstract class Question {
-
-    /**
-     * The ID of the question, as given in the sql file.
-     */
-    private final int myID;
-
+public abstract class Question implements Serializable {
+    private static final long serialVersionUID = 5L;
     /**
      * The question to be asked to the player, as given in the sql file.
      */
     private final String myQuestion;
 
+    private final String myAnswer;
+
     /**
      * The question constructor. Super should be called in Multiple choice, short answer,
      * and T/F classes.
-     * @param theID - The ID of the question.
      * @param theQuestion - The question to be asked.
+     * @param theAnswer - The answer for the question.
      */
-    public Question(final int theID, final String theQuestion) {
-        myID = theID;
+    public Question(final String theQuestion, final String theAnswer) {
         myQuestion = theQuestion;
+        myAnswer = theAnswer;
     }
 
-    /**
-     * Gets the ID from the sql file.
-     * @return The ID of the question.
-     */
-    protected int getID() {
-        return myID;
-    }
 
     /**
      * Gets the question to ask the player.
@@ -44,6 +36,14 @@ public abstract class Question {
      */
     public String getQuestion() {
         return myQuestion;
+    }
+
+    /**
+     * Returns the answer of the question.
+     * @return The answer
+     */
+    public String getAnswer() {
+        return myAnswer;
     }
 
     /**

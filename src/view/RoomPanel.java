@@ -4,6 +4,8 @@
  */
 package view;
 
+import model.Room;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -11,6 +13,7 @@ import java.awt.Graphics2D;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serializable;
 
 import javax.swing.JPanel;
 
@@ -19,7 +22,8 @@ import javax.swing.JPanel;
  * @author Eric John
  * @version 7/27/2024
  */
-public class RoomPanel extends JPanel implements PropertyChangeListener {
+public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
+    private static final long serialVersionUID = 3L;
 
     /**
      * A boolean representing if the north door can be opened.
@@ -109,11 +113,19 @@ public class RoomPanel extends JPanel implements PropertyChangeListener {
 
         theGraphics2D.drawString("Move North", (theWidth / 2) - 40, 50);
         theGraphics2D.drawString("Move East", theWidth - 100, theHeight / 2);
-        theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 325);
+        theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 250);
         theGraphics2D.drawString("Move West", theWidth - 350, theHeight / 2);
 
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
         theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
+    }
+
+    public void updateRoomPanel(Room theRoom) {
+        this.myNorthDoor = !theRoom.getDoor("North").isClosed();
+        this.mySouthDoor = !theRoom.getDoor("South").isClosed();
+        this.myEastDoor = !theRoom.getDoor("East").isClosed();
+        this.myWestDoor = !theRoom.getDoor("West").isClosed();
+        repaint();
     }
 
     /**

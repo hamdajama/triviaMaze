@@ -1,77 +1,50 @@
-/**
- * TCSS 360 - Trivia Maze
- * QuestionPanel.java
- */
 
 package view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.util.Map;
-
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-
-import model.MultipleChoice;
-import model.Question;
-import model.ShortAnswer;
-import model.TrueFalse;
+import javax.swing.ButtonGroup;
+import model.*;
 
 /**
- * Displays the question to a JPanel
+ * The QuestionPanel class represents the panel where questions are displayed to the player.
+ * It handles displaying multiple choice, short answer, and true/false questions,
+ * and processes the player's answers.
  * @author Eric John
  * @version 7/28/2024
+ *
  */
 public class QuestionPanel extends JPanel {
-
-    /**
-     * The question to be displayed
-     */
     private Question myCurrentQuestion;
-    /**
-     * The choices for multiple choice and True/False
-     */
+    private Maze myMaze;
     private ButtonGroup myButtonGroup;
-    /**
-     * The panel to display the questions
-     */
-    private final JPanel myQuestionPanel;
+    private JPanel myQuestionPanel;
 
     /**
-     * Creates the panel for the question. Has a gridLayout(0,1)
+     * Constructs a new QuestionPanel.
+     *
+     * @param maze The Maze object containing the game's state and logic.
      */
-    public QuestionPanel() {
+    public QuestionPanel(Maze maze) {
         super();
-        myButtonGroup = new ButtonGroup();
+        this.myMaze = maze;
+        this.myButtonGroup = new ButtonGroup();
         setBackground(Color.BLACK);
         myQuestionPanel = new JPanel(new GridLayout(0, 1));
         add(myQuestionPanel, BorderLayout.SOUTH);
         setFocusable(true);
-
-        addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                System.out.println("QuestionPanel gained focus");
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                getParent().requestFocusInWindow(); // Request focus back to the parent frame
-            }
-        });
     }
 
     /**
-     * Sets the question to ask the player
-     * @param theQuestion - The question to ask the player.
+     * Sets the current question to be displayed on the panel.
+     *
+     * @param theQuestion The Question object to be displayed.
      */
     public void setQuestion(final Question theQuestion) {
         myCurrentQuestion = theQuestion;
@@ -79,7 +52,7 @@ public class QuestionPanel extends JPanel {
     }
 
     /**
-     * Displays the question to the panel.
+     * Displays the current question on the panel.
      */
     private void displayQuestion() {
         myQuestionPanel.removeAll();
@@ -101,8 +74,9 @@ public class QuestionPanel extends JPanel {
     }
 
     /**
-     * Displays a multiple choice question to the panel.
-     * @param theQuestion - The multiple choice question.
+     * Displays a multiple choice question on the panel.
+     *
+     * @param theQuestion The MultipleChoice object to be displayed.
      */
     private void displayMultipleChoice(final MultipleChoice theQuestion) {
         Map<String, String> choices = theQuestion.getChoices();
@@ -117,8 +91,9 @@ public class QuestionPanel extends JPanel {
     }
 
     /**
-     * Displays a short answer question to the panel.
-     * @param theQuestion - The short answer question
+     * Displays a short answer question on the panel.
+     *
+     * @param theQuestion The ShortAnswer object to be displayed.
      */
     private void displayShortAnswer(final ShortAnswer theQuestion) {
         JTextField answerField = new JTextField();
@@ -135,8 +110,9 @@ public class QuestionPanel extends JPanel {
     }
 
     /**
-     * Displays a true false question to the panel
-     * @param theQuestion - The true/false question.
+     * Displays a true/false question on the panel.
+     *
+     * @param theQuestion The TrueFalse object to be displayed.
      */
     private void displayTrueFalse(final TrueFalse theQuestion) {
         JRadioButton trueButton = new JRadioButton("True");
@@ -153,21 +129,28 @@ public class QuestionPanel extends JPanel {
     }
 
     /**
-     * Helper method to test if the answer is correct and display it to the screen.
-     * @param isCorrect - Whether the answer given by the player is correct or not.
+     * Handles the player's answer and updates the game state accordingly.
+     *
+     * @param isCorrect Whether the player's answer is correct.
      */
     private void handleAnswer(boolean isCorrect) {
         if (isCorrect) {
             JOptionPane.showMessageDialog(this, "Correct answer!");
+            myMaze.processAnswer("correct answer");
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
+            myMaze.processAnswer("wrong answer");
+            if (myMaze.getCurrentRoom().allClosed()) {
+                JOptionPane.showMessageDialog(this, "Game Over!");
+            }
         }
         getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
     }
 
     /**
-     * Helper method for creating the submit button.
-     * @param theQuestion - The question that is asked to the player.
+     * Creates a submit button for the current question and adds it to the panel.
+     *
+     * @param theQuestion The Question object for which the submit button is created.
      */
     private void createSubmitButton(final Question theQuestion) {
         JButton submitButton = new JButton("Submit");

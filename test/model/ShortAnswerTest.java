@@ -14,12 +14,6 @@ import org.junit.jupiter.api.Test;
  * @version 7/26/2024
  */
 public class ShortAnswerTest {
-
-    /**
-     * The question ID from the sql file.
-     */
-    private static final int QUESTION_ID = 26;
-
     /**
      * The question for questionID 26
      */
@@ -35,21 +29,11 @@ public class ShortAnswerTest {
      */
     @Test
     public void testShortAnswerConstructor() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
 
         assertAll("Three argument constructor test,",
-                () -> assertEquals(QUESTION_ID, Question26.getID(), "The ID does not match."),
                 () -> assertEquals(QUESTION, Question26.getQuestion(), "The answer displayed is not the same as the database"),
                 () -> assertEquals(ANSWER, Question26.getAnswer(), "The answer is not the same as the database"));
-    }
-
-    /**
-     * Tests if the class gets the correct question ID.
-     */
-    @Test
-    public void testGetQuestionID() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
-        assertEquals(QUESTION_ID, Question26.getID(),"The method does not get the correct question id");
     }
 
     /**
@@ -57,7 +41,7 @@ public class ShortAnswerTest {
      */
     @Test
     public void testGetQuestion() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
         assertEquals(QUESTION, Question26.getQuestion(),"The method does not get the correct question");
     }
 
@@ -66,7 +50,7 @@ public class ShortAnswerTest {
      */
     @Test
     public void testGetAnswer() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
         assertEquals(ANSWER, Question26.getAnswer(), "The method does not get the correct answer");
     }
 
@@ -75,7 +59,7 @@ public class ShortAnswerTest {
      */
     @Test
     public void testIncorrectAnswer() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
         assertFalse(Question26.isMatch("Buzz Lightyear"),"The method should return false");
     }
 
@@ -84,7 +68,7 @@ public class ShortAnswerTest {
      */
     @Test
     public void testCorrectAnswer() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
         assertTrue(Question26.isMatch("Woody"),"The method should return true");
     }
 
@@ -93,8 +77,8 @@ public class ShortAnswerTest {
      */
     @Test
     public void testGetHint() {
-        final ShortAnswer Question26 = new ShortAnswer(QUESTION_ID, QUESTION, ANSWER);
-        assertEquals("The word starts with a \"W\"", Question26.getHint(),"The first character is wrong");
+        final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
+        assertEquals("The word starts with a \"W\"", Question26.getHint(),"The first resources.character is wrong");
     }
 
 

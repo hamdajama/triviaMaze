@@ -19,10 +19,6 @@ import org.junit.jupiter.api.Test;
  */
 public class MultipleChoiceTest {
 
-    /**
-     * Question ID 41 from the sql file.
-     */
-    private static final int QUESTION_ID = 41;
 
     /**
      * The question to ask the user.
@@ -49,10 +45,9 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION_ID, QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
-        Assertions.assertAll("Four argument constructor test.",
-                () -> Assertions.assertEquals(QUESTION_ID, Question41.getID(), "Question ID should be " + QUESTION_ID),
+        Assertions.assertAll("Three argument constructor test.",
                 () -> Assertions.assertEquals(QUESTION, Question41.getQuestion(), "The question should be \"" + QUESTION + "\""),
                 () -> Assertions.assertEquals(MULTIPLE_CHOICE, Question41.getChoices(), " The choices should be \"" + MULTIPLE_CHOICE + "\""),
                 () -> Assertions.assertEquals(RIGHT_ANSWER, Question41.getAnswer(), "The correct answer is \"" + RIGHT_ANSWER + "\""));
@@ -70,7 +65,7 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION_ID, QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
         Question41.deleteChoice();
 
@@ -88,7 +83,7 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION_ID, QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
         Assertions.assertFalse(Question41.isMatch("B"), "Should return false. The answer given is incorrect");
     }
@@ -103,7 +98,7 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION_ID, QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
         Assertions.assertTrue(Question41.isMatch("A"), "Should return true. The answer given is correct");
         Assertions.assertTrue(Question41.isMatch(RIGHT_ANSWER), "Should return true. The answer given is correct");

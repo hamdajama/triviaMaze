@@ -1,4 +1,4 @@
-package object;
+package model;
 
 import java.io.Serializable;
 
@@ -51,7 +51,7 @@ public class GameObject implements Serializable {
      *
      * @return the x-coordinate
      */
-    public int getX() {
+    public final int getX() {
         return x;
     }
 
@@ -60,7 +60,7 @@ public class GameObject implements Serializable {
      *
      * @param x the new x-coordinate
      */
-    public void setX(int x) {
+    public final void setX(int x) {
         this.x = x;
     }
 
@@ -69,7 +69,7 @@ public class GameObject implements Serializable {
      *
      * @return the y-coordinate
      */
-    public int getY() {
+    public final int getY() {
         return y;
     }
 
@@ -78,7 +78,7 @@ public class GameObject implements Serializable {
      *
      * @param y the new y-coordinate
      */
-    public void setY(int y) {
+    public final void setY(int y) {
         this.y = y;
     }
 

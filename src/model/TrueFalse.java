@@ -4,31 +4,21 @@
  */
 package model;
 
+import java.io.Serializable;
+
 /**
  * A True/False class to ask a true or false question.
  */
 public class TrueFalse extends Question {
 
     /**
-     * The answer from the sql file.
-     */
-    private final int myAnswer;
-
-    /**
      * Creates a True/False question to ask the player.
-     * @param theID - The ID of the question.
      * @param theQuestion - The question to ask the user.
      * @param theAnswer - The correct answer of the question. NOTE: 0 means FALSE
      *                    and 1 means TRUE.
      */
-    public TrueFalse(final int theID, final String theQuestion, final int theAnswer) {
-
-        super(theID, theQuestion);
-        if (theAnswer != 0 && theAnswer != 1) {
-            throw new IllegalArgumentException("The answer must be 0 for FALSE " +
-                                                "or 1 for TRUE.");
-        }
-        myAnswer = theAnswer;
+    public TrueFalse(final String theQuestion, final int theAnswer) {
+        super(theQuestion, String.valueOf(theAnswer));
     }
 
     /**
@@ -39,7 +29,7 @@ public class TrueFalse extends Question {
      */
     @Override
     public boolean isMatch(final String thePlayerAnswer) {
-        String convertAnswer = convertToTF(myAnswer);
+        String convertAnswer = convertToTF(getAnswer());
         return thePlayerAnswer.equals(convertAnswer);
     }
 
@@ -50,7 +40,7 @@ public class TrueFalse extends Question {
     protected String getHint() {
         StringBuilder hint = new StringBuilder();
         hint.append("This question is not ");
-        if (myAnswer == 0) {
+        if (getAnswer().equals("0")) {
             hint.append("true!");
         } else {
             hint.append("false!");
@@ -59,22 +49,14 @@ public class TrueFalse extends Question {
     }
 
     /**
-     * Gets the correct answer for the question.
-     * @return The correct answer.
-     */
-    protected int getAnswer() {
-        return myAnswer;
-    }
-
-    /**
      * Converts the given number from 0 or 1 to True or False. A private method for the overridden
      * isMatch method.
      * @param theAnswer - The answer given by the player.
      * @return "F" if the given answer is 0. "T" if the given answer is one.
      */
-    private String convertToTF(final int theAnswer) {
+    private String convertToTF(final String theAnswer) {
         String result;
-        if (theAnswer == 0) {
+        if (theAnswer.equals("0")) {
             result = "False";
         } else {
             result = "True";

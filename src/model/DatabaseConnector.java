@@ -3,6 +3,7 @@ package model;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteException;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,9 +13,10 @@ import java.sql.Statement;
  * used in the TriviaMaze game. It creates tables, inserts initial data, and provides
  * methods for querying the database.
  */
-public class DatabaseConnector {
+public class DatabaseConnector implements Serializable {
+    private final static long serialVersionUID = 7L;
     private final String myDS_url = "jdbc:sqlite:TriviaMaze.db";
-    private SQLiteDataSource myDS;
+    private transient SQLiteDataSource myDS;
     /**
      * Constructs a new DatabaseConnector, initializing the SQLiteDataSource
      * and setting up the database.
@@ -89,18 +91,18 @@ public class DatabaseConnector {
                 "(2, 'Darth Vader is Luke Skywalkers father.', 1), " +
                 "(3, 'SpongeBob SquarePants lives in a pineapple.', 1), " +
                 "(4, 'Bugs Bunny is a rabbit from the Looney Tunes show.', 1), " +
-                "(5, 'Monkey D. Luffy is the main character of One Piece.', 1), " +
+                "(5, 'Monkey D. Luffy is the main resources.character of One Piece.', 1), " +
                 "(6, 'Woody is a toy cowboy from Toy Story.', 1), " +
                 "(7, 'Hermione Granger became a headmaster of Hogwarts.', 0), " +
                 "(8, 'Yoda trained Luke Skywalker.', 1), " +
                 "(9, 'Patrick Star is SpongeBobs best friend.', 1), " +
-                "(10, 'Daffy Duck is a character from One Piece.', 0), " +
+                "(10, 'Daffy Duck is a resources.character from One Piece.', 0), " +
                 "(11, 'Nami is a navigator in One Piece.', 1), " +
                 "(12, 'Buzz Lightyear believes he is a real space ranger.', 1), " +
                 "(13, 'Draco Malfoy is a Gryffindor.', 0), " +
                 "(14, 'Han Solo was frozen in carbonite.', 1), " +
                 "(15, 'Sandy Cheeks is a squirrel.', 1), " +
-                "(16, 'Porky Pig is a character from the Looney Tunes show.', 1), " +
+                "(16, 'Porky Pig is a resources.character from the Looney Tunes show.', 1), " +
                 "(17, 'Roronoa Zoro is a chef in One Piece.', 0), " +
                 "(18, 'Jessie is a cowgirl from Toy Story.', 1), " +
                 "(19, 'Albus Dumbledore was a headmaster of Hogwarts.', 1), " +
