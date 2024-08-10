@@ -25,6 +25,7 @@ public class QuestionPanel extends JPanel {
     private Maze myMaze;
     private ButtonGroup myButtonGroup;
     private JPanel myQuestionPanel;
+    private Direction myDirection;
 
     /**
      * Constructs a new QuestionPanel.
@@ -45,9 +46,11 @@ public class QuestionPanel extends JPanel {
      * Sets the current question to be displayed on the panel.
      *
      * @param theQuestion The Question object to be displayed.
+     * @param theDirection The direction the player intends to move.
      */
-    public void setQuestion(final Question theQuestion) {
+    public void setQuestion(final Question theQuestion,final Direction theDirection) {
         myCurrentQuestion = theQuestion;
+        myDirection = theDirection;
         displayQuestion();
     }
 
