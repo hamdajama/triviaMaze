@@ -1,3 +1,4 @@
+
 package view;
 
 import java.awt.BorderLayout;
@@ -15,7 +16,6 @@ import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -85,6 +85,7 @@ public class GUI {
     public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
         myMaze = new Maze(theDBConnector);
+        myMaze.setMovementAllowed(true);
         myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
@@ -114,47 +115,39 @@ public class GUI {
     private void addKeyEventDispatcher() {
         if (!isKeyDispatcherAdded) {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                if (e.getID() == KeyEvent.KEY_PRESSED && myMaze.isMovementAllowed()) {
+                    Direction direction = null;
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_W:
-                            myPlayerCharacter.moveUp();
+                            direction = Direction.NORTH;
                             currentDirection = UP;
                             break;
                         case KeyEvent.VK_S:
-                            myPlayerCharacter.moveDown();
+                            direction = Direction.SOUTH;
                             currentDirection = DOWN;
                             break;
                         case KeyEvent.VK_A:
-                            myPlayerCharacter.moveLeft();
+                            direction = Direction.WEST;
                             currentDirection = LEFT;
                             break;
                         case KeyEvent.VK_D:
-                            myPlayerCharacter.moveRight();
+                            direction = Direction.EAST;
                             currentDirection = RIGHT;
                             break;
                     }
-                    myPlayerCharacter.displayPosition();
-                    myMazePanel.revalidate();
-                    myMazePanel.repaint();
-                    if (myMaze.isMovementAllowed()) {
-                        switch (e.getKeyCode()) {
-                            case KeyEvent.VK_W:
-                                myMaze.move("NORTH");
-                                break;
-                            case KeyEvent.VK_S:
-                                myMaze.move("SOUTH");
-                                break;
-                            case KeyEvent.VK_A:
-                                myMaze.move("WEST");
-                                break;
-                            case KeyEvent.VK_D:
-                                myMaze.move("EAST");
-                                break;
+                    if (direction != null) {
+                        Room currentRoom = myMaze.getCurrentRoom();
+                        Question doorQues = currentRoom.getQuesDoor(direction);
+
+                        if (doorQues != null){
+                            myQuestionPanel.setQuestion(doorQues,direction);
+                            myMaze.setMovementAllowed(false);
+                            myQuestionPanel.setVisible(true);
+                        } else {
+                            movePlayer(direction);
                         }
-                        myPlayerCharacter.displayPosition();
                         myMazePanel.revalidate();
                         myMazePanel.repaint();
-                        displayCurrentRoomQuestion(myQuestionPanel);
                     }
                 }
                 return false;
@@ -162,8 +155,25 @@ public class GUI {
             isKeyDispatcherAdded = true;
         }
     }
-
-
+    private void movePlayer(Direction theDirection) {
+        Direction direction = theDirection;
+        switch (direction) {
+            case NORTH:
+                myPlayerCharacter.moveUp();
+                break;
+            case SOUTH:
+                myPlayerCharacter.moveDown();
+                break;
+            case WEST:
+                myPlayerCharacter.moveLeft();
+                break;
+            case EAST:
+                myPlayerCharacter.moveRight();
+                break;
+        }
+        myPlayerCharacter.displayPosition();
+        myMaze.processAnswer("correct answer", direction);
+    }
 
 
     /**
@@ -405,35 +415,44 @@ public class GUI {
         myQuestionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(myQuestionPanel);
 
-        // Display the current room's question
-        displayCurrentRoomQuestion(myQuestionPanel);
         myMaze.addPropertyChangeListener(evt -> {
             if ("move".equals(evt.getPropertyName())) {
-                displayCurrentRoomQuestion(myQuestionPanel);
-                updateRoomPanel(myMaze.getCurrentRoom());
+                myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
             } else if ("correct answer".equals(evt.getPropertyName()) || "wrong answer".equals(evt.getPropertyName())) {
-                updateRoomPanel(myMaze.getCurrentRoom());
+                myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
+            } else if ("win".equals(evt.getPropertyName()) || "lose".equals(evt.getPropertyName())) {
+                boolean isWin = "win".equals(evt.getPropertyName());
+                showResults(isWin);
             }
         });
     }
+
 
     /**
      * Displays the current room's question in the question panel.
      *
      * @param questionPanel The question panel.
      */
-    private void displayCurrentRoomQuestion(QuestionPanel questionPanel) {
+    private void displayCurrentRoomQuestion(QuestionPanel questionPanel, Direction direction) {
         Room currentRoom = myMaze.getCurrentRoom();
-        questionPanel.setQuestion(currentRoom.getTrivia());
+        Question doorQues = currentRoom.getQuesDoor(direction);
+        //questionPanel.setQuestion(doorQues, );
     }
 
     /**
-     * Updates the room panel with the current room's door statuses.
+     * Shows the game results when the player wins or loses.
      *
-     * @param theRoom The current room.
+     * @param theWin Whether the player won or lost.
      */
-    private void updateRoomPanel(Room theRoom) {
-        myRoomPanel.updateRoomPanel(theRoom);
+    public void showResults(boolean theWin) {
+        myMaze.getTrivia().stopTimer();
+        String message = theWin ? "Congratulations, you won!" : "Game over, you lost!";
+        message += "\nTime taken: " + myMaze.getTrivia().getTime() / 1000 + " seconds";
+        message += "\nTries used: " + myMaze.getTrivia().getTrys();
+        message += " Correct Answers: " + myMaze.getTrivia().getRightAnswer();
+        message += " Wrong Answers " + myMaze.getTrivia().getWrongAnswer();
+        JOptionPane.showMessageDialog(null, message, "Game Results", JOptionPane.INFORMATION_MESSAGE);
+        System.exit(0);
     }
 
     /**
