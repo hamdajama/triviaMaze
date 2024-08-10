@@ -122,10 +122,8 @@ public class Maze implements Serializable {
         } else {
             movementAllowed = false;
             currentRoom.wrongAnswer(answerType);
+            checkGameOver();
             mySupport.firePropertyChange("wrong answer", null, currentRoom);
-            if (currentRoom.allClosed()) {
-                mySupport.firePropertyChange("game over", null, currentRoom);
-            }
 
         }
     }
@@ -202,4 +200,54 @@ public class Maze implements Serializable {
         this.myDBConn = theDbConnector;
         this.myQesGen = new QuestionGenerator(theDbConnector);
     }
+
+    /**
+     * Checks if the player can't reach the exit.
+     */
+    public void checkGameOver() {
+        boolean[][] visited = new boolean[MAZE_SIZE][MAZE_SIZE];
+        if (!canReachExit(myCurrentX, myCurrentY, visited)) {
+            System.out.println("Game is over");
+            mySupport.firePropertyChange("game over", null, getCurrentRoom());
+        }
+    }
+
+    /**
+     * Checks if the player can reach the exit.
+     * @param theXCoordinate - Current x coordinate the player is in.
+     * @param theYCoordinate - Current y coordinate the player is in.
+     * @param theVisitedRoom - A true/false value that determines if the player can still win the game.
+     * @return True if the player can still reach the exit. False otherwise.
+     */
+    private boolean canReachExit(int theXCoordinate, int theYCoordinate, boolean[][] theVisitedRoom) {
+        if (theXCoordinate < 0 || theXCoordinate >= MAZE_SIZE || theYCoordinate < 0
+                || theYCoordinate >= MAZE_SIZE || theVisitedRoom[theXCoordinate][theYCoordinate]) {
+            return false;
+        }
+
+        theVisitedRoom[theXCoordinate][theYCoordinate] = true;
+
+        String[] directions = {"North", "South", "West", "East"};
+        int[] xdirection = {-1, 1, 0, 0};
+        int[] ydirection = {0, 0, -1, 1};
+
+        boolean nearbyDoors = false;
+
+        for (int i = 0; i < 4; i++) {
+            int newX = theXCoordinate + xdirection[i];
+            int newY = theYCoordinate + ydirection[i];
+
+            Room currentRoom = myMap[theXCoordinate][theYCoordinate];
+            Door connectingDoor = currentRoom.getDoor(directions[i]);
+
+            if (connectingDoor != null && !connectingDoor.isClosed()) {
+                nearbyDoors = true;
+                if (canReachExit(newX, newY, theVisitedRoom)) {
+                    return true;
+                }
+            }
+        }
+        return nearbyDoors;
+    }
+
 }
