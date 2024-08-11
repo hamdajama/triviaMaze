@@ -75,6 +75,8 @@ public class GUI {
     private RoomPanel myRoomPanel;
     private QuestionPanel myQuestionPanel;
     private boolean isKeyDispatcherAdded = false;
+    private final SoundPlayer mySound = SoundPlayer.getInstance();
+
 
     /**
      * Creates a new GUI instance and initializes the game.
@@ -85,10 +87,16 @@ public class GUI {
     public GUI(DatabaseConnector theDBConnector) throws SQLException {
         super();
         myMaze = new Maze(theDBConnector);
-        myMaze.setMovementAllowed(true);
+        myMaze.setMovementAllowed(true); // initaile movemnt
         myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
+        try {
+            mySound.playBackgroundMusic();
+        } catch (final Exception e) {
+            System.out.println("Error playing background music: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -110,6 +118,9 @@ public class GUI {
         addKeyEventDispatcher();
 
         myFrame.setVisible(true);
+    }
+    public JFrame geFrame () {
+        return  myFrame;
     }
 
     private void addKeyEventDispatcher() {
@@ -144,6 +155,7 @@ public class GUI {
                             myMaze.setMovementAllowed(false);
                             myQuestionPanel.setVisible(true);
                         } else {
+                            myMaze.move(direction);
                             movePlayer(direction);
                         }
                         myMazePanel.revalidate();
@@ -155,8 +167,9 @@ public class GUI {
             isKeyDispatcherAdded = true;
         }
     }
-    private void movePlayer(Direction theDirection) {
+    void movePlayer(Direction theDirection) {
         Direction direction = theDirection;
+        myMaze.move(direction);
         switch (direction) {
             case NORTH:
                 myPlayerCharacter.moveUp();
@@ -172,7 +185,16 @@ public class GUI {
                 break;
         }
         myPlayerCharacter.displayPosition();
-        myMaze.processAnswer("correct answer", direction);
+        myMazePanel.revalidate();
+        myMazePanel.repaint();
+        mySound.playSFX("./audio/mixkit-player-jumping-in-a-video-game-2043.wav");
+        myMaze.setMovementAllowed(true);
+        myFrame.requestFocusInWindow();
+    }
+    public void updateAfterCorrectAnswer() {
+        myMaze.setMovementAllowed(true);
+        addKeyEventDispatcher();
+        myFrame.requestFocusInWindow();
     }
 
 
@@ -409,8 +431,8 @@ public class GUI {
         myRoomPanel.setBackground(Color.BLACK);
         myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(myRoomPanel);
-
         myQuestionPanel = new QuestionPanel(myMaze);
+        myQuestionPanel.setGUI(this);
         myQuestionPanel.setBackground(Color.BLACK);
         myQuestionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(myQuestionPanel);
@@ -418,9 +440,13 @@ public class GUI {
         myMaze.addPropertyChangeListener(evt -> {
             if ("move".equals(evt.getPropertyName())) {
                 myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
-            } else if ("correct answer".equals(evt.getPropertyName()) || "wrong answer".equals(evt.getPropertyName())) {
+            } else if ("correct answer".equals(evt.getPropertyName())) {
                 myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
-            } else if ("win".equals(evt.getPropertyName()) || "lose".equals(evt.getPropertyName())) {
+                mySound.playSFX("./audio/mixkit-correct-answer-reward-952.wav");
+            } else if ( "wrong answer".equals(evt.getPropertyName())) {
+                myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
+                mySound.playSFX("./audio/mixkit-player-losing-or-failing-2042.wav");
+            } else if  ("win".equals(evt.getPropertyName()) || "lose".equals(evt.getPropertyName())) {
                 boolean isWin = "win".equals(evt.getPropertyName());
                 showResults(isWin);
             }
