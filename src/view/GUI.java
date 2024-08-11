@@ -76,6 +76,8 @@ public class GUI {
     private QuestionPanel myQuestionPanel;
     private boolean isKeyDispatcherAdded = false;
 
+    private final SoundPlayer mySound = SoundPlayer.getInstance();
+
     /**
      * Creates a new GUI instance and initializes the game.
      *
@@ -88,6 +90,12 @@ public class GUI {
         myPlayerCharacter = new PlayerCharacter(0, 0);
         setupFrame();
         setupAnimationTimer();
+        try {
+            mySound.playBackgroundMusic();
+        } catch (final Exception e) {
+            System.out.println("Error playing background music: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
