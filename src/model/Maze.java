@@ -120,21 +120,47 @@ public class Maze implements Serializable {
     public void processAnswer(String theAnswer, Direction theDirection) {
         Room currentRoom = getCurrentRoom();
         Question quesDoor = currentRoom.getQuesDoor(theDirection);
-        boolean isCorrect = myTrivia.isRightAnswer(theAnswer, quesDoor.getAnswer() );
+        boolean isCorrect = myTrivia.isRightAnswer(theAnswer, quesDoor.getAnswer());
         if (isCorrect) {
             move(theDirection);
             setMovementAllowed(true);
-            mySupport.firePropertyChange("correct answer", null, currentRoom) ;
+            mySupport.firePropertyChange("correct answer", null, currentRoom);
             if(isAtEnd()) {
                 gameOver(true);
             }
-        }else  {
+        } else {
             currentRoom.closeDoor(theDirection);
+            Room adjacentRoom = getAdjacentRoom(currentRoom, theDirection);
+            if (adjacentRoom != null) {
+                Direction oppositeDirection = getOppositeDirection(theDirection);
+                adjacentRoom.closeDoor(oppositeDirection);
+            }
             setMovementAllowed(false);
             mySupport.firePropertyChange("wrong answer", null, currentRoom);
             if (currentRoom.allClosed() || isMazeBlocked()) {
                 gameOver(false);
             }
+        }
+    }
+
+    private Room getAdjacentRoom(Room currentRoom, Direction direction) {
+        int newX = myCurrentX, newY = myCurrentY;
+        switch (direction) {
+            case NORTH: newY--; break;
+            case SOUTH: newY++; break;
+            case EAST: newX++; break;
+            case WEST: newX--; break;
+        }
+        return getRoom(newX, newY);
+    }
+
+    private Direction getOppositeDirection(Direction direction) {
+        switch (direction) {
+            case NORTH: return Direction.SOUTH;
+            case SOUTH: return Direction.NORTH;
+            case EAST: return Direction.WEST;
+            case WEST: return Direction.EAST;
+            default: throw new IllegalArgumentException("Invalid direction");
         }
     }
 
