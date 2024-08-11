@@ -26,6 +26,9 @@ public class QuestionPanel extends JPanel {
     private ButtonGroup myButtonGroup;
     private JPanel myQuestionPanel;
     private Direction myDirection;
+    private RoomPanel myRoomPanel;
+    private MazePanel myMazePanel;
+    private GUI myGUI;
 
     /**
      * Constructs a new QuestionPanel.
@@ -35,11 +38,18 @@ public class QuestionPanel extends JPanel {
     public QuestionPanel(Maze maze) {
         super();
         this.myMaze = maze;
-        this.myButtonGroup = new ButtonGroup();
+        //this.myRoomPanel =theRoomPanel;
+        //this.myMazePanel = theMazePanel;
+        //this.myButtonGroup = new ButtonGroup();
         setBackground(Color.BLACK);
         myQuestionPanel = new JPanel(new GridLayout(0, 1));
         add(myQuestionPanel, BorderLayout.SOUTH);
         setFocusable(true);
+    }
+    public void setGUI(GUI gui) {
+        this.myGUI = gui;
+        //this.myMazePanel = mazePanel;
+        //this.myRoomPanel = roomPanel;
     }
 
     /**
@@ -140,14 +150,28 @@ public class QuestionPanel extends JPanel {
         if (isCorrect) {
             JOptionPane.showMessageDialog(this, "Correct answer!");
             myMaze.processAnswer("correct answer", theDirection);
+            myQuestionPanel.setVisible(false);
+            myMaze.move(theDirection); // move the player
+            myGUI.movePlayer(theDirection);
+            //myMaze.setMovementAllowed(true);
+            myGUI.updateAfterCorrectAnswer();
+            //updateMazeDisplay();
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
             myMaze.processAnswer("wrong answer", theDirection);
             if (myMaze.getCurrentRoom().allClosed()) {
                 JOptionPane.showMessageDialog(this, "Game Over!");
+                myMaze.setMovementAllowed(false);
             }
         }
+        // Re-enable movement after processing the answer
+        myMaze.setMovementAllowed(true);
+        myGUI.geFrame().requestFocusInWindow();
         getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
+    }
+    void updateMazeDisplay() {
+        myMazePanel.repaint();
+        myRoomPanel.updateRoomPanel(myMaze.getCurrentRoom());
     }
 
     /**
