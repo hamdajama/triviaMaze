@@ -8,6 +8,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -144,6 +146,7 @@ public class GUI {
                     myPlayerCharacter.displayPosition();
                     myMazePanel.revalidate();
                     myMazePanel.repaint();
+                    mySound.playSFX("./audio/mixkit-player-jumping-in-a-video-game-2043.wav");
                     if (myMaze.isMovementAllowed()) {
                         switch (e.getKeyCode()) {
                             case KeyEvent.VK_W:
@@ -403,10 +406,10 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        final RoomPanel roomPanel = new RoomPanel();
-        roomPanel.setBackground(Color.BLACK);
-        roomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
-        rightPanel.add(roomPanel);
+        myRoomPanel = new RoomPanel();
+        myRoomPanel.setBackground(Color.BLACK);
+        myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
+        rightPanel.add(myRoomPanel);
 
         myQuestionPanel = new QuestionPanel(myMaze);
         myQuestionPanel.setBackground(Color.BLACK);
@@ -419,8 +422,12 @@ public class GUI {
             if ("move".equals(evt.getPropertyName())) {
                 displayCurrentRoomQuestion(myQuestionPanel);
                 updateRoomPanel(myMaze.getCurrentRoom());
-            } else if ("correct answer".equals(evt.getPropertyName()) || "wrong answer".equals(evt.getPropertyName())) {
+            } else if ("correct answer".equals(evt.getPropertyName())) {
                 updateRoomPanel(myMaze.getCurrentRoom());
+                mySound.playSFX("./audio/mixkit-correct-answer-reward-952.wav");
+            } else if ("wrong answer".equals(evt.getPropertyName())) {
+                updateRoomPanel(myMaze.getCurrentRoom());
+                mySound.playSFX("./audio/mixkit-player-losing-or-failing-2042.wav");
             }
         });
     }
