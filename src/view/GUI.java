@@ -146,7 +146,7 @@ public class GUI {
                     myPlayerCharacter.displayPosition();
                     myMazePanel.revalidate();
                     myMazePanel.repaint();
-                    mySound.playSFX("./audio/mixkit-player-jumping-in-a-video-game-2043.wav");
+                    mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
                     if (myMaze.isMovementAllowed()) {
                         switch (e.getKeyCode()) {
                             case KeyEvent.VK_W:
@@ -424,10 +424,10 @@ public class GUI {
                 updateRoomPanel(myMaze.getCurrentRoom());
             } else if ("correct answer".equals(evt.getPropertyName())) {
                 updateRoomPanel(myMaze.getCurrentRoom());
-                mySound.playSFX("./audio/mixkit-correct-answer-reward-952.wav");
+                mySound.playSFX("audio/mixkit-correct-answer-reward-952.wav");
             } else if ("wrong answer".equals(evt.getPropertyName())) {
                 updateRoomPanel(myMaze.getCurrentRoom());
-                mySound.playSFX("./audio/mixkit-player-losing-or-failing-2042.wav");
+                mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
             }
         });
     }

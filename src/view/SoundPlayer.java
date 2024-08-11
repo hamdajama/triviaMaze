@@ -20,7 +20,7 @@ public final class SoundPlayer {
 
     public void playBackgroundMusic() {
         try {
-            final File path = new File("./audio/mixkit-game-level-music-689.wav");
+            final File path = new File("audio/mixkit-game-level-music-689.wav");
             final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(path);
             final Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
