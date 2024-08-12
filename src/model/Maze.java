@@ -30,7 +30,7 @@ public class Maze implements Serializable {
      * The direction the player is heading.
      */
     private Direction myPendingDirection = null;
-    private Trivia myTrivia;
+    private final Trivia myTrivia;
 
     /**
      * Constructs a new Maze, initializing the game grid and questions.
@@ -59,10 +59,29 @@ public class Maze implements Serializable {
      * @throws SQLException If an error occurs during question retrieval from the database.
      */
     private void buildMap() throws SQLException {
+        myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         for (int i = 0; i < MAZE_SIZE; i++) {
             for (int j = 0; j < MAZE_SIZE; j++) {
                 Question question = myQesGen.getRandomQes();
-                myMap[i][j] = new Room(question);
+                Room room = new Room(question);
+
+                for (Direction dir : Direction.values()) {
+                    room.setDoorOpen(dir,true);
+                }
+
+                if (i == 0) room.setDoorOpen(Direction.NORTH, false);
+                if (j == 0) room.setDoorOpen(Direction.WEST, false);
+
+
+                myMap[i][j] = room;
+            }
+        }
+
+
+        // Debug print
+        for (int i = 0; i < MAZE_SIZE; i++) {
+            for (int j = 0; j < MAZE_SIZE; j++) {
+                System.out.println("Room [" + i + "][" + j + "] South door open: " + myMap[i][j].isDoorOpen(Direction.SOUTH));
             }
         }
     }
@@ -105,6 +124,10 @@ public class Maze implements Serializable {
     private void setEnd() {
         myEndX = MAZE_SIZE - 1;
         myEndY = MAZE_SIZE - 1;
+    }
+
+    public int getMazeSize() {
+        return MAZE_SIZE;
     }
 
     /**
@@ -190,9 +213,10 @@ public class Maze implements Serializable {
      * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
      */
     public void move(Direction theDirection) {
-        Room currentRoom = getCurrentRoom();
-
-        if (currentRoom.isDoorPassable(theDirection) || isAdjacentToExit(theDirection)) {
+        System.out.println("This is being triggered");
+        if (canMove(theDirection)) {
+            Room currentRoom = getCurrentRoom();
+            //System.out.println("Makes it through here");
             int newX = myCurrentX + (theDirection == Direction.EAST ? 1 : (theDirection == Direction.WEST ? -1 : 0));
             int newY = myCurrentY + (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
 
@@ -202,7 +226,46 @@ public class Maze implements Serializable {
                 myPendingDirection = theDirection;
                 mySupport.firePropertyChange("question", null, new QuestionEvent(currentRoom.getTrivia(), theDirection));
             }
+
         }
+    }
+
+    public boolean canMove(Direction direction) {
+        int newX = myCurrentX;
+        int newY = myCurrentY;
+
+        switch (direction) {
+            case NORTH:
+                newY--;
+                break;
+            case SOUTH:
+                newY++;
+                break;
+            case EAST:
+                newX++;
+                break;
+            case WEST:
+                newX--;
+                break;
+        }
+
+        System.out.println("Attempting to move " + direction + " from (" + myCurrentX + "," + myCurrentY + ") to (" + newX + "," + newY + ")");
+
+        if (newX < 0 || newX >= MAZE_SIZE || newY < 0 || newY >= MAZE_SIZE) {
+            System.out.println("Move is out of bounds");
+            return false;
+        }
+
+
+        Room currentRoom = myMap[myCurrentY][myCurrentX];
+        boolean isDoorOpen = currentRoom.isDoorOpen(direction);
+        boolean isIncorrectlyAnswered = currentRoom.hasBeenAnsweredIncorrectly(direction);
+
+        System.out.println("Door is open: " + isDoorOpen);
+        System.out.println("Door has been answered incorrectly: " + isIncorrectlyAnswered);
+
+
+        return isDoorOpen && !isIncorrectlyAnswered;
 
     }
 
@@ -267,7 +330,7 @@ public class Maze implements Serializable {
      * Checks if the game is over through backtracking.
      * @return True if the game is over. False otherwise.
      */
-    private boolean isGameOver() {
+    public boolean isGameOver() {
         return !hasPathToExit(myCurrentX, myCurrentY, new boolean[MAZE_SIZE][MAZE_SIZE]);
     }
 
@@ -352,14 +415,6 @@ public class Maze implements Serializable {
          */
         public Room getRoom() {
             return myRoom;
-        }
-
-        /**
-         * Gets the direction
-         * @return The direction
-         */
-        public Direction getDirection() {
-            return myDirection;
         }
 
         /**

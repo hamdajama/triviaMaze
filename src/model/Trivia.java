@@ -129,14 +129,14 @@ public class Trivia {
     /**
      * Starts the timer of the game.
      */
-    protected void startTimer() {
+    public void startTimer() {
         myStartTime = System.currentTimeMillis();
     }
 
     /**
      * When the timer stops, this method calculates the time from starting to stopping.
      */
-    protected void stopTimer() {
+    public void stopTimer() {
         if (myStartTime != 0) {
             myTotalTime += System.currentTimeMillis() - myStartTime;
             myStartTime = 0;
@@ -147,7 +147,7 @@ public class Trivia {
      * Gets the time.
      * @return The total time it takes.
      */
-    protected long getTime() {
+    public long getTime() {
         return myTotalTime;
     }
 }

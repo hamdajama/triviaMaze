@@ -21,7 +21,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     private static final long serialVersionUID = 3L;
 
     private enum DoorState {
-        CLOSED, OPEN, OUT_OF_BOUNDS, EXIT
+        CLOSED, OPEN, EXIT
     }
 
     private final Map<Direction, DoorState> doorStates;
@@ -39,7 +39,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         doorStates = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
             if (dir.equals(Direction.NORTH) || dir.equals(Direction.WEST)) {
-                doorStates.put(dir, DoorState.OUT_OF_BOUNDS);
+                doorStates.put(dir, DoorState.CLOSED);
             } else {
                 doorStates.put(dir, DoorState.OPEN);
             }
@@ -104,9 +104,6 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
             case OPEN:
                 theG.setColor(Color.GREEN);
                 break;
-            case OUT_OF_BOUNDS:
-                theG.setColor(Color.YELLOW);
-                break;
             case EXIT:
                 theG.setColor(Color.BLUE);
                 break;
@@ -142,18 +139,32 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     public void updateRoomPanel(final Room theRoom, final int theX, final int theY) {
         myPlayerX = theX;
         myPlayerY = theY;
+        System.out.println("Updating RoomPanel for position (" + theX + ", " + theY + ")");
+        theRoom.debugPrintDoors();
         for (Direction dir : Direction.values()) {
-            if (isEdge(dir)) {
-                doorStates.put(dir, DoorState.OUT_OF_BOUNDS);
-            } else if (myMaze.isAdjacentToExit(dir)) {
+
+            boolean isOpen = theRoom.isDoorOpen(dir);
+            boolean isEdge = isEdge(dir);
+            boolean isExit = myMaze.isAdjacentToExit(dir);
+            boolean isIncorrect = theRoom.hasBeenAnsweredIncorrectly(dir);
+
+            System.out.println(dir + " door - Open: " + isOpen + ", Edge: " + isEdge +
+                    ", Exit: " + isExit + ", Incorrect: " + isIncorrect);
+
+
+            if (myMaze.isAdjacentToExit(dir)) {
                 doorStates.put(dir, DoorState.EXIT);
+            } else if (isEdge(dir)) {
+                doorStates.put(dir, DoorState.CLOSED);
+            } else if (theRoom.hasBeenAnsweredIncorrectly(dir)) {
+                doorStates.put(dir, DoorState.CLOSED);
             } else if (theRoom.isDoorOpen(dir)) {
                 doorStates.put(dir, DoorState.OPEN);
             } else {
                 doorStates.put(dir, DoorState.CLOSED);
             }
+            System.out.println("Door state for " + dir + ": " + doorStates.get(dir));
         }
-        //printDoorStates();
         repaint();
     }
 
@@ -162,19 +173,11 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theDirection - The direction of the doors.
      * @return - True if the door is on the edge of the maze or false otherwise.
      */
-    private boolean isEdge(final Direction theDirection) {
-        switch (theDirection) {
-            case NORTH:
-                return myPlayerY == 0;
-            case SOUTH:
-                return myPlayerY == 4;
-            case WEST:
-                return myPlayerX == 0;
-            case EAST:
-                return myPlayerX == 4;
-            default:
-                return false;
-        }
+    private boolean isEdge(Direction theDirection) {
+        return (myPlayerY == 0 && theDirection == Direction.NORTH) ||
+                (myPlayerY == myMaze.getMazeSize() - 1 && theDirection == Direction.SOUTH) ||
+                (myPlayerX == 0 && theDirection == Direction.WEST) ||
+                (myPlayerX == myMaze.getMazeSize() - 1 && theDirection == Direction.EAST);
     }
 
     /**

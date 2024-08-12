@@ -148,6 +148,8 @@ public class GUI {
                         mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
                         System.out.println("Key pressed: " + direction);
                         myMaze.move(direction);
+                    } else {
+                        System.out.println("Cannot move " + direction);
                     }
                 }
                 return false;
@@ -421,8 +423,9 @@ public class GUI {
 
                 updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(), myMaze.getCurrentY());
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
-                yMaze.getTrivia().incrementTrys();         // increment tries
+                myMaze.getTrivia().incrementTrys();         // increment tries
                 myMaze.getTrivia().incrementWrongAnswer();  // Increment wrong answer
+                myMaze.isGameOver();
 
             } else if ("game over".equals(evt.getPropertyName())) {
 

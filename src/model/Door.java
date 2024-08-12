@@ -20,11 +20,15 @@ public class Door implements Serializable {
      * Indicates whether the door is closed.
      */
     private boolean myClosed;
+
+    private boolean myAnswerIncorrect;
     /**
      * Constructs a new Door, initially closed.
      */
     public Door() {
+
         this.myClosed = true;
+        this.myAnswerIncorrect = false;
     }
 
     /**
@@ -53,5 +57,14 @@ public class Door implements Serializable {
      */
     public void close() {
         myClosed = true;
+    }
+
+    public boolean hasBeenAnsweredIncorrectly() {
+        return myAnswerIncorrect;
+    }
+
+    public void setAnsweredIncorrectly() {
+        this.myAnswerIncorrect = true;
+        this.myClosed = true;
     }
 }

@@ -15,7 +15,7 @@ public class Room implements Serializable {
     private final boolean isAnswered;
 
     /**
-     * Creats a room object with the trivia question.
+     * Creates a room object with the trivia question.
      * @param theTrivia The question that goes with the room.
      */
     public Room(final Question theTrivia) {
@@ -58,14 +58,6 @@ public class Room implements Serializable {
         return myDoors.values().stream().allMatch(Door::isClosed);
     }
 
-    /**
-     * Checks if the player can pass through a door.
-     * @param theDirection - The direction of the door.
-     * @return - True if the door is passable and there is an adjacent room in that direction. False otherwise.
-     */
-    public boolean isDoorPassable(final Direction theDirection) {
-        return !myDoors.get(theDirection).isClosed() && myAdjacentRooms.containsKey(theDirection);
-    }
 
     /**
      * Returns the isAnswered field
@@ -80,9 +72,31 @@ public class Room implements Serializable {
      * @param theDirection The direction of the door.
      * @return - True if the door is open. False otherwise.
      */
-    public boolean isDoorOpen(final Direction theDirection) {
-        return !myDoors.get(theDirection).isClosed();
+    public boolean isDoorOpen(Direction theDirection) {
+        Door door = myDoors.get(theDirection);
+        return door != null && !door.isClosed();
     }
+
+    public boolean hasBeenAnsweredIncorrectly(Direction direction) {
+        return myDoors.get(direction).hasBeenAnsweredIncorrectly();
+    }
+
+    public void setDoorOpen(Direction dir, boolean isOpen) {
+        Door door = myDoors.get(dir);
+        if (isOpen) {
+            door.open();
+        } else {
+            door.close();
+        }
+    }
+
+    public void debugPrintDoors() {
+        System.out.println("Room Door States:");
+        for (Direction dir : Direction.values()) {
+            System.out.println(dir + ": open=" + isDoorOpen(dir) + ", incorrectlyAnswered=" + hasBeenAnsweredIncorrectly(dir));
+        }
+    }
+
 
 
 
