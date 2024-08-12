@@ -1,19 +1,14 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.Serializable;
 
-import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import model.*;
-import controller.GameSaver;
 import controller.GameSaver;
 import model.DatabaseConnector;
 import model.Maze;
@@ -67,6 +61,9 @@ public class GUI {
     private static final String RIGHT = "right";
     private static final String DOWN = "down";
     private static final String LEFT = "left";
+    /**
+     * The direction the player intends to go.
+     */
     private String currentDirection;
     private int frameIndex = 0;
     private Map<String, BufferedImage[]> characterImages;
@@ -78,6 +75,9 @@ public class GUI {
     private QuestionPanel myQuestionPanel;
     private boolean isKeyDispatcherAdded = false;
 
+    /**
+     * The audio for the game.
+     */
     private final SoundPlayer mySound = SoundPlayer.getInstance();
 
     /**
@@ -128,19 +128,15 @@ public class GUI {
                     Direction direction = null;
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_W:
-                           // myPlayerCharacter.moveUp();
                             direction = Direction.NORTH;
                             break;
                         case KeyEvent.VK_S:
-                            //myPlayerCharacter.moveDown();
                             direction = Direction.SOUTH;
                             break;
                         case KeyEvent.VK_A:
-                           // myPlayerCharacter.moveLeft();
                             direction = Direction.WEST;
                             break;
                         case KeyEvent.VK_D:
-                           // myPlayerCharacter.moveRight();
                             direction = Direction.EAST;
                             break;
                     }
@@ -150,10 +146,8 @@ public class GUI {
                         myMazePanel.revalidate();
                         myMazePanel.repaint();
                         mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
+                        System.out.println("Key pressed: " + direction);
                         myMaze.move(direction);
-                      //  displayCurrentRoomQuestion(myQuestionPanel, direction);
-
-
                     }
                 }
                 return false;
@@ -394,7 +388,7 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        myRoomPanel = new RoomPanel();
+        myRoomPanel = new RoomPanel(myMaze);
         myRoomPanel.setBackground(Color.BLACK);
         myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(myRoomPanel);
@@ -404,41 +398,61 @@ public class GUI {
         myQuestionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(myQuestionPanel);
 
-        // Display the current room's question
         myMaze.addPropertyChangeListener(evt -> {
             if ("question".equals(evt.getPropertyName())) {
+
                 Maze.QuestionEvent questionEvent = (Maze.QuestionEvent) evt.getNewValue();
-                displayQuestion(questionEvent.question, questionEvent.direction);
+                displayQuestion(questionEvent.getQuestion(), questionEvent.getDirection());
+
             } else if ("move".equals(evt.getPropertyName())) {
+
                 Maze.MoveEvent moveEvent = (Maze.MoveEvent) evt.getNewValue();
-                //myPlayerCharacter.moveRight();
                 myPlayerCharacter.move(currentDirection);
-                updateRoomPanel(moveEvent.room);
+                updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(),moveEvent.getY());
                 myQuestionPanel.clearQuestion();
+
             } else if ("correct answer".equals(evt.getPropertyName())) {
-                updateRoomPanel(myMaze.getCurrentRoom());
+
                 mySound.playSFX("audio/mixkit-correct-answer-reward-952.wav");
+
             } else if ("wrong answer".equals(evt.getPropertyName())) {
-                updateRoomPanel(myMaze.getCurrentRoom());
+
+                updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(), myMaze.getCurrentY());
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
+
+            } else if ("game over".equals(evt.getPropertyName())) {
+
+                boolean playerWon = (boolean) evt.getNewValue();
+                showGameOverDialog(playerWon);
             }
         });
     }
 
-    private void displayQuestion(Question question, Direction direction) {
-        myQuestionPanel.setQuestion(question, direction);
-        myQuestionPanel.setVisible(true);
+    /**
+     * Shows the game over dialog based on if they won or lost the game.
+     * @param theResult - If true, creates a congrats message. If false, creates a game over message.
+     */
+    private void showGameOverDialog(final boolean theResult) {
+        String message;
+        if (theResult) {
+            message = "Congratulations! You've reached the exit and won the game!";
+        } else {
+            message = "Game Over! There's no path to the exit.";
+        }
+        JOptionPane.showMessageDialog(myFrame, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+
     }
 
+
     /**
-     * Displays the current room's question in the question panel.
-     *
-     * @param questionPanel The question panel.
+     * Displays the question to the panel.
+     * @param theQuestion - The question to ask the player.
+     * @param theDirection - The direction the player is going.
      */
-    private void displayCurrentRoomQuestion(QuestionPanel questionPanel, Direction theDirection) {
-        Room currentRoom = myMaze.getCurrentRoom();
-        Question question = currentRoom.getTrivia();
-        questionPanel.setQuestion(question, theDirection);
+    private void displayQuestion(final Question theQuestion, final Direction theDirection) {
+        System.out.println("Displaying question: " + theQuestion.getQuestion());
+        myQuestionPanel.setQuestion(theQuestion, theDirection);
+        myQuestionPanel.setVisible(true);
     }
 
     /**
@@ -446,8 +460,9 @@ public class GUI {
      *
      * @param theRoom The current room.
      */
-    private void updateRoomPanel(Room theRoom) {
-        myRoomPanel.updateRoomPanel(theRoom);
+    private void updateRoomPanel(final Room theRoom, final int theX, final int theY) {
+        System.out.println("Updating RoomPanel: x=" + theX + ", y=" + theY);
+        myRoomPanel.updateRoomPanel(theRoom, theX, theY);
     }
 
     /**
@@ -468,6 +483,5 @@ public class GUI {
         myFrame.revalidate();
         myFrame.repaint();
     }
-
 }
 

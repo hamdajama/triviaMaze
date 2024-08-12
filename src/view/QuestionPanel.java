@@ -22,9 +22,12 @@ import model.*;
  */
 public class QuestionPanel extends JPanel {
     private Question myCurrentQuestion;
-    private Maze myMaze;
+    private final Maze myMaze;
     private ButtonGroup myButtonGroup;
-    private JPanel myQuestionPanel;
+    private final JPanel myQuestionPanel;
+    /**
+     * The current direction the player is going
+     */
     private Direction myCurrentDirection;
 
     /**
@@ -147,7 +150,6 @@ public class QuestionPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Game Over!");
             }
         }
-        //setVisible(false);
         getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
     }
 
@@ -167,6 +169,9 @@ public class QuestionPanel extends JPanel {
         myQuestionPanel.add(submitButton);
     }
 
+    /**
+     * Clears the question from the panel
+     */
     public void clearQuestion() {
         myCurrentQuestion = null;
         myCurrentDirection = null;

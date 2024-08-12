@@ -1,5 +1,6 @@
 package view;
 
+import model.Maze;
 import model.Room;
 import model.Direction;
 
@@ -9,24 +10,51 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.io.Serializable;
 import javax.swing.JPanel;
 import java.util.EnumMap;
 import java.util.Map;
 
 public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
+    @Serial
     private static final long serialVersionUID = 3L;
 
-    private Map<Direction, Boolean> doorStates;
+    private enum DoorState {
+        CLOSED, OPEN, OUT_OF_BOUNDS, EXIT
+    }
 
-    public RoomPanel() {
+    private final Map<Direction, DoorState> doorStates;
+
+    private int myPlayerX;
+    private int myPlayerY;
+    private final Maze myMaze;
+
+    /**
+     * Creates the panel for the room.
+     * @param theMaze - The maze for the game.
+     */
+    public RoomPanel(Maze theMaze) {
         super();
         doorStates = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
-            doorStates.put(dir, dir == Direction.SOUTH || dir == Direction.EAST);
+            if (dir.equals(Direction.NORTH) || dir.equals(Direction.WEST)) {
+                doorStates.put(dir, DoorState.OUT_OF_BOUNDS);
+            } else {
+                doorStates.put(dir, DoorState.OPEN);
+            }
+
         }
+        myPlayerX = 0;
+        myPlayerY = 0;
+        myMaze = theMaze;
     }
 
+
+    /**
+     * Paints the room panel.
+     * @param theG - The graphics for the game.
+     */
     @Override
     protected void paintComponent(final Graphics theG) {
         super.paintComponent(theG);
@@ -34,6 +62,10 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         drawRoom(graphics2D);
     }
 
+    /**
+     * Draws the room for the player
+     * @param theGraphics2D - The graphics.
+     */
     private void drawRoom(final Graphics2D theGraphics2D) {
         final int width = getWidth();
         final int height = getHeight();
@@ -50,13 +82,44 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         drawDoor(theGraphics2D, Direction.WEST, 10, height / 2 - roomSize / 2, doorSize, doorSize);
 
         drawText(theGraphics2D, width, height);
+
+//        printDoorStates();
     }
 
-    private void drawDoor(Graphics2D g, Direction dir, int x, int y, int width, int height) {
-        g.setColor(doorStates.get(dir) ? Color.GREEN : Color.RED);
-        g.fillRect(x, y, width, height);
+    /**
+     * Draws the door for the room.
+     * @param theG - The graphics of the game
+     * @param theDirection - The direction of the door.
+     * @param theX - The x position to draw the door.
+     * @param theY - The y position to draw the door.
+     * @param theWidth - The width of the text
+     * @param theHeight - The height of the text
+     */
+    private void drawDoor(final Graphics2D theG, final Direction theDirection, final int theX,
+                          final int theY, final int theWidth, final int theHeight) {
+        switch (doorStates.get(theDirection)) {
+            case CLOSED:
+                theG.setColor(Color.RED);
+                break;
+            case OPEN:
+                theG.setColor(Color.GREEN);
+                break;
+            case OUT_OF_BOUNDS:
+                theG.setColor(Color.YELLOW);
+                break;
+            case EXIT:
+                theG.setColor(Color.BLUE);
+                break;
+        }
+        theG.fillRect(theX, theY, theWidth, theHeight);
     }
 
+    /**
+     * Draws the text for the game.
+     * @param theGraphics2D - The graphics
+     * @param theWidth - The width of the frame
+     * @param theHeight - The height of the frame.
+     */
     private void drawText(final Graphics2D theGraphics2D, final int theWidth, final int theHeight) {
         theGraphics2D.setColor(Color.WHITE);
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 10));
@@ -70,21 +133,70 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
     }
 
-    public void updateRoomPanel(Room theRoom) {
+    /**
+     * Updates the room panel for the game.
+     * @param theRoom - The room the player is in.
+     * @param theX - The x coordinate.
+     * @param theY - The y coordinate.
+     */
+    public void updateRoomPanel(final Room theRoom, final int theX, final int theY) {
+        myPlayerX = theX;
+        myPlayerY = theY;
         for (Direction dir : Direction.values()) {
-            doorStates.put(dir, !theRoom.getDoor(dir).isClosed());
+            if (isEdge(dir)) {
+                doorStates.put(dir, DoorState.OUT_OF_BOUNDS);
+            } else if (myMaze.isAdjacentToExit(dir)) {
+                doorStates.put(dir, DoorState.EXIT);
+            } else if (theRoom.isDoorOpen(dir)) {
+                doorStates.put(dir, DoorState.OPEN);
+            } else {
+                doorStates.put(dir, DoorState.CLOSED);
+            }
         }
+        //printDoorStates();
         repaint();
     }
 
+    /**
+     * Checks if the player is at the edge of the maze.
+     * @param theDirection - The direction of the doors.
+     * @return - True if the door is on the edge of the maze or false otherwise.
+     */
+    private boolean isEdge(final Direction theDirection) {
+        switch (theDirection) {
+            case NORTH:
+                return myPlayerY == 0;
+            case SOUTH:
+                return myPlayerY == 4;
+            case WEST:
+                return myPlayerX == 0;
+            case EAST:
+                return myPlayerX == 4;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Helper method that prints where the player is at and what state each dooe is in.
+     */
+    private void printDoorStates() {
+        System.out.println("Door states at position (" + myPlayerX + ", " + myPlayerY + "):");
+        for (Direction dir : Direction.values()) {
+            System.out.println(dir + ": " + doorStates.get(dir));
+        }
+    }
+
+    /**
+     * Property change for handling the move event.
+     * @param theEvt A PropertyChangeEvent object describing the event source
+     *          and the property that has changed.
+     */
     @Override
     public void propertyChange(final PropertyChangeEvent theEvt) {
-        try {
-            Direction dir = Direction.valueOf(theEvt.getPropertyName());
-            doorStates.put(dir, !(boolean) theEvt.getNewValue());
-            repaint();
-        } catch (IllegalArgumentException e) {
-            // Not a direction property, ignore
+        if (theEvt.getPropertyName().equals("move")) {
+            Maze.MoveEvent moveEvent = (Maze.MoveEvent) theEvt.getNewValue();
+            updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(), moveEvent.getY());
         }
     }
 }

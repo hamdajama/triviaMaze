@@ -1,8 +1,6 @@
 package view;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Map;
 
 import javax.swing.JPanel;
 

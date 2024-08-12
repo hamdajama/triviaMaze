@@ -1,77 +1,89 @@
 package model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
 public class Room implements Serializable {
+    @Serial
     private static final long serialVersionUID = 2L;
-    private Map<Direction, Door> myDoors;
-    private Map<Direction, Room> myAdjacentRooms;
-    private Question myTrivia;
-    private final PropertyChangeSupport myPcs = new PropertyChangeSupport(this);
-    private boolean isAnswered;
+    private final Map<Direction, Door> myDoors;
+    private final Map<Direction, Room> myAdjacentRooms;
+    private final Question myTrivia;
+    private final boolean isAnswered;
 
-    public Room(Question theTrivia) {
+    /**
+     * Creats a room object with the trivia question.
+     * @param theTrivia The question that goes with the room.
+     */
+    public Room(final Question theTrivia) {
         this.myTrivia = theTrivia;
         myDoors = new EnumMap<>(Direction.class);
         myAdjacentRooms = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
-            myDoors.put(dir, new Door());
+            myDoors.put(dir, new Door(true));
         }
         isAnswered = false;
     }
 
-    public void setAdjacentRoom(Direction direction, Room room) {
-        myAdjacentRooms.put(direction, room);
+    /**
+     * Setting up the adjacent rooms in the maze
+     * @param theDirection - The direction.
+     * @param theRoom - The room
+     */
+    public void setAdjacentRoom(final Direction theDirection, final Room theRoom) {
+        myAdjacentRooms.put(theDirection, theRoom);
     }
 
-    public Door getDoor(Direction direction) {
-        return myDoors.get(direction);
-    }
-
-    public Map<Direction, Door> getDoors() {
-        return myDoors;
+    /**
+     * Gets the door in a given direction.
+     * @param theDirection - The direction to get the door.
+     * @return - The door in the given direction
+     */
+    public Door getDoor(final Direction theDirection) {
+        return myDoors.get(theDirection);
     }
 
     public Question getTrivia() {
         return myTrivia;
     }
 
-    public boolean answerQuestion(String theAnswer) {
-        return myTrivia.isMatch(theAnswer);
-    }
-
-    public void processDoorState(Direction direction, boolean isCorrect) {
-        Door door = myDoors.get(direction);
-        if (isCorrect) {
-            door.open();
-            Room adjacentRoom = myAdjacentRooms.get(direction);
-            if (adjacentRoom != null) {
-                adjacentRoom.getDoor(direction.getOpposite()).open();
-            }
-        } else {
-            door.close();
-            Room adjacentRoom = myAdjacentRooms.get(direction);
-            if (adjacentRoom != null) {
-                adjacentRoom.getDoor(direction.getOpposite()).close();
-            }
-        }
-        myPcs.firePropertyChange(direction.name(), !isCorrect, isCorrect);
-    }
-
+    /**
+     * Checks if all the doors are closed.
+     * @return - True if it is closed. False otherwise.
+     */
     public boolean allClosed() {
         return myDoors.values().stream().allMatch(Door::isClosed);
     }
 
+    /**
+     * Checks if the player can pass through a door.
+     * @param theDirection - The direction of the door.
+     * @return - True if the door is passable and there is an adjacent room in that direction. False otherwise.
+     */
+    public boolean isDoorPassable(final Direction theDirection) {
+        return !myDoors.get(theDirection).isClosed() && myAdjacentRooms.containsKey(theDirection);
+    }
+
+    /**
+     * Returns the isAnswered field
+     * @return The boolean if the question has been answered.
+     */
     public boolean isAnswered() {
         return isAnswered;
     }
 
-    public void setAnswered(boolean answered) {
-        isAnswered = answered;
+    /**
+     * Checks if a door is open.
+     * @param theDirection The direction of the door.
+     * @return - True if the door is open. False otherwise.
+     */
+    public boolean isDoorOpen(final Direction theDirection) {
+        return !myDoors.get(theDirection).isClosed();
     }
 
-    // PropertyChangeListener methods remain the same
+
+
 }
