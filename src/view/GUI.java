@@ -414,11 +414,15 @@ public class GUI {
             } else if ("correct answer".equals(evt.getPropertyName())) {
 
                 mySound.playSFX("audio/mixkit-correct-answer-reward-952.wav");
+                myMaze.getTrivia().incrementTrys();  // Increment tries
+                myMaze.getTrivia().incrementRightAnswer();  // Increment right answer
 
             } else if ("wrong answer".equals(evt.getPropertyName())) {
 
                 updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(), myMaze.getCurrentY());
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
+                yMaze.getTrivia().incrementTrys();         // increment tries
+                myMaze.getTrivia().incrementWrongAnswer();  // Increment wrong answer
 
             } else if ("game over".equals(evt.getPropertyName())) {
 
@@ -433,14 +437,14 @@ public class GUI {
      * @param theResult - If true, creates a congrats message. If false, creates a game over message.
      */
     private void showGameOverDialog(final boolean theResult) {
-        String message;
-        if (theResult) {
-            message = "Congratulations! You've reached the exit and won the game!";
-        } else {
-            message = "Game Over! There's no path to the exit.";
-        }
-        JOptionPane.showMessageDialog(myFrame, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
-
+        myMaze.getTrivia().stopTimer();
+        String message = theResult ? "Congratulations, you won!" : "Game over, you lost!";
+        message += "\nTime taken: " + myMaze.getTrivia().getTime() / 1000 + " seconds";
+        message += "\nTries used: " + myMaze.getTrivia().getTrys();
+        message += "\nCorrect Answers: " + myMaze.getTrivia().getRightAnswer();
+        message += "\nWrong Answers " + myMaze.getTrivia().getWrongAnswer();
+        JOptionPane.showMessageDialog(null, message, "Game Results", JOptionPane.INFORMATION_MESSAGE);
+        System.exit(0);
     }
 
 
