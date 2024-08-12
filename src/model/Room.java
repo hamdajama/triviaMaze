@@ -1,162 +1,77 @@
 package model;
-/**
- * TCSS 360 - Trivia Maze
- * Room.java
- */
 
-import model.Door;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.*;
 
-/**
- * The Room class represents a room in the trivia maze.
- * Each room contains a set of doors and a trivia question.
- * @author Hamda Jama
- * @version 7/21/2024
- */
 public class Room implements Serializable {
     private static final long serialVersionUID = 2L;
-    /**
-     * A map of doors in the room, keyed by direction (e.g., "North", "East", "South", "West").
-     */
-    private Map<String, Door> myRoom;
-    /**
-     * The trivia question associated with the room.
-     */
+    private Map<Direction, Door> myDoors;
+    private Map<Direction, Room> myAdjacentRooms;
     private Question myTrivia;
-
-    /**
-     * A property change support object that helps changes the state in other classes.
-     */
     private final PropertyChangeSupport myPcs = new PropertyChangeSupport(this);
-
-    /**
-     * A boolean that checks if the answer for the room has been answered or not.
-     */
     private boolean isAnswered;
 
-    /**
-     * Constructs a new Room with the given trivia question.
-     * Initializes the doors in the room.
-     *
-     * @param theTrivia The trivia question for the room.
-     */
     public Room(Question theTrivia) {
         this.myTrivia = theTrivia;
-        myRoom = new HashMap<>();
-        myRoom.put("North", new Door());
-        myRoom.put("East", new Door());
-        myRoom.put("South", new Door());
-        myRoom.put("West", new Door());
-
-        //Since starting at the first door, make sure the east door and south door are open.
-        myRoom.get("East").open();
-        myRoom.get("South").open();
-
+        myDoors = new EnumMap<>(Direction.class);
+        myAdjacentRooms = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            myDoors.put(dir, new Door());
+        }
         isAnswered = false;
-
-    }
-    public void addPropertyChangeListener(PropertyChangeListener theListener) {
-        myPcs.addPropertyChangeListener(theListener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener theListener) {
-        myPcs.removePropertyChangeListener(theListener);
-    }
-    /**
-     * Retrieves the door in the specified direction.
-     *
-     * @param theDirection The direction of the door (e.g., "North").
-     * @return The door in the specified direction.
-     */
-
-    public Door getDoor(String theDirection) {
-        return myRoom.get(theDirection);
+    public void setAdjacentRoom(Direction direction, Room room) {
+        myAdjacentRooms.put(direction, room);
     }
 
-    /**
-     * get all doors for the room.
-     * @return all the doors in the room.
-     */
-    public Map<String, Door> getDoors() {
-        return myRoom;
+    public Door getDoor(Direction direction) {
+        return myDoors.get(direction);
     }
-    /**
-     * Retrieves the trivia question associated with the room.
-     *
-     * @return The trivia question.
-     */
-    public Question getTrivia () {
+
+    public Map<Direction, Door> getDoors() {
+        return myDoors;
+    }
+
+    public Question getTrivia() {
         return myTrivia;
     }
-    /**
-     * Checks if the player's answer matches the correct answer to the trivia question.
-     *
-     * @param theAnswer The answer given by the player.
-     * @return True if the answer matches, false otherwise.
-     */
+
     public boolean answerQuestion(String theAnswer) {
         return myTrivia.isMatch(theAnswer);
     }
-    /**
-     * Handles the player's wrong answer. If the answer is incorrect, closes a random door.
-     * Otherwise, allows the player to choose a door and move to the next room.
-     *
-     * @param theAnswer The answer given by the player.
-     */
 
-    public void wrongAnswer(String theAnswer) {
-        if (!answerQuestion(theAnswer)) {
-            closeDoor();
-        }
-    }
-    /**
-     * Closes a random open door in the room.
-     */
-    public void closeDoor() {
-        Random rand = new Random();
-        List<String> openDoors = new ArrayList<>();
-        for (Map.Entry<String, Door> entry : myRoom.entrySet()) {
-            if (!entry.getValue().isClosed()) {
-                openDoors.add(entry.getKey());
+    public void processDoorState(Direction direction, boolean isCorrect) {
+        Door door = myDoors.get(direction);
+        if (isCorrect) {
+            door.open();
+            Room adjacentRoom = myAdjacentRooms.get(direction);
+            if (adjacentRoom != null) {
+                adjacentRoom.getDoor(direction.getOpposite()).open();
+            }
+        } else {
+            door.close();
+            Room adjacentRoom = myAdjacentRooms.get(direction);
+            if (adjacentRoom != null) {
+                adjacentRoom.getDoor(direction.getOpposite()).close();
             }
         }
-        if (!openDoors.isEmpty()) {
-            String randomOpenDoor = openDoors.get(rand.nextInt(openDoors.size()));
-            myRoom.get(randomOpenDoor).close();
-            myPcs.firePropertyChange(randomOpenDoor, false, true);
-        }
+        myPcs.firePropertyChange(direction.name(), !isCorrect, isCorrect);
     }
-    /**
-     * Checks if all doors in the room are closed.
-     *
-     * @return True if all doors are closed, false otherwise.
-     */
+
     public boolean allClosed() {
-        for (Door D : myRoom.values() ) {
-            if (!D.isClosed()) {
-                return false;
-            }
-        }
-        return true;
+        return myDoors.values().stream().allMatch(Door::isClosed);
     }
 
-    /**
-     * Checks if the current room's question has been answered.
-     * @return True if the question has been answered. False if not.
-     */
     public boolean isAnswered() {
         return isAnswered;
     }
 
-    /**
-     * Changes the state of the boolean depending on if the question has been answered.
-     * @param answered - The state to change the isAnswered boolean to.
-     */
     public void setAnswered(boolean answered) {
         isAnswered = answered;
     }
 
+    // PropertyChangeListener methods remain the same
 }

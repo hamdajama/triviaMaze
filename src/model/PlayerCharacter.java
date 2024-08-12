@@ -89,6 +89,15 @@ public final class PlayerCharacter extends GameObject {
         }
     }
 
+    public void move(String theDirection) {
+        switch (theDirection) {
+            case "NORTH": moveUp(); break;
+            case "SOUTH": moveDown(); break;
+            case "WEST": moveLeft(); break;
+            case "EAST": moveRight(); break;
+        }
+    }
+
     /**
      * Displays the position of the player resources.character in the format:
      * {@code PlayerCharacter is at (x, y)}.
