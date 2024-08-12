@@ -30,6 +30,7 @@ public class Maze implements Serializable {
      * The direction the player is heading.
      */
     private Direction myPendingDirection = null;
+    private Trivia myTrivia;
 
     /**
      * Constructs a new Maze, initializing the game grid and questions.
@@ -48,6 +49,8 @@ public class Maze implements Serializable {
         myCurrentX = 0;
         myCurrentY = 0;
         setAdjacentRooms();
+        myTrivia = new Trivia("Player");
+        myTrivia.startTimer();
     }
 
     /**
@@ -245,6 +248,13 @@ public class Maze implements Serializable {
      */
     public int getRoomSize() {
         return MAZE_SIZE;
+    }
+    /**
+    * Gets the instance of the Trivia class.
+    * @return the instance of the trivia class.
+    */
+    public Trivia getTrivia() {
+        return myTrivia;
     }
 
 
