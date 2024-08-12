@@ -51,7 +51,7 @@ public class Trivia {
         myName = theName;
         myRightAnswer = 0;
         myWrongAnswer = 0;
-        myTrys = 1;
+        myTrys = 0;
         myStartTime = 0;
         myTotalTime = 0;
     }
@@ -68,14 +68,14 @@ public class Trivia {
      * Gets the amount of tries for the player.
      * @return The number of tries left.
      */
-    protected int getTrys() {
+    public int getTrys() {
         return myTrys;
     }
 
     /**
      * When the player finds the treasure, increment the try count.
      */
-    protected void incrementTrys() {
+    public void incrementTrys() {
         myTrys++;
     }
 
@@ -90,14 +90,14 @@ public class Trivia {
      * Gets the count of how many questions the player got right.
      * @return The right answer.
      */
-    protected int getRightAnswer() {
+    public int getRightAnswer() {
         return myRightAnswer;
     }
 
     /**
      * Increments the right answer count.
      */
-    protected void incrementRightAnswer() {
+    public void incrementRightAnswer() {
         myRightAnswer++;
     }
 
@@ -105,14 +105,14 @@ public class Trivia {
      * Gets the count of how many questions the player got wrong.
      * @return The wrong answer.
      */
-    protected int getWrongAnswer() {
+    public int getWrongAnswer() {
         return myWrongAnswer;
     }
 
     /**
      * Increments the wrong answer count.
      */
-    protected void incrementWrongAnswer() {
+    public void incrementWrongAnswer() {
         myWrongAnswer++;
     }
 
