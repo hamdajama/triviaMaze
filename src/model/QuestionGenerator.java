@@ -15,7 +15,8 @@ import java.util.*;
 public class QuestionGenerator implements Serializable {
     private static final long serialVersionUID = 6L;
     private Random myRandom;
-    private DatabaseConnector myDataConn ;
+    private DatabaseConnector myDataConn;
+    private QuestionFactoryProvider myFactoryProvider;
     /**
      * Constructs a new QuestionGenerator with the given DatabaseConnector.
      *
@@ -24,6 +25,7 @@ public class QuestionGenerator implements Serializable {
     public QuestionGenerator(DatabaseConnector theDBConn) {
         this.myDataConn = theDBConn;
         this.myRandom = new Random();
+        this.myFactoryProvider = new QuestionFactoryProvider(theDBConn);
     }
 
     /**
@@ -56,31 +58,41 @@ public class QuestionGenerator implements Serializable {
      * @throws SQLException If a database access error occurs.
      */
     private List<Question> getTable(Statement theStmt, String theTableName) throws SQLException {
-        Statement stmt = theStmt;
-        String table = theTableName;
-        List<Question> questions  = new ArrayList<>();
-        String query = "SELECT * FROM " + table;
-        ResultSet rs = stmt.executeQuery(query);
+//        Statement stmt = theStmt;
+//        String table = theTableName;
+//        List<Question> questions  = new ArrayList<>();
+//        String query = "SELECT * FROM " + table;
+//        ResultSet rs = stmt.executeQuery(query);
+//
+//        while (rs.next()) {
+//            int id = rs.getInt("id");
+//            String questionText = rs.getString("question");
+//            switch (table) {
+//                case "TrueFalse":
+//                    String correctAnswerTF = rs.getString("correct_answer");
+//                    questions.add(new TrueFalse(questionText, correctAnswerTF));
+//                    break;
+//                case "shortAnswer" :
+//                    String correctAnsSA = rs.getString("correct_answer");
+//                    questions.add(new ShortAnswer(questionText, correctAnsSA));
+//                    break;
+//                case "MultipleQuestion" :
+//                    String correctAnswerMQ = rs.getString("correct_answer");
+//                    questions.add(new MultipleChoice(questionText, choices(id), correctAnswerMQ));
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//        return questions;
 
+        List<Question> questions = new ArrayList<>();
+        String query = "SELECT * FROM " + theTableName;
+        ResultSet rs = theStmt.executeQuery(query);
+
+        QuestionFactory factory = myFactoryProvider.getFactory(theTableName);
         while (rs.next()) {
-            int id = rs.getInt("id");
-            String questionText = rs.getString("question");
-            switch (table) {
-                case "TrueFalse":
-                    String correctAnswerTF = rs.getString("correct_answer");
-                    questions.add(new TrueFalse(questionText, correctAnswerTF));
-                    break;
-                case "shortAnswer" :
-                    String correctAnsSA = rs.getString("correct_answer");
-                    questions.add(new ShortAnswer(questionText, correctAnsSA));
-                    break;
-                case "MultipleQuestion" :
-                    String correctAnswerMQ = rs.getString("correct_answer");
-                    questions.add(new MultipleChoice(questionText, choices(id), correctAnswerMQ));
-                    break;
-                default:
-                    break;
-            }
+            questions.add(factory.createQuestion(rs));
         }
         return questions;
     }
