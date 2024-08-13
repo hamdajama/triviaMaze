@@ -8,7 +8,7 @@ public class TrueFalseFactory implements QuestionFactory {
     @Override
     public Question createQuestion(ResultSet rs) throws SQLException {
         String question = rs.getString("question");
-        String answer = rs.getString("correct_answer");
+        int answer = rs.getInt("correct_answer");
         return new TrueFalse(question, answer);
     }
 }

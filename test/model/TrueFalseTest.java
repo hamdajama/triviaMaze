@@ -19,7 +19,7 @@ public class TrueFalseTest {
     /**
      * The answer to the question.
      */
-    private static final String ANSWER = "1";
+    private static final int ANSWER = 1;
 
     /**
      * Tests the constructor of the true false class.
