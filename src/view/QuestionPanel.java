@@ -22,9 +22,15 @@ import model.*;
  */
 public class QuestionPanel extends JPanel {
     private Question myCurrentQuestion;
-    private Maze myMaze;
+    private final Maze myMaze;
     private ButtonGroup myButtonGroup;
-    private JPanel myQuestionPanel;
+    private final JPanel myQuestionPanel;
+
+    private GUI myGUI;
+    /**
+     * The current direction the player is going
+     */
+    private Direction myCurrentDirection;
 
     /**
      * Constructs a new QuestionPanel.
@@ -41,14 +47,21 @@ public class QuestionPanel extends JPanel {
         setFocusable(true);
     }
 
+    public void setGUI(GUI theGUI) {
+        this.myGUI = theGUI;
+    }
+
+
     /**
      * Sets the current question to be displayed on the panel.
      *
      * @param theQuestion The Question object to be displayed.
      */
-    public void setQuestion(final Question theQuestion) {
+    public void setQuestion(final Question theQuestion, Direction theDirection) {
         myCurrentQuestion = theQuestion;
+        myCurrentDirection = theDirection;
         displayQuestion();
+        setVisible(true);
     }
 
     /**
@@ -136,14 +149,16 @@ public class QuestionPanel extends JPanel {
     private void handleAnswer(boolean isCorrect) {
         if (isCorrect) {
             JOptionPane.showMessageDialog(this, "Correct answer!");
-            myMaze.processAnswer("correct answer");
+            myMaze.processAnswer(myCurrentDirection, true);
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
-            myMaze.processAnswer("wrong answer");
+            myMaze.processAnswer(myCurrentDirection, false);
             if (myMaze.getCurrentRoom().allClosed()) {
                 JOptionPane.showMessageDialog(this, "Game Over!");
             }
         }
+        myGUI.stopAnsweringAnimation();
+        setVisible(false);
         getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
     }
 
@@ -161,5 +176,16 @@ public class QuestionPanel extends JPanel {
         });
 
         myQuestionPanel.add(submitButton);
+    }
+
+    /**
+     * Clears the question from the panel
+     */
+    public void clearQuestion() {
+        myCurrentQuestion = null;
+        myCurrentDirection = null;
+        setVisible(false);
+        revalidate();
+        repaint();
     }
 }

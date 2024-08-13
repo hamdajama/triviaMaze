@@ -2,12 +2,14 @@ package view;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Map;
 
 import javax.swing.JPanel;
 
+import model.Direction;
 import model.Maze;
 import model.PlayerCharacter;
+
+import java.util.Map;
 
 /**
  * The maze panel for the game that shows the player and the maze.
@@ -26,6 +28,12 @@ public class MazePanel extends JPanel {
      */
     private final PlayerCharacter myPlayerCharacter;
 
+    private int myFrameIndex;
+
+    private String myDirection;
+
+    private final Map<String, BufferedImage[]> myCharacterImages;
+
 
     /**
      * How big the cell sizes should be.
@@ -37,9 +45,14 @@ public class MazePanel extends JPanel {
      * @param theMaze - The maze for the game.
      * @param thePlayerCharacter - The character for the game.
      */
-    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter) {
+    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter,
+                     int theFrameIndex, Map<String, BufferedImage[]> theCharacterImage,
+                     String theDirection) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
+        myFrameIndex = theFrameIndex;
+        myCharacterImages = theCharacterImage;
+        myDirection = theDirection;
         myMaze.addPropertyChangeListener(e -> repaint());
     }
 
@@ -85,8 +98,20 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics of the game.
      */
     private void drawPlayer(Graphics theG) {
-        theG.setColor(Color.BLUE);
         myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
-        theG.fillRect(myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize, cellSize,cellSize);
+        BufferedImage[] images = myCharacterImages.get(myDirection.toUpperCase());
+        BufferedImage currentImage = images[myFrameIndex];
+        theG.drawImage(currentImage, myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize + 10, this);
+    }
+
+    public void updateFrame(final int theFrameIndex) {
+        myFrameIndex = theFrameIndex;
+        repaint();
+    }
+
+    public void updateDirectionAndFrame(final String theNewDirection, final int theNewFrameIndex) {
+        myDirection = theNewDirection.toUpperCase();
+        myFrameIndex = theNewFrameIndex;
+        repaint();
     }
 }

@@ -4,6 +4,7 @@
  */
 package model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -13,16 +14,29 @@ import java.io.Serializable;
  * @version 7/21/2024
  */
 public class Door implements Serializable {
+    @Serial
     private static final long serialVersionUID = 4L;
     /**
      * Indicates whether the door is closed.
      */
     private boolean myClosed;
+
+    private boolean myAnswerIncorrect;
     /**
      * Constructs a new Door, initially closed.
      */
     public Door() {
+
         this.myClosed = true;
+        this.myAnswerIncorrect = false;
+    }
+
+    /**
+     * Constructs a door to change it's state to open.
+     * @param initiallyOpen - The state of the door
+     */
+    public Door(boolean initiallyOpen) {
+        this.myClosed = !initiallyOpen;
     }
     /**
      * Checks if the door is closed.
@@ -43,5 +57,14 @@ public class Door implements Serializable {
      */
     public void close() {
         myClosed = true;
+    }
+
+    public boolean hasBeenAnsweredIncorrectly() {
+        return myAnswerIncorrect;
+    }
+
+    public void setAnsweredIncorrectly() {
+        this.myAnswerIncorrect = true;
+        this.myClosed = true;
     }
 }

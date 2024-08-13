@@ -1,65 +1,67 @@
-/**
- * TCSS 360 - Trivia Maze
- * RoomPanel.java
- */
 package view;
 
+import model.Maze;
 import model.Room;
+import model.Direction;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.io.Serializable;
-
 import javax.swing.JPanel;
+import java.util.EnumMap;
+import java.util.Map;
 
-/**
- * This class creates the panel for the room and displays the door and what doors the player can go through
- * @author Eric John
- * @version 7/27/2024
- */
 public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
+    @Serial
     private static final long serialVersionUID = 3L;
 
-    /**
-     * A boolean representing if the north door can be opened.
-     */
-    private boolean myNorthDoor;
+    private enum DoorState {
+        CLOSED, OPEN, EXIT
+    }
+
+    private final Map<Direction, DoorState> doorStates;
+
+    private int myPlayerX;
+    private int myPlayerY;
+    private final Maze myMaze;
+    private Map<String, BufferedImage[]> myImages;
+    private String myDirection;
+    private int myFrameIndex;
 
     /**
-     * A boolean representing if the south door can be opened.
+     * Creates the panel for the room.
+     * @param theMaze - The maze for the game.
      */
-    private boolean mySouthDoor;
-
-    /**
-     * A boolean representing if the east door can be opened.
-     */
-    private boolean myEastDoor;
-
-    /**
-     * A boolean representing if the west door can be opened.
-     */
-    private boolean myWestDoor;
-
-    /**
-     * Constructor for the room panel.
-     */
-    public RoomPanel() {
+    public RoomPanel(Maze theMaze, int theFrameIndex, Map<String, BufferedImage[]> theImages,
+                    String theDirecton) {
         super();
-        myNorthDoor = false;
-        mySouthDoor = true;
-        myEastDoor = true;
-        myWestDoor = false;
+        doorStates = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            if (dir.equals(Direction.NORTH) || dir.equals(Direction.WEST)) {
+                doorStates.put(dir, DoorState.CLOSED);
+            } else {
+                doorStates.put(dir, DoorState.OPEN);
+            }
+
+        }
+        myPlayerX = 0;
+        myPlayerY = 0;
+        myMaze = theMaze;
+        myImages = theImages;
+        myDirection = theDirecton;
+        myFrameIndex = theFrameIndex;
     }
 
 
     /**
-     * Paints the text and images on the screen.
-     * @param theG - The graphics for the project
+     * Paints the room panel.
+     * @param theG - The graphics for the game.
      */
     @Override
     protected void paintComponent(final Graphics theG) {
@@ -69,8 +71,8 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     }
 
     /**
-     * Draws the room to display to the player. To start out, it should show that the right and bottom door is open.
-     * @param theGraphics2D - The graphics for the project.
+     * Draws the room for the player
+     * @param theGraphics2D - The graphics.
      */
     private void drawRoom(final Graphics2D theGraphics2D) {
         final int width = getWidth();
@@ -82,32 +84,53 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
 
         final int doorSize = 30;
 
-
-        theGraphics2D.setColor(myNorthDoor ? Color.GREEN : Color.RED);
-        theGraphics2D.fillRect(width / 2 - roomSize / 2, 10, doorSize, doorSize);
-
-        theGraphics2D.setColor(myEastDoor ? Color.GREEN : Color.RED);
-        theGraphics2D.fillRect(width - roomSize, height / 2 - roomSize / 2, doorSize, doorSize);
-
-        theGraphics2D.setColor(mySouthDoor ? Color.GREEN : Color.RED);
-        theGraphics2D.fillRect(width / 2 - roomSize / 2, height - roomSize, doorSize, doorSize);
-
-        theGraphics2D.setColor(myWestDoor ? Color.GREEN : Color.RED);
-        theGraphics2D.fillRect(10, height / 2 - roomSize / 2, doorSize, doorSize);
-
-
+        drawDoor(theGraphics2D, Direction.NORTH, width / 2 - roomSize / 2, 10, doorSize, doorSize);
+        drawDoor(theGraphics2D, Direction.EAST, width - roomSize, height / 2 - roomSize / 2, doorSize, doorSize);
+        drawDoor(theGraphics2D, Direction.SOUTH, width / 2 - roomSize / 2, height - roomSize, doorSize, doorSize);
+        drawDoor(theGraphics2D, Direction.WEST, 10, height / 2 - roomSize / 2, doorSize, doorSize);
 
         drawText(theGraphics2D, width, height);
 
+//        printDoorStates();
     }
 
     /**
-     * Draws the "North", "South", "East" and "West" directions along with what room the player is in.
-     * @param theGraphics2D - The graphics to display
-     * @param theWidth - The width of the panel.
-     * @param theHeight - The height of the panel.
+     * Draws the door for the room.
+     * @param theG - The graphics of the game
+     * @param theDirection - The direction of the door.
+     * @param theX - The x position to draw the door.
+     * @param theY - The y position to draw the door.
+     * @param theWidth - The width of the text
+     * @param theHeight - The height of the text
+     */
+    private void drawDoor(final Graphics2D theG, final Direction theDirection, final int theX,
+                          final int theY, final int theWidth, final int theHeight) {
+        switch (doorStates.get(theDirection)) {
+            case CLOSED:
+                theG.setColor(Color.RED);
+                break;
+            case OPEN:
+                theG.setColor(Color.GREEN);
+                break;
+            case EXIT:
+                theG.setColor(Color.BLUE);
+                break;
+        }
+        theG.fillRect(theX, theY, theWidth, theHeight);
+    }
+
+    /**
+     * Draws the text for the game.
+     * @param theGraphics2D - The graphics
+     * @param theWidth - The width of the frame
+     * @param theHeight - The height of the frame.
      */
     private void drawText(final Graphics2D theGraphics2D, final int theWidth, final int theHeight) {
+        BufferedImage[] images = myImages.get(myDirection.toUpperCase());
+        BufferedImage currentImage = images[myFrameIndex];
+
+        theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20, 40, 40, this);
+
         theGraphics2D.setColor(Color.WHITE);
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 10));
 
@@ -116,41 +139,89 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 250);
         theGraphics2D.drawString("Move West", theWidth - 350, theHeight / 2);
 
-        theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
-        theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
     }
 
-    public void updateRoomPanel(Room theRoom) {
-        this.myNorthDoor = !theRoom.getDoor("North").isClosed();
-        this.mySouthDoor = !theRoom.getDoor("South").isClosed();
-        this.myEastDoor = !theRoom.getDoor("East").isClosed();
-        this.myWestDoor = !theRoom.getDoor("West").isClosed();
+    /**
+     * Updates the room panel for the game.
+     * @param theRoom - The room the player is in.
+     * @param theX - The x coordinate.
+     * @param theY - The y coordinate.
+     */
+    public void updateRoomPanel(final Room theRoom, final int theX, final int theY) {
+        myPlayerX = theX;
+        myPlayerY = theY;
+        System.out.println("Updating RoomPanel for position (" + theX + ", " + theY + ")");
+        theRoom.debugPrintDoors();
+        for (Direction dir : Direction.values()) {
+
+            boolean isOpen = theRoom.isDoorOpen(dir);
+            boolean isEdge = isEdge(dir);
+            boolean isExit = myMaze.isAdjacentToExit(dir);
+            boolean isIncorrect = theRoom.hasBeenAnsweredIncorrectly(dir);
+
+            System.out.println(dir + " door - Open: " + isOpen + ", Edge: " + isEdge +
+                    ", Exit: " + isExit + ", Incorrect: " + isIncorrect);
+
+
+            if (myMaze.isAdjacentToExit(dir)) {
+                doorStates.put(dir, DoorState.EXIT);
+            } else if (isEdge(dir)) {
+                doorStates.put(dir, DoorState.CLOSED);
+            } else if (theRoom.hasBeenAnsweredIncorrectly(dir)) {
+                doorStates.put(dir, DoorState.CLOSED);
+            } else if (theRoom.isDoorOpen(dir)) {
+                doorStates.put(dir, DoorState.OPEN);
+            } else {
+                doorStates.put(dir, DoorState.CLOSED);
+            }
+            System.out.println("Door state for " + dir + ": " + doorStates.get(dir));
+        }
         repaint();
     }
 
     /**
-     * The property change methods changes the color of the door from green to red.
-     * @param theEvt - A PropertyChangeEvent object describing the event source
-     *          and the property that has changed.
+     * Checks if the player is at the edge of the maze.
+     * @param theDirection - The direction of the doors.
+     * @return - True if the door is on the edge of the maze or false otherwise.
      */
-    public void propertyChange(final PropertyChangeEvent theEvt) {
-        switch (theEvt.getPropertyName()) {
-            case "North":
-                myNorthDoor = !(boolean) theEvt.getNewValue();
-                break;
-            case "East":
-                myEastDoor = !(boolean) theEvt.getNewValue();
-                break;
-            case "South":
-                mySouthDoor = !(boolean) theEvt.getNewValue();
-                break;
-            case "West":
-                myWestDoor = !(boolean) theEvt.getNewValue();
-                break;
-        }
-        repaint();
-
+    private boolean isEdge(Direction theDirection) {
+        return (myPlayerY == 0 && theDirection == Direction.NORTH) ||
+                (myPlayerY == myMaze.getMazeSize() - 1 && theDirection == Direction.SOUTH) ||
+                (myPlayerX == 0 && theDirection == Direction.WEST) ||
+                (myPlayerX == myMaze.getMazeSize() - 1 && theDirection == Direction.EAST);
     }
 
+    /**
+     * Helper method that prints where the player is at and what state each dooe is in.
+     */
+    private void printDoorStates() {
+        System.out.println("Door states at position (" + myPlayerX + ", " + myPlayerY + "):");
+        for (Direction dir : Direction.values()) {
+            System.out.println(dir + ": " + doorStates.get(dir));
+        }
+    }
 
+    public void updateDirectionAndFrame(String theDirection, int theFrameIndex) {
+        myDirection = theDirection.toUpperCase();
+        myFrameIndex = theFrameIndex;
+        repaint();
+    }
+
+    public void updateFrame(final int theFrameIndex) {
+        myFrameIndex = theFrameIndex;
+        repaint();
+    }
+
+    /**
+     * Property change for handling the move event.
+     * @param theEvt A PropertyChangeEvent object describing the event source
+     *          and the property that has changed.
+     */
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvt) {
+        if (theEvt.getPropertyName().equals("move")) {
+            Maze.MoveEvent moveEvent = (Maze.MoveEvent) theEvt.getNewValue();
+            updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(), moveEvent.getY());
+        }
+    }
 }

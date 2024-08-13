@@ -1,11 +1,9 @@
 package model;
 
-import javax.xml.crypto.Data;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Random;
 
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
@@ -19,10 +17,20 @@ public class Maze implements Serializable {
     private Room[][] myMap;
     private int myEndX, myEndY;
     private int myCurrentX, myCurrentY;
-    private boolean movementAllowed;
     private PropertyChangeSupport mySupport;
     private transient DatabaseConnector myDBConn;
     private QuestionGenerator myQesGen;
+
+    /**
+     * A boolean asking if there is a question waiting to be asked.
+     */
+    private boolean myQuestionPending = false;
+
+    /**
+     * The direction the player is heading.
+     */
+    private Direction myPendingDirection = null;
+    private final Trivia myTrivia;
 
     /**
      * Constructs a new Maze, initializing the game grid and questions.
@@ -36,10 +44,13 @@ public class Maze implements Serializable {
         this.mySupport = new PropertyChangeSupport(this);
         this.myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         buildMap();
+        setAdjacentRooms();
         setEnd();
         myCurrentX = 0;
         myCurrentY = 0;
-        movementAllowed = false; // Initially, movement is not allowed until the first question is answered correctly
+        setAdjacentRooms();
+        myTrivia = new Trivia("Player");
+        myTrivia.startTimer();
     }
 
     /**
@@ -48,10 +59,43 @@ public class Maze implements Serializable {
      * @throws SQLException If an error occurs during question retrieval from the database.
      */
     private void buildMap() throws SQLException {
+        myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         for (int i = 0; i < MAZE_SIZE; i++) {
             for (int j = 0; j < MAZE_SIZE; j++) {
                 Question question = myQesGen.getRandomQes();
-                myMap[i][j] = new Room(question);
+                Room room = new Room(question);
+
+                for (Direction dir : Direction.values()) {
+                    room.setDoorOpen(dir,true);
+                }
+
+                if (i == 0) room.setDoorOpen(Direction.NORTH, false);
+                if (j == 0) room.setDoorOpen(Direction.WEST, false);
+
+
+                myMap[i][j] = room;
+            }
+        }
+
+
+        // Debug print
+        for (int i = 0; i < MAZE_SIZE; i++) {
+            for (int j = 0; j < MAZE_SIZE; j++) {
+                System.out.println("Room [" + i + "][" + j + "] South door open: " + myMap[i][j].isDoorOpen(Direction.SOUTH));
+            }
+        }
+    }
+
+    /**
+     * Sets up adjacent rooms for the maze.
+     */
+    private void setAdjacentRooms() {
+        for (int i = 0; i < MAZE_SIZE; i++) {
+            for (int j = 0; j < MAZE_SIZE; j++) {
+                if (i > 0) myMap[i][j].setAdjacentRoom(Direction.NORTH, myMap[i-1][j]);
+                if (i < MAZE_SIZE-1) myMap[i][j].setAdjacentRoom(Direction.SOUTH, myMap[i+1][j]);
+                if (j > 0) myMap[i][j].setAdjacentRoom(Direction.WEST, myMap[i][j-1]);
+                if (j < MAZE_SIZE-1) myMap[i][j].setAdjacentRoom(Direction.EAST, myMap[i][j+1]);
             }
         }
     }
@@ -82,6 +126,10 @@ public class Maze implements Serializable {
         myEndY = MAZE_SIZE - 1;
     }
 
+    public int getMazeSize() {
+        return MAZE_SIZE;
+    }
+
     /**
      * Retrieves the room at the specified coordinates.
      *
@@ -105,27 +153,49 @@ public class Maze implements Serializable {
         mySupport.firePropertyChange("start game", null, getCurrentRoom());
     }
 
+
     /**
-     * Processes the player's answer and updates the game state accordingly.
-     *
-     * @param answerType The type of answer provided by the player ("correct answer" or "wrong answer").
+     * Processes the answer and determines if the player moves in the given direction.
+     * @param theDirection - The direction the player is headed.
+     * @param isCorrect - True if the question is correct and false otherwise.
      */
-    public void processAnswer(String answerType) {
+    public void processAnswer(Direction theDirection, boolean isCorrect) {
         Room currentRoom = getCurrentRoom();
-        if ("correct answer".equals(answerType)) {
-            currentRoom.setAnswered(true);
-            movementAllowed = true;
-            for (Door door : currentRoom.getDoors().values()) {
-                door.open();
+        if (isCorrect && theDirection == myPendingDirection) {
+            currentRoom.getDoor(theDirection).open();
+
+            myCurrentX += (theDirection == Direction.EAST ? 1 : (theDirection == Direction.WEST ? -1 : 0));
+            myCurrentY += (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
+            myQuestionPending = false;
+            myPendingDirection = null;
+
+             Room newRoom = getCurrentRoom();
+             newRoom.getDoor(theDirection.getOpposite()).open();
+
+            mySupport.firePropertyChange("move", null, new MoveEvent(newRoom, theDirection, myCurrentX, myCurrentY));
+            mySupport.firePropertyChange("correct answer", null, getCurrentRoom());
+
+            if (isExit(myCurrentX, myCurrentY)) {
+                mySupport.firePropertyChange("game over", null, true);
             }
-            mySupport.firePropertyChange("correct answer", null, currentRoom);
         } else {
-            movementAllowed = false;
-            currentRoom.wrongAnswer(answerType);
-            checkGameOver();
+            currentRoom.getDoor(theDirection).close();
+            myQuestionPending = false;
+            myPendingDirection = null;
             mySupport.firePropertyChange("wrong answer", null, currentRoom);
 
+            if (isGameOver()) {
+                mySupport.firePropertyChange("game over", null, false);
+            }
         }
+    }
+
+    /**
+     * Checks if there is a question that needs to be answered
+     * @return True if there is a question waiting to be answered. False otherwise.
+     */
+    public boolean isQuestionPending() {
+        return myQuestionPending;
     }
 
     /**
@@ -142,31 +212,61 @@ public class Maze implements Serializable {
      *
      * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
      */
-    public void move(String theDirection) {
-        int newX = myCurrentX, newY = myCurrentY;
-        switch (theDirection.toUpperCase()) {
-            case "NORTH":
+    public void move(Direction theDirection) {
+        System.out.println("This is being triggered");
+        if (canMove(theDirection)) {
+            Room currentRoom = getCurrentRoom();
+            //System.out.println("Makes it through here");
+            int newX = myCurrentX + (theDirection == Direction.EAST ? 1 : (theDirection == Direction.WEST ? -1 : 0));
+            int newY = myCurrentY + (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
+
+
+            if (isValidMove(newX, newY)) {
+                myQuestionPending = true;
+                myPendingDirection = theDirection;
+                mySupport.firePropertyChange("question", null, new QuestionEvent(currentRoom.getTrivia(), theDirection));
+            }
+
+        }
+    }
+
+    public boolean canMove(Direction direction) {
+        int newX = myCurrentX;
+        int newY = myCurrentY;
+
+        switch (direction) {
+            case NORTH:
                 newY--;
                 break;
-            case "SOUTH":
+            case SOUTH:
                 newY++;
                 break;
-            case "EAST":
+            case EAST:
                 newX++;
                 break;
-            case "WEST":
+            case WEST:
                 newX--;
                 break;
-            default:
-                return;
         }
 
-        if (newX >= 0 && newX < MAZE_SIZE && newY >= 0 && newY < MAZE_SIZE) {
-            myCurrentX = newX;
-            myCurrentY = newY;
-            movementAllowed = false;
-            mySupport.firePropertyChange("move", null, getCurrentRoom());
+        System.out.println("Attempting to move " + direction + " from (" + myCurrentX + "," + myCurrentY + ") to (" + newX + "," + newY + ")");
+
+        if (newX < 0 || newX >= MAZE_SIZE || newY < 0 || newY >= MAZE_SIZE) {
+            System.out.println("Move is out of bounds");
+            return false;
         }
+
+
+        Room currentRoom = myMap[myCurrentY][myCurrentX];
+        boolean isDoorOpen = currentRoom.isDoorOpen(direction);
+        boolean isIncorrectlyAnswered = currentRoom.hasBeenAnsweredIncorrectly(direction);
+
+        System.out.println("Door is open: " + isDoorOpen);
+        System.out.println("Door has been answered incorrectly: " + isIncorrectlyAnswered);
+
+
+        return isDoorOpen && !isIncorrectlyAnswered;
+
     }
 
     /**
@@ -179,6 +279,32 @@ public class Maze implements Serializable {
     }
 
     /**
+     * Gets the x coordinate
+     * @return The x coordinate
+     */
+    public int getCurrentX() {
+        return myCurrentX;
+    }
+
+    /**
+     * Gets the y coordinate
+     * @return The y coordinate.
+     */
+    public int getCurrentY() {
+        return myCurrentY;
+    }
+
+    /**
+     * Checks if a given move is valid.
+     * @param theX - The x coordinate of the player.
+     * @param theY - The y coordinate of the player
+     * @return True if it's a valid move. False otherwise.
+     */
+    private boolean isValidMove(int theX, int theY) {
+        return theX >= 0 && theX < MAZE_SIZE && theY >= 0 && theY < MAZE_SIZE || isExit(theX, theY);
+    }
+
+    /**
      * Gets the size of the maze.
      *
      * @return The size of the maze.
@@ -186,15 +312,14 @@ public class Maze implements Serializable {
     public int getRoomSize() {
         return MAZE_SIZE;
     }
-
     /**
-     * Checks if the player movement is allowed.
-     *
-     * @return True if movement is allowed, false otherwise.
-     */
-    public boolean isMovementAllowed() {
-        return movementAllowed;
+    * Gets the instance of the Trivia class.
+    * @return the instance of the trivia class.
+    */
+    public Trivia getTrivia() {
+        return myTrivia;
     }
+
 
     public void reinitializeDatabaseConnector(final DatabaseConnector theDbConnector) {
         this.myDBConn = theDbConnector;
@@ -202,52 +327,145 @@ public class Maze implements Serializable {
     }
 
     /**
-     * Checks if the player can't reach the exit.
+     * Checks if the game is over through backtracking.
+     * @return True if the game is over. False otherwise.
      */
-    public void checkGameOver() {
-        boolean[][] visited = new boolean[MAZE_SIZE][MAZE_SIZE];
-        if (!canReachExit(myCurrentX, myCurrentY, visited)) {
-            System.out.println("Game is over");
-            mySupport.firePropertyChange("game over", null, getCurrentRoom());
-        }
+    public boolean isGameOver() {
+        return !hasPathToExit(myCurrentX, myCurrentY, new boolean[MAZE_SIZE][MAZE_SIZE]);
     }
 
     /**
-     * Checks if the player can reach the exit.
-     * @param theXCoordinate - Current x coordinate the player is in.
-     * @param theYCoordinate - Current y coordinate the player is in.
-     * @param theVisitedRoom - A true/false value that determines if the player can still win the game.
-     * @return True if the player can still reach the exit. False otherwise.
+     * Maze backtracking to determine if the player can reach the exit.
+     * @param theX - The x coordinate
+     * @param theY - The y coordinate
+     * @param theVisited - A boolean array representing what places the maze visited
+     * @return True if there is a path to the exit. False otherwise
      */
-    private boolean canReachExit(int theXCoordinate, int theYCoordinate, boolean[][] theVisitedRoom) {
-        if (theXCoordinate < 0 || theXCoordinate >= MAZE_SIZE || theYCoordinate < 0
-                || theYCoordinate >= MAZE_SIZE || theVisitedRoom[theXCoordinate][theYCoordinate]) {
+    private boolean hasPathToExit(int theX, int theY, boolean[][] theVisited) {
+        if (theX == MAZE_SIZE - 1 && theY == MAZE_SIZE - 1) {
+            return true; // Reached the exit
+        }
+        if (theX < 0 || theX >= MAZE_SIZE || theY < 0 || theY >= MAZE_SIZE || theVisited[theX][theY]) {
             return false;
         }
 
-        theVisitedRoom[theXCoordinate][theYCoordinate] = true;
+        theVisited[theX][theY] = true;
 
-        String[] directions = {"North", "South", "West", "East"};
-        int[] xdirection = {-1, 1, 0, 0};
-        int[] ydirection = {0, 0, -1, 1};
-
-        boolean nearbyDoors = false;
-
-        for (int i = 0; i < 4; i++) {
-            int newX = theXCoordinate + xdirection[i];
-            int newY = theYCoordinate + ydirection[i];
-
-            Room currentRoom = myMap[theXCoordinate][theYCoordinate];
-            Door connectingDoor = currentRoom.getDoor(directions[i]);
-
-            if (connectingDoor != null && !connectingDoor.isClosed()) {
-                nearbyDoors = true;
-                if (canReachExit(newX, newY, theVisitedRoom)) {
+        for (Direction dir : Direction.values()) {
+            if (myMap[theX][theY].isDoorOpen(dir)) {
+                int newX = theX + (dir == Direction.EAST ? 1 : (dir == Direction.WEST ? -1 : 0));
+                int newY = theY + (dir == Direction.SOUTH ? 1 : (dir == Direction.NORTH ? -1 : 0));
+                if (hasPathToExit(newX, newY, theVisited)) {
                     return true;
                 }
             }
         }
-        return nearbyDoors;
+
+        return false;
+    }
+
+
+    /**
+     * Checks if the player is on the exit coordinate
+     * @param theX - The x coordinate
+     * @param theY - The y coordinate
+     * @return True if at exit coordinate, false otherwise
+     */
+    private boolean isExit(final int theX, final int theY) {
+        return theX == MAZE_SIZE - 1 && theY == MAZE_SIZE - 1;
+    }
+
+    /**
+     * Checks if the player is next to the exit.
+     * @param theDirection - The direction to search at.
+     * @return True if next to the exit. False otherwise.
+     */
+    public boolean isAdjacentToExit(final Direction theDirection) {
+        int newX = myCurrentX + (theDirection == Direction.EAST ? 1 : (theDirection == Direction.WEST ? -1 : 0));
+        int newY = myCurrentY + (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
+        return isExit(newX, newY);
+    }
+
+    /**
+     * Small class to handle moving the player between rooms
+     */
+    public static class MoveEvent {
+        private final Room myRoom;
+        private final Direction myDirection;
+        private final int myX;
+        private final int myY;
+
+        /**
+         * Moves the player to the given room
+         * @param theRoom - The room to head to
+         * @param theDirection - The direction the room is at
+         * @param theX - The x position
+         * @param theY - The y position
+         */
+        public MoveEvent(final Room theRoom, final Direction theDirection, final int theX, final int theY) {
+            myRoom = theRoom;
+            myDirection = theDirection;
+            myX = theX;
+            myY = theY;
+        }
+
+        /**
+         * Gets the room to go to
+         * @return The room
+         */
+        public Room getRoom() {
+            return myRoom;
+        }
+
+        /**
+         * Gets the x coordinate
+         * @return The x coordinate
+         */
+        public int getX() {
+            return myX;
+        }
+
+        /**
+         * Gets the y coordinate
+         * @return The y coordinate
+         */
+        public int getY() {
+            return myY;
+        }
+    }
+
+    /**
+     * Small class to handle the questions for the game.
+     */
+    public static class QuestionEvent {
+        private final Question myQuestion;
+        private final Direction myDirection;
+
+        /**
+         * Handles a question being passed to the room panel
+         * @param question - The question to be asked
+         * @param direction - The direction the player is going
+         */
+        public QuestionEvent(final Question question, final Direction direction) {
+            myQuestion = question;
+            myDirection = direction;
+        }
+
+        /**
+         * Gets the question to ask the player
+         * @return The question to ask the player
+         */
+        public Question getQuestion() {
+            return myQuestion;
+        }
+
+        /**
+         * Gets the direction the player is going
+         * @return The direction the player is heading
+         */
+        public Direction getDirection() {
+            return myDirection;
+        }
     }
 
 }
