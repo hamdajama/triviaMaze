@@ -25,6 +25,8 @@ public class QuestionPanel extends JPanel {
     private final Maze myMaze;
     private ButtonGroup myButtonGroup;
     private final JPanel myQuestionPanel;
+
+    private GUI myGUI;
     /**
      * The current direction the player is going
      */
@@ -44,6 +46,11 @@ public class QuestionPanel extends JPanel {
         add(myQuestionPanel, BorderLayout.SOUTH);
         setFocusable(true);
     }
+
+    public void setGUI(GUI theGUI) {
+        this.myGUI = theGUI;
+    }
+
 
     /**
      * Sets the current question to be displayed on the panel.
@@ -150,6 +157,8 @@ public class QuestionPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Game Over!");
             }
         }
+        myGUI.stopAnsweringAnimation();
+        setVisible(false);
         getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
     }
 

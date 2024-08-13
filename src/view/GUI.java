@@ -55,16 +55,16 @@ public class GUI {
 
     private PlayerCharacter myPlayerCharacter;
     private transient JFrame myFrame;
-    private transient JPanel myMazePanel;
+    private transient MazePanel myMazePanel;
     private transient Maze myMaze;
-    private static final String UP = "up";
-    private static final String RIGHT = "right";
-    private static final String DOWN = "down";
-    private static final String LEFT = "left";
+    private static final String UP = "NORTH";
+    private static final String RIGHT = "EAST";
+    private static final String DOWN = "SOUTH";
+    private static final String LEFT = "WEST";
     /**
      * The direction the player intends to go.
      */
-    private String currentDirection;
+    private String currentDirection = DOWN;
     private int frameIndex = 0;
     private Map<String, BufferedImage[]> characterImages;
     private transient Timer animationTimer;
@@ -74,6 +74,8 @@ public class GUI {
     private RoomPanel myRoomPanel;
     private QuestionPanel myQuestionPanel;
     private boolean isKeyDispatcherAdded = false;
+    private boolean isAnsweringQuestion = false;
+    private boolean isFirstStep = true;
 
     /**
      * The audio for the game.
@@ -90,6 +92,7 @@ public class GUI {
         super();
         myMaze = new Maze(theDBConnector);
         myPlayerCharacter = new PlayerCharacter(0, 0);
+        loadCharacterImages();
         setupFrame();
         setupAnimationTimer();
         try {
@@ -143,8 +146,9 @@ public class GUI {
                     if (direction != null) {
                         currentDirection = String.valueOf(direction);
                         myPlayerCharacter.displayPosition();
-                        myMazePanel.revalidate();
-                        myMazePanel.repaint();
+                        myMazePanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);
+                        isFirstStep = false;
+                        myRoomPanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);
                         mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
                         System.out.println("Key pressed: " + direction);
                         myMaze.move(direction);
@@ -188,16 +192,25 @@ public class GUI {
                     ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_2.png"))),
             });
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Error loading character images: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private void setupAnimationTimer() {
-        animationTimer = new Timer(1000, new ActionListener() {
+        animationTimer = new Timer(200, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frameIndex = (frameIndex + 1) % 3;
+                if (isAnsweringQuestion) {
+                    myMazePanel.updateFrame(frameIndex);
+                }
                 myMazePanel.repaint();
+                if (!isFirstStep) {
+                    myRoomPanel.updateFrame(frameIndex);
+                    myRoomPanel.repaint();
+                }
+
             }
         });
         animationTimer.start();
@@ -369,7 +382,7 @@ public class GUI {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, frameIndex, characterImages, currentDirection);
         myMazePanel.setBackground(Color.BLACK);
         myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(myMazePanel, BorderLayout.CENTER);
@@ -390,12 +403,13 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        myRoomPanel = new RoomPanel(myMaze);
+        myRoomPanel = new RoomPanel(myMaze, frameIndex, characterImages, currentDirection);
         myRoomPanel.setBackground(Color.BLACK);
         myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(myRoomPanel);
 
         myQuestionPanel = new QuestionPanel(myMaze);
+        myQuestionPanel.setGUI(this);
         myQuestionPanel.setBackground(Color.BLACK);
         myQuestionPanel.setBounds(theHalfWidth, theHalfHeight, theHalfWidth, theHalfHeight);
         rightPanel.add(myQuestionPanel);
@@ -458,6 +472,7 @@ public class GUI {
      */
     private void displayQuestion(final Question theQuestion, final Direction theDirection) {
         System.out.println("Displaying question: " + theQuestion.getQuestion());
+        isAnsweringQuestion = true;
         myQuestionPanel.setQuestion(theQuestion, theDirection);
         myQuestionPanel.setVisible(true);
     }
@@ -489,6 +504,10 @@ public class GUI {
 
         myFrame.revalidate();
         myFrame.repaint();
+    }
+
+    public void stopAnsweringAnimation() {
+        isAnsweringQuestion = false;
     }
 }
 

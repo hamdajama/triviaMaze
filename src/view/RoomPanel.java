@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
@@ -29,12 +30,16 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     private int myPlayerX;
     private int myPlayerY;
     private final Maze myMaze;
+    private Map<String, BufferedImage[]> myImages;
+    private String myDirection;
+    private int myFrameIndex;
 
     /**
      * Creates the panel for the room.
      * @param theMaze - The maze for the game.
      */
-    public RoomPanel(Maze theMaze) {
+    public RoomPanel(Maze theMaze, int theFrameIndex, Map<String, BufferedImage[]> theImages,
+                    String theDirecton) {
         super();
         doorStates = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
@@ -48,6 +53,9 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         myPlayerX = 0;
         myPlayerY = 0;
         myMaze = theMaze;
+        myImages = theImages;
+        myDirection = theDirecton;
+        myFrameIndex = theFrameIndex;
     }
 
 
@@ -118,6 +126,11 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theHeight - The height of the frame.
      */
     private void drawText(final Graphics2D theGraphics2D, final int theWidth, final int theHeight) {
+        BufferedImage[] images = myImages.get(myDirection.toUpperCase());
+        BufferedImage currentImage = images[myFrameIndex];
+
+        theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20, 40, 40, this);
+
         theGraphics2D.setColor(Color.WHITE);
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 10));
 
@@ -126,8 +139,6 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         theGraphics2D.drawString("Move South", (theWidth / 2) - 40, 250);
         theGraphics2D.drawString("Move West", theWidth - 350, theHeight / 2);
 
-        theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 30));
-        theGraphics2D.drawString("1", (theWidth/2) - 15, theHeight/2);
     }
 
     /**
@@ -188,6 +199,17 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         for (Direction dir : Direction.values()) {
             System.out.println(dir + ": " + doorStates.get(dir));
         }
+    }
+
+    public void updateDirectionAndFrame(String theDirection, int theFrameIndex) {
+        myDirection = theDirection.toUpperCase();
+        myFrameIndex = theFrameIndex;
+        repaint();
+    }
+
+    public void updateFrame(final int theFrameIndex) {
+        myFrameIndex = theFrameIndex;
+        repaint();
     }
 
     /**
