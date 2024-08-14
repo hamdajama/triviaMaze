@@ -1,8 +1,8 @@
 package model;
 
 import org.sqlite.SQLiteDataSource;
-import org.sqlite.SQLiteException;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,20 +14,34 @@ import java.sql.Statement;
  * methods for querying the database.
  */
 public class DatabaseConnector implements Serializable {
+    /**
+     * Serial Version UID
+     */
+    @Serial
     private final static long serialVersionUID = 7L;
+
+    /**
+     * Url for the database
+     */
     private final String myDS_url = "jdbc:sqlite:TriviaMaze.db";
-    private transient SQLiteDataSource myDS;
+
+
+    /**
+     * The data source
+     */
+    private final transient SQLiteDataSource myDS;
+
     /**
      * Constructs a new DatabaseConnector, initializing the SQLiteDataSource
      * and setting up the database.
      */
-
     public DatabaseConnector() {
             myDS = new SQLiteDataSource();
             myDS.setUrl(myDS_url);
             initializeData();
 
     }
+
     /**
      * Returns the SQLiteDataSource used for database connections.
      *
@@ -48,6 +62,7 @@ public class DatabaseConnector implements Serializable {
             e.printStackTrace();
         }
     }
+
     /**
      * Creates the necessary tables for storing questions in the database if they do not already exist.
      *
@@ -78,6 +93,7 @@ public class DatabaseConnector implements Serializable {
         stmt.executeUpdate(createMQTable);
         stmt.executeUpdate(createMCTable);
     }
+
     /**
      * Inserts initial data into the tables for questions in the database.
      *
@@ -177,6 +193,7 @@ public class DatabaseConnector implements Serializable {
         stmt.executeUpdate(insertMQ);
         stmt.executeUpdate(insertMC);
     }
+
     /**
      * Queries the database for all questions and displays them.
      */

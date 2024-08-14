@@ -1,3 +1,7 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * MultipleChoiceFactory
+ */
 package model;
 
 import java.sql.Connection;
@@ -7,28 +11,51 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Factory class for the multiple choice class.
+ * @author Eric John
+ * @version 08/13/2024
+ */
 public class MultipleChoiceFactory implements QuestionFactory {
 
-    private final DatabaseConnector dbConnector;
+    /**
+     * The database connector.
+     */
+    private final DatabaseConnector myDBConnector;
 
-    public MultipleChoiceFactory(DatabaseConnector dbConnector) {
-        this.dbConnector = dbConnector;
+    /**
+     * Multiple choice factory for the classes.
+     * @param theDBConnector - THe connector to get the choices
+     */
+    public MultipleChoiceFactory(final DatabaseConnector theDBConnector) {
+        this.myDBConnector = theDBConnector;
     }
 
+    /**
+     * Creates the question for multiple choice.
+     * @param theRS - The results for a multiple choice question
+     * @return A multiple choice question.
+     * @throws SQLException when it cannot access the database.
+     */
     @Override
-    public Question createQuestion(ResultSet rs) throws SQLException {
-        int id = rs.getInt("id");
-        String question = rs.getString("question");
-        String answer = rs.getString("correct_answer");
+    public Question createQuestion(final ResultSet theRS) throws SQLException {
+        int id = theRS.getInt("id");
+        String question = theRS.getString("question");
+        String answer = theRS.getString("correct_answer");
         Map<String, String> choices = fetchChoices(id);
         return new MultipleChoice(question, choices, answer);
     }
 
-    private Map<String, String> fetchChoices(int questionId) {
+    /**
+     * Gets the choices for the multiple choice question
+     * @param theQuestionId - The ID associated with the question
+     * @return The choices available for the question.
+     */
+    private Map<String, String> fetchChoices(final int theQuestionId) {
         Map<String, String> choices = new HashMap<>();
-        String query = "SELECT choice, choice_text FROM MultipleChoice WHERE question_id = " + questionId;
+        String query = "SELECT choice, choice_text FROM MultipleChoice WHERE question_id = " + theQuestionId;
 
-        try (Connection conn = dbConnector.getDataSource().getConnection();
+        try (Connection conn = myDBConnector.getDataSource().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -38,8 +65,7 @@ public class MultipleChoiceFactory implements QuestionFactory {
                 choices.put(choice, choiceText);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            // Consider logging the error or throwing a custom exception
+           System.out.println("There's seem to be an SQLException: " + e.getMessage());
         }
 
         return choices;

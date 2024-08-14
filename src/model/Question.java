@@ -4,12 +4,14 @@
  */
 package model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
  * An abstract class that is given to the Multiple choice, short answer, and T/F classes.
  */
 public abstract class Question implements Serializable {
+    @Serial
     private static final long serialVersionUID = 5L;
     /**
      * The question to be asked to the player, as given in the sql file.

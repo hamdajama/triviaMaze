@@ -145,7 +145,7 @@ public class GUI {
                     }
                     if (direction != null) {
                         currentDirection = String.valueOf(direction);
-                        myPlayerCharacter.displayPosition();
+                      //  myPlayerCharacter.displayPosition();
                         myMazePanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);
                         isFirstStep = false;
                         myRoomPanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);

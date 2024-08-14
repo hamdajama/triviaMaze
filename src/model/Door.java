@@ -14,16 +14,24 @@ import java.io.Serializable;
  * @version 7/21/2024
  */
 public class Door implements Serializable {
+    /**
+     * Serial ID for the class
+     */
     @Serial
     private static final long serialVersionUID = 4L;
+
     /**
      * Indicates whether the door is closed.
      */
     private boolean myClosed;
 
-    private boolean myAnswerIncorrect;
     /**
-     * Constructs a new Door, initially closed.
+     * Indicates whether the door was answered incorrectly
+     */
+    private boolean myAnswerIncorrect;
+
+    /**
+     * Constructs a new Door, initially closed and answerIncorrect is false.
      */
     public Door() {
 
@@ -38,6 +46,7 @@ public class Door implements Serializable {
     public Door(boolean initiallyOpen) {
         this.myClosed = !initiallyOpen;
     }
+
     /**
      * Checks if the door is closed.
      *
@@ -46,12 +55,14 @@ public class Door implements Serializable {
     public boolean isClosed() {
         return myClosed;
     }
+
     /**
      * Opens the door.
      */
     public void open() {
         myClosed = false;
     }
+
     /**
      * Closes the door.
      */
@@ -59,12 +70,13 @@ public class Door implements Serializable {
         myClosed = true;
     }
 
+
+    /**
+     * Checks if the question to the door has been answered incorrectly
+     * @return True if the player answered wrong and false otherwise
+     */
     public boolean hasBeenAnsweredIncorrectly() {
         return myAnswerIncorrect;
     }
 
-    public void setAnsweredIncorrectly() {
-        this.myAnswerIncorrect = true;
-        this.myClosed = true;
-    }
 }

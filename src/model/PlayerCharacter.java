@@ -1,7 +1,7 @@
 package model;
 
 /**
- * The {@code PlayerCharacter} class represents a player resources.character within a game
+ * The {@code PlayerCharacter} class represents a player resources. character within a game
  * that can move around a maze. This class extends the {@link GameObject} class to
  * inherit its position properties and methods, and adds functionality to move
  * within specified maze dimensions.
@@ -26,66 +26,66 @@ package model;
  */
 public final class PlayerCharacter extends GameObject {
 
-    /** The width of the maze in which the player resources.character can move. */
-    private int mazeWidth;
+    /** The width of the maze in which the player resources. character can move. */
+    private int myMazeWidth;
 
-    /** The height of the maze in which the player resources.character can move. */
-    private int mazeHeight;
+    /** The height of the maze in which the player resources. character can move. */
+    private int myMazeHeight;
 
     /**
      * Constructs a {@code PlayerCharacter} with the specified initial position.
      *
-     * @param x the initial x-coordinate of the player resources.character
-     * @param y the initial y-coordinate of the player resources.character
+     * @param theX the initial x-coordinate of the player resources. character
+     * @param theY the initial y-coordinate of the player resources. character
      */
-    public PlayerCharacter(int x, int y) {
-        super(x, y);
+    public PlayerCharacter(final int theX, final int theY) {
+        super(theX, theY);
     }
 
     /**
-     * Sets the dimensions of the maze in which the player resources.character can move.
+     * Sets the dimensions of the maze in which the player resources. character can move.
      *
-     * @param mazeWidth the width of the maze
-     * @param mazeHeight the height of the maze
+     * @param theMazeWidth the width of the maze
+     * @param theMazeHeight the height of the maze
      */
-    public final void setMazeDimensions(int mazeWidth, int mazeHeight) {
-        this.mazeWidth = mazeWidth;
-        this.mazeHeight = mazeHeight;
+    public void setMazeDimensions(final int theMazeWidth, final int theMazeHeight) {
+        this.myMazeWidth = theMazeWidth;
+        this.myMazeHeight = theMazeHeight;
     }
 
     /**
-     * Moves the player resources.character up by one unit if it is not at the top edge of the maze.
+     * Moves the player resources. character up by one unit if it is not at the top edge of the maze.
      */
-    public final void moveUp() {
-        if (y > 0) {
-            y--;
+    public void moveUp() {
+        if (myY > 0) {
+            myY--;
         }
     }
 
     /**
-     * Moves the player resources.character down by one unit if it is not at the bottom edge of the maze.
+     * Moves the player resources. character down by one unit if it is not at the bottom edge of the maze.
      */
-    public final void moveDown() {
-        if (y < mazeHeight - 1) {
-            y++;
+    public void moveDown() {
+        if (myY < myMazeHeight - 1) {
+            myY++;
         }
     }
 
     /**
-     * Moves the player resources.character left by one unit if it is not at the left edge of the maze.
+     * Moves the player resources. character left by one unit if it is not at the left edge of the maze.
      */
-    public final void moveLeft() {
-        if (x > 0) {
-            x--;
+    public void moveLeft() {
+        if (myX > 0) {
+            myX--;
         }
     }
 
     /**
-     * Moves the player resources.character right by one unit if it is not at the right edge of the maze.
+     * Moves the player resources. character right by one unit if it is not at the right edge of the maze.
      */
-    public final void moveRight() {
-        if (x < mazeWidth - 1) {
-            x++;
+    public void moveRight() {
+        if (myX < myMazeWidth - 1) {
+            myX++;
         }
     }
 
@@ -93,7 +93,7 @@ public final class PlayerCharacter extends GameObject {
      * Moves the player in a given direction.
      * @param theDirection - The direction the player is going.
      */
-    public void move(String theDirection) {
+    public void move(final String theDirection) {
         switch (theDirection) {
             case "NORTH": moveUp(); break;
             case "SOUTH": moveDown(); break;
@@ -103,11 +103,11 @@ public final class PlayerCharacter extends GameObject {
     }
 
     /**
-     * Displays the position of the player resources.character in the format:
+     * Displays the position of the player resources. character in the format:
      * {@code PlayerCharacter is at (x, y)}.
      */
     @Override
-    public final void displayPosition() {
-        System.out.println("PlayerCharacter is at (" + x + ", " + y + ")");
+    public void displayPosition() {
+        System.out.println("PlayerCharacter is at (" + myX + ", " + myY + ")");
     }
 }

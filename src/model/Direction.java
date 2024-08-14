@@ -1,8 +1,15 @@
 package model;
 
+/**
+ * Direction for the maze
+ */
 public enum Direction {
     NORTH, SOUTH, EAST, WEST;
 
+    /**
+     * Opposite direction for the direction.
+     * @return The opposite direction. (North <--> South AND West <--> East
+     */
     public Direction getOpposite() {
         return switch (this) {
             case NORTH -> SOUTH;

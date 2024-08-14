@@ -151,7 +151,6 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         myPlayerX = theX;
         myPlayerY = theY;
         System.out.println("Updating RoomPanel for position (" + theX + ", " + theY + ")");
-        theRoom.debugPrintDoors();
         for (Direction dir : Direction.values()) {
 
             boolean isOpen = theRoom.isDoorOpen(dir);

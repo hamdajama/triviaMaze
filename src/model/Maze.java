@@ -2,6 +2,7 @@ package model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.SQLException;
 
@@ -12,13 +13,45 @@ import java.sql.SQLException;
  * @version 8/7/2024
  */
 public class Maze implements Serializable {
-    private static final long serialVersionUID = 1l;
+    /**
+     * Constant Maze size for the maze.
+     */
     private static final int MAZE_SIZE = 5;
+
+    /**
+     * Serial for the Maze
+     */
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Array full of rooms representing the map
+     */
     private Room[][] myMap;
-    private int myEndX, myEndY;
-    private int myCurrentX, myCurrentY;
-    private PropertyChangeSupport mySupport;
+
+    /**
+     * Current x position of the player
+     */
+    private int myCurrentX;
+
+    /**
+     * Current y position of the player
+     */
+    private int myCurrentY;
+
+    /**
+     * Property change support to communicate to the view
+     */
+    private final PropertyChangeSupport mySupport;
+
+    /**
+     * Database connection for the maze
+     */
     private transient DatabaseConnector myDBConn;
+
+    /**
+     * Question generator that generates a question
+     */
     private QuestionGenerator myQesGen;
 
     /**
@@ -30,6 +63,10 @@ public class Maze implements Serializable {
      * The direction the player is heading.
      */
     private Direction myPendingDirection = null;
+
+    /**
+     * The trivia for the game.
+     */
     private final Trivia myTrivia;
 
     /**
@@ -38,14 +75,13 @@ public class Maze implements Serializable {
      * @param theDBConn The DatabaseConnector object for accessing the question database.
      * @throws SQLException If an error occurs during database access.
      */
-    public Maze(DatabaseConnector theDBConn) throws SQLException {
+    public Maze(final DatabaseConnector theDBConn) throws SQLException {
         this.myDBConn = theDBConn;
         this.myQesGen = new QuestionGenerator(theDBConn);
         this.mySupport = new PropertyChangeSupport(this);
         this.myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         buildMap();
         setAdjacentRooms();
-        setEnd();
         myCurrentX = 0;
         myCurrentY = 0;
         setAdjacentRooms();
@@ -76,14 +112,6 @@ public class Maze implements Serializable {
                 myMap[i][j] = room;
             }
         }
-
-
-        // Debug print
-        for (int i = 0; i < MAZE_SIZE; i++) {
-            for (int j = 0; j < MAZE_SIZE; j++) {
-                System.out.println("Room [" + i + "][" + j + "] South door open: " + myMap[i][j].isDoorOpen(Direction.SOUTH));
-            }
-        }
     }
 
     /**
@@ -105,27 +133,14 @@ public class Maze implements Serializable {
      *
      * @param theListener The PropertyChangeListener to add.
      */
-    public void addPropertyChangeListener(PropertyChangeListener theListener) {
+    public void addPropertyChangeListener(final PropertyChangeListener theListener) {
         mySupport.addPropertyChangeListener(theListener);
     }
 
     /**
-     * Removes a PropertyChangeListener from the listener list.
-     *
-     * @param theListener The PropertyChangeListener to remove.
+     * Returns the size of the maze
+     * @return The size of the maze
      */
-    public void removePropertyChangeListener(PropertyChangeListener theListener) {
-        mySupport.removePropertyChangeListener(theListener);
-    }
-
-    /**
-     * Sets the end point of the maze to the bottom-right corner.
-     */
-    private void setEnd() {
-        myEndX = MAZE_SIZE - 1;
-        myEndY = MAZE_SIZE - 1;
-    }
-
     public int getMazeSize() {
         return MAZE_SIZE;
     }
@@ -137,7 +152,7 @@ public class Maze implements Serializable {
      * @param theY The Y-coordinate of the room.
      * @return The Room object at the specified coordinates, or null if out of bounds.
      */
-    public Room getRoom(int theX, int theY) {
+    public Room getRoom(final int theX, final int theY) {
         if (theX >= 0 && theX < MAZE_SIZE && theY >= 0 && theY < MAZE_SIZE) {
             return myMap[theX][theY];
         }
@@ -159,7 +174,7 @@ public class Maze implements Serializable {
      * @param theDirection - The direction the player is headed.
      * @param isCorrect - True if the question is correct and false otherwise.
      */
-    public void processAnswer(Direction theDirection, boolean isCorrect) {
+    public void processAnswer(final Direction theDirection, final boolean isCorrect) {
         Room currentRoom = getCurrentRoom();
         if (isCorrect && theDirection == myPendingDirection) {
             currentRoom.getDoor(theDirection).open();
@@ -199,20 +214,11 @@ public class Maze implements Serializable {
     }
 
     /**
-     * Checks if the player has reached the end of the maze.
-     *
-     * @return True if the player is at the end of the maze, false otherwise.
-     */
-    public boolean isAtEnd() {
-        return myCurrentX == myEndX && myCurrentY == myEndY;
-    }
-
-    /**
      * Moves the player in the specified direction, if possible.
      *
      * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
      */
-    public void move(Direction theDirection) {
+    public void move(final Direction theDirection) {
         System.out.println("This is being triggered");
         if (canMove(theDirection)) {
             Room currentRoom = getCurrentRoom();
@@ -230,11 +236,16 @@ public class Maze implements Serializable {
         }
     }
 
-    public boolean canMove(Direction direction) {
+    /**
+     * Checks if the player can move in the given direction in the maze
+     * @param theDirection - The direction the player is heading
+     * @return True if the player can move in that direction, false otherwise
+     */
+    public boolean canMove(Direction theDirection) {
         int newX = myCurrentX;
         int newY = myCurrentY;
 
-        switch (direction) {
+        switch (theDirection) {
             case NORTH:
                 newY--;
                 break;
@@ -249,7 +260,6 @@ public class Maze implements Serializable {
                 break;
         }
 
-        System.out.println("Attempting to move " + direction + " from (" + myCurrentX + "," + myCurrentY + ") to (" + newX + "," + newY + ")");
 
         if (newX < 0 || newX >= MAZE_SIZE || newY < 0 || newY >= MAZE_SIZE) {
             System.out.println("Move is out of bounds");
@@ -258,8 +268,8 @@ public class Maze implements Serializable {
 
 
         Room currentRoom = myMap[myCurrentY][myCurrentX];
-        boolean isDoorOpen = currentRoom.isDoorOpen(direction);
-        boolean isIncorrectlyAnswered = currentRoom.hasBeenAnsweredIncorrectly(direction);
+        boolean isDoorOpen = currentRoom.isDoorOpen(theDirection);
+        boolean isIncorrectlyAnswered = currentRoom.hasBeenAnsweredIncorrectly(theDirection);
 
         System.out.println("Door is open: " + isDoorOpen);
         System.out.println("Door has been answered incorrectly: " + isIncorrectlyAnswered);
@@ -341,7 +351,7 @@ public class Maze implements Serializable {
      * @param theVisited - A boolean array representing what places the maze visited
      * @return True if there is a path to the exit. False otherwise
      */
-    private boolean hasPathToExit(int theX, int theY, boolean[][] theVisited) {
+    private boolean hasPathToExit(final int theX, final int theY, final boolean[][] theVisited) {
         if (theX == MAZE_SIZE - 1 && theY == MAZE_SIZE - 1) {
             return true; // Reached the exit
         }
@@ -390,9 +400,24 @@ public class Maze implements Serializable {
      * Small class to handle moving the player between rooms
      */
     public static class MoveEvent {
+        /**
+         * The room the player is going to.
+         */
         private final Room myRoom;
+
+        /**
+         * The direction to the room.
+         */
         private final Direction myDirection;
+
+        /**
+         * The x coordinate for the player
+         */
         private final int myX;
+
+        /**
+         * The y coordinate for the player
+         */
         private final int myY;
 
         /**
@@ -438,7 +463,14 @@ public class Maze implements Serializable {
      * Small class to handle the questions for the game.
      */
     public static class QuestionEvent {
+        /**
+         * The question to ask the player.
+         */
         private final Question myQuestion;
+
+        /**
+         * The direction the player is heading.
+         */
         private final Direction myDirection;
 
         /**

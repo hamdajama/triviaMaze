@@ -4,10 +4,12 @@
  */
 package model;
 
-import java.io.Serializable;
 
 /**
  * A True/False class to ask a true or false question.
+ *
+ * @author Eric John
+ * @version 08/13/2024
  */
 public class TrueFalse extends Question {
 

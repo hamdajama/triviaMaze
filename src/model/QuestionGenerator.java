@@ -1,5 +1,6 @@
-
 package model;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,122 +9,80 @@ import java.sql.Statement;
 import java.util.*;
 
 /**
- * The QuestionGenerator class is a simple factory for creating different types of questions.
- * It fetches questions from True/False, Short Answer, and Multiple Choice tables.
+ * The QuestionGenerator class is responsible for generating random questions
+ * from the database for the TriviaMaze game. It fetches questions from
+ * True/False, Short Answer, and Multiple Choice tables.
  */
-public class QuestionGenerator implements Serializable{
+public class QuestionGenerator implements Serializable {
+    /**
+     * Serial for QuestionGenerator
+     */
+    @Serial
     private static final long serialVersionUID = 6L;
 
-    private final DatabaseConnector dbConn;
-    private final Random random;
+    /**
+     * A random variable to randomize the type of question.
+     */
+    private final Random myRandom;
 
     /**
-     * Constructs a QuestionGenerator with the given DatabaseConnector.
-     *
-     * @param dbConn The DatabaseConnector object for accessing the database.
+     * The database connector
      */
-    public QuestionGenerator(DatabaseConnector dbConn) {
-        this.dbConn = dbConn;
-        this.random = new Random();
+    private final DatabaseConnector myDataConn;
+
+    /**
+     * A question factory provider.
+     */
+    private final QuestionFactoryProvider myFactoryProvider;
+    /**
+     * Constructs a new QuestionGenerator with the given DatabaseConnector.
+     *
+     * @param theDBConn The DatabaseConnector object for accessing the database.
+     */
+    public QuestionGenerator(final DatabaseConnector theDBConn) {
+        this.myDataConn = theDBConn;
+        this.myRandom = new Random();
+        this.myFactoryProvider = new QuestionFactoryProvider(theDBConn);
     }
 
     /**
-     * Factory method to create a random question.
+     * Retrieves a random question from the database.
      *
-     * @return A randomly selected Question object.
-     * @throws SQLException If an error occurs during database access.
+     * @return A random Question object, or null if no questions are found.
      */
-    public Question getRandomQes() throws SQLException {
-        int questionType = random.nextInt(3); // Assuming 3 types of questions
-        switch (questionType) {
-            case 0:
-                return createTrueFalseQuestion();
-            case 1:
-                return createMultipleChoiceQuestion();
-            case 2:
-                return createShortAnswerQuestion();
-            default:
-                throw new IllegalArgumentException("Invalid question type");
-        }
-    }
-
-    /**
-     * Creates a TrueFalse question from the database.
-     *
-     * @return A TrueFalse question.
-     * @throws SQLException If an error occurs during database access.
-     */
-    private TrueFalse createTrueFalseQuestion() throws SQLException {
-        String query = "SELECT * FROM TrueFalse ORDER BY RANDOM() LIMIT 1";
-        try (Connection conn = dbConn.getDataSource().getConnection();
-             Statement stmt = conn.createStatement()) {
-             ResultSet rs = stmt.executeQuery(query) ;
-            if (rs.next()) {
-                String question = rs.getString("question");
-                int correctAnswer = rs.getInt("correct_answer");
-                return new TrueFalse( question, correctAnswer);
-            }
+    public Question getRandomQes () {
+        List<Question> questions = new ArrayList<>();
+        try(Connection conn = myDataConn.getDataSource().getConnection();
+            Statement stmt  = conn.createStatement()) {
+            questions.addAll(getTable(stmt, "TrueFalse"));
+            questions.addAll(getTable(stmt,"ShortAnswer"));
+            questions.addAll(getTable(stmt,"MultipleQuestion"));
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
-        throw new SQLException("No TrueFalse questions available");
+        if (questions.isEmpty()) {
+            return null;
+        }
+        return questions.get(myRandom.nextInt(questions.size()));
     }
 
     /**
-     * Creates a MultipleChoice question from the database.
+     * Retrieves questions from a specific table and converts them to Question objects.
      *
-     * @return A MultipleChoice question.
-     * @throws SQLException If an error occurs during database access.
+     * @param theStmt The Statement object for executing the query.
+     * @param theTableName The name of the table to query.
+     * @return A list of Question objects.
+     * @throws SQLException If a database access error occurs.
      */
-    private MultipleChoice createMultipleChoiceQuestion() throws SQLException {
-        String questionQuery = "SELECT * FROM MultipleQuestion ORDER BY RANDOM() LIMIT 1";
-        String choicesQuery = "SELECT * FROM MultipleChoice WHERE question_id = ?";
+    private List<Question> getTable(final Statement theStmt, final String theTableName) throws SQLException {
+        List<Question> questions = new ArrayList<>();
+        String query = "SELECT * FROM " + theTableName;
+        ResultSet rs = theStmt.executeQuery(query);
 
-        try (Connection conn = dbConn.getDataSource().getConnection();
-             Statement stmt = conn.createStatement() ) {
-             ResultSet rs = stmt.executeQuery(questionQuery);
-
-            if (rs.next()) {
-                int id = rs.getInt("id");
-                String question = rs.getString("question");
-                String correctAnswer = rs.getString("correct_answer");
-
-                Map<String, String> choices = new HashMap<>();
-                try (ResultSet choiceRs = stmt.executeQuery(choicesQuery.replace("?", String.valueOf(id)))) {
-                    while (choiceRs.next()) {
-                        String choiceKey = choiceRs.getString("choice");
-                        String choiceText = choiceRs.getString("choice_text");
-                        choices.put(choiceKey, choiceText);
-                    }
-                }
-
-                return new MultipleChoice( question, choices, correctAnswer);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        QuestionFactory factory = myFactoryProvider.getFactory(theTableName);
+        while (rs.next()) {
+            questions.add(factory.createQuestion(rs));
         }
-        throw new SQLException("No MultipleChoice questions available");
-    }
-
-    /**
-     * Creates a ShortAnswer question from the database.
-     *
-     * @return A ShortAnswer question.
-     * @throws SQLException If an error occurs during database access.
-     */
-    private ShortAnswer createShortAnswerQuestion() throws SQLException {
-        String query = "SELECT * FROM ShortAnswer ORDER BY RANDOM() LIMIT 1";
-        try (Connection conn = dbConn.getDataSource().getConnection();
-             Statement stmt = conn.createStatement()) {
-             ResultSet rs = stmt.executeQuery(query);
-            if (rs.next()) {
-                String question = rs.getString("question");
-                String correctAnswer = rs.getString("correct_answer");
-                return new ShortAnswer(question, correctAnswer);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        throw new SQLException("No ShortAnswer questions available");
+        return questions;
     }
 }

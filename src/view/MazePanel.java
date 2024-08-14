@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import model.Direction;
 import model.Maze;
 import model.PlayerCharacter;
 
@@ -101,7 +100,7 @@ public class MazePanel extends JPanel {
         myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
         BufferedImage[] images = myCharacterImages.get(myDirection.toUpperCase());
         BufferedImage currentImage = images[myFrameIndex];
-        theG.drawImage(currentImage, myPlayerCharacter.getX() * cellSize, myPlayerCharacter.getY()*cellSize + 10, this);
+        theG.drawImage(currentImage, myPlayerCharacter.getMyX() * cellSize, myPlayerCharacter.getMyY()*cellSize + 10, this);
     }
 
     public void updateFrame(final int theFrameIndex) {

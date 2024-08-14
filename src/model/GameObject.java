@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -27,23 +28,24 @@ import java.io.Serializable;
 public class GameObject implements Serializable {
 
     /** The serial version UID for this class. */
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /** The x-coordinate of the game object. */
-    protected int x;
+    protected int myX;
 
     /** The y-coordinate of the game object. */
-    protected int y;
+    protected int myY;
 
     /**
      * Constructs a {@code GameObject} with the specified x and y coordinates.
      *
-     * @param x the x-coordinate of the game object
-     * @param y the y-coordinate of the game object
+     * @param theX the x-coordinate of the game object
+     * @param theY the y-coordinate of the game object
      */
-    public GameObject(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public GameObject(final int theX, int theY) {
+        this.myX = theX;
+        this.myY = theY;
     }
 
     /**
@@ -51,17 +53,17 @@ public class GameObject implements Serializable {
      *
      * @return the x-coordinate
      */
-    public final int getX() {
-        return x;
+    public final int getMyX() {
+        return myX;
     }
 
     /**
      * Sets the x-coordinate of this game object.
      *
-     * @param x the new x-coordinate
+     * @param theX the new x-coordinate
      */
-    public final void setX(int x) {
-        this.x = x;
+    public final void setMyX(final int theX) {
+        this.myX = theX;
     }
 
     /**
@@ -69,17 +71,17 @@ public class GameObject implements Serializable {
      *
      * @return the y-coordinate
      */
-    public final int getY() {
-        return y;
+    public final int getMyY() {
+        return myY;
     }
 
     /**
      * Sets the y-coordinate of this game object.
      *
-     * @param y the new y-coordinate
+     * @param theY the new y-coordinate
      */
-    public final void setY(int y) {
-        this.y = y;
+    public final void setMyY(final int theY) {
+        this.myY = theY;
     }
 
     /**
@@ -87,6 +89,6 @@ public class GameObject implements Serializable {
      * {@code ClassName is at (x, y)}.
      */
     public void displayPosition() {
-        System.out.println(this.getClass().getSimpleName() + " is at (" + x + ", " + y + ")");
+        System.out.println(this.getClass().getSimpleName() + " is at (" + myX + ", " + myY + ")");
     }
 }

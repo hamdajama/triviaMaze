@@ -6,12 +6,35 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Room class for the maze that contains doors.
+ *
+ * @author Eric John
+ * @version 08/13/2024
+ */
 public class Room implements Serializable {
+
     @Serial
     private static final long serialVersionUID = 2L;
+
+    /**
+     * A map for the doors with the key being direction and the value being the door.
+     */
     private final Map<Direction, Door> myDoors;
+
+    /**
+     * A map for adjacent rooms with the key being direction and the value being the door.
+     */
     private final Map<Direction, Room> myAdjacentRooms;
+
+    /**
+     * The trivia for the game.
+     */
     private final Question myTrivia;
+
+    /**
+     * Boolean that checks if the door is answered
+     */
     private final boolean isAnswered;
 
     /**
@@ -72,32 +95,32 @@ public class Room implements Serializable {
      * @param theDirection The direction of the door.
      * @return - True if the door is open. False otherwise.
      */
-    public boolean isDoorOpen(Direction theDirection) {
+    public boolean isDoorOpen(final Direction theDirection) {
         Door door = myDoors.get(theDirection);
         return door != null && !door.isClosed();
     }
 
-    public boolean hasBeenAnsweredIncorrectly(Direction direction) {
-        return myDoors.get(direction).hasBeenAnsweredIncorrectly();
+    /**
+     * Checks if the question has been answered correctly.
+     * @param theDirection - The direction of the door.
+     * @return True if it has been answered incorrectly, false otherwise.
+     */
+    public boolean hasBeenAnsweredIncorrectly(final Direction theDirection) {
+        return myDoors.get(theDirection).hasBeenAnsweredIncorrectly();
     }
 
-    public void setDoorOpen(Direction dir, boolean isOpen) {
-        Door door = myDoors.get(dir);
+    /**
+     * Sets the door in the given direction open.
+     * @param theDirection - The direction of the door.
+     * @param isOpen - Checks if the door is open or closed.
+     */
+    public void setDoorOpen(final Direction theDirection, final boolean isOpen) {
+        Door door = myDoors.get(theDirection);
         if (isOpen) {
             door.open();
         } else {
             door.close();
         }
     }
-
-    public void debugPrintDoors() {
-        System.out.println("Room Door States:");
-        for (Direction dir : Direction.values()) {
-            System.out.println(dir + ": open=" + isDoorOpen(dir) + ", incorrectlyAnswered=" + hasBeenAnsweredIncorrectly(dir));
-        }
-    }
-
-
-
 
 }

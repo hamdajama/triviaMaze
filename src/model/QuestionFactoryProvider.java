@@ -1,19 +1,41 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * QuestionFactoryProvider
+ */
 package model;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A QuestionFactoryProvider that puts the other factories in this class.
+ *
+ * @author Eric John
+ * @version 08/13/2024
+ */
 public class QuestionFactoryProvider {
-    private final Map<String, QuestionFactory> factories;
+    /**
+     * A map that contains the question factories for the type of question.
+     */
+    private final Map<String, QuestionFactory> myFactories;
 
-    public QuestionFactoryProvider(DatabaseConnector dbConnector) {
-        factories = new HashMap<>();
-        factories.put("TrueFalse", new TrueFalseFactory());
-        factories.put("ShortAnswer", new ShortAnswerFactory());
-        factories.put("MultipleQuestion", new MultipleChoiceFactory(dbConnector));
+    /**
+     * Puts all the factories into a hashmap
+     * @param theDBConnector - The database of the game.
+     */
+    public QuestionFactoryProvider(final DatabaseConnector theDBConnector) {
+        myFactories = new HashMap<>();
+        myFactories.put("TrueFalse", new TrueFalseFactory());
+        myFactories.put("ShortAnswer", new ShortAnswerFactory());
+        myFactories.put("MultipleQuestion", new MultipleChoiceFactory(theDBConnector));
     }
 
-    public QuestionFactory getFactory(String tableName) {
-        return factories.get(tableName);
+    /**
+     * Gets the specific factory for the database
+     * @param theTableName - The type of question
+     * @return The factory for the type of question.
+     */
+    public QuestionFactory getFactory(final String theTableName) {
+        return myFactories.get(theTableName);
     }
 }
