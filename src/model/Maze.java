@@ -6,6 +6,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.sql.SQLException;
 
+import java.io.*;
+
 /**
  * Maze class represents a 5x5 grid of rooms in the TriviaMaze game.
  * It handles the setup of rooms with questions, player movement, and game state events.
@@ -42,7 +44,7 @@ public class Maze implements Serializable {
     /**
      * Property change support to communicate to the view
      */
-    private final PropertyChangeSupport mySupport;
+    private PropertyChangeSupport mySupport;
 
     /**
      * Database connection for the maze
@@ -69,6 +71,8 @@ public class Maze implements Serializable {
      */
     private final Trivia myTrivia;
 
+    private QuestionFactoryProvider questionFactoryProvider;
+
     /**
      * Constructs a new Maze, initializing the game grid and questions.
      *
@@ -77,6 +81,7 @@ public class Maze implements Serializable {
      */
     public Maze(final DatabaseConnector theDBConn) throws SQLException {
         this.myDBConn = theDBConn;
+        this.questionFactoryProvider = new QuestionFactoryProvider(theDBConn);
         this.myQesGen = new QuestionGenerator(theDBConn);
         this.mySupport = new PropertyChangeSupport(this);
         this.myMap = new Room[MAZE_SIZE][MAZE_SIZE];
@@ -187,6 +192,8 @@ public class Maze implements Serializable {
              Room newRoom = getCurrentRoom();
              newRoom.getDoor(theDirection.getOpposite()).open();
 
+            System.out.println("Moving to: " + myCurrentX + ", " + myCurrentY);
+
             mySupport.firePropertyChange("move", null, new MoveEvent(newRoom, theDirection, myCurrentX, myCurrentY));
             mySupport.firePropertyChange("correct answer", null, getCurrentRoom());
 
@@ -219,20 +226,19 @@ public class Maze implements Serializable {
      * @param theDirection The direction to move ("NORTH", "SOUTH", "EAST", "WEST").
      */
     public void move(final Direction theDirection) {
-        System.out.println("This is being triggered");
+        System.out.println("Maze move method called");
         if (canMove(theDirection)) {
             Room currentRoom = getCurrentRoom();
-            //System.out.println("Makes it through here");
-            int newX = myCurrentX + (theDirection == Direction.EAST ? 1 : (theDirection == Direction.WEST ? -1 : 0));
-            int newY = myCurrentY + (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
+            System.out.println("Can move in direction: " + theDirection);
 
-
-            if (isValidMove(newX, newY)) {
+            if (isValidMove(myCurrentX, myCurrentY)) {
+                System.out.println("Setting up question for direction: " + theDirection);
                 myQuestionPending = true;
                 myPendingDirection = theDirection;
                 mySupport.firePropertyChange("question", null, new QuestionEvent(currentRoom.getTrivia(), theDirection));
             }
-
+        } else {
+            System.out.println("Cannot move in direction: " + theDirection);
         }
     }
 
@@ -271,8 +277,6 @@ public class Maze implements Serializable {
         boolean isDoorOpen = currentRoom.isDoorOpen(theDirection);
         boolean isIncorrectlyAnswered = currentRoom.hasBeenAnsweredIncorrectly(theDirection);
 
-        System.out.println("Door is open: " + isDoorOpen);
-        System.out.println("Door has been answered incorrectly: " + isIncorrectlyAnswered);
 
 
         return isDoorOpen && !isIncorrectlyAnswered;
@@ -322,6 +326,7 @@ public class Maze implements Serializable {
     public int getRoomSize() {
         return MAZE_SIZE;
     }
+
     /**
     * Gets the instance of the Trivia class.
     * @return the instance of the trivia class.
@@ -331,9 +336,28 @@ public class Maze implements Serializable {
     }
 
 
+    /**
+     * Reinitializes the database connector
+     * @param theDbConnector - the database connector
+     */
     public void reinitializeDatabaseConnector(final DatabaseConnector theDbConnector) {
-        this.myDBConn = theDbConnector;
-        this.myQesGen = new QuestionGenerator(theDbConnector);
+        try {
+            this.myDBConn = theDbConnector;
+            this.myQesGen = new QuestionGenerator(theDbConnector);
+            this.questionFactoryProvider = new QuestionFactoryProvider(theDbConnector);
+
+            // Reinitialize questions for each room if necessary
+            for (int i = 0; i < MAZE_SIZE; i++) {
+                for (int j = 0; j < MAZE_SIZE; j++) {
+                    if (myMap[i][j].getTrivia() == null) {
+                        myMap[i][j].setTrivia(myQesGen.getRandomQes());
+                    }
+                }
+            }
+            System.out.println("Maze database connector reinitialized successfully");
+        } catch (Exception e) {
+            System.err.println("Error reinitializing Maze database connector: " + e.getMessage());
+        }
     }
 
     /**
@@ -395,6 +419,34 @@ public class Maze implements Serializable {
         int newY = myCurrentY + (theDirection == Direction.SOUTH ? 1 : (theDirection == Direction.NORTH ? -1 : 0));
         return isExit(newX, newY);
     }
+
+    /**
+     * Writes the state of the maze.
+     * @param theOut - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     */
+    @Serial
+    private void writeObject(final ObjectOutputStream theOut) throws IOException {
+      //  System.out.println("Maze writeObject called");
+        theOut.defaultWriteObject();
+       // System.out.println("Maze serialization successful");
+    }
+
+
+    /**
+     * Writes the state of the maze.
+     * @param theIn - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     * @throws ClassNotFoundException When it cannot find the class
+     */
+    @Serial
+    private void readObject(ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+       // System.out.println("Maze readObject called");
+        theIn.defaultReadObject();
+        mySupport = new PropertyChangeSupport(this);
+       // System.out.println("Maze deserialization successful");
+    }
+
 
     /**
      * Small class to handle moving the player between rooms

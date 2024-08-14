@@ -1,5 +1,8 @@
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * The {@code PlayerCharacter} class represents a player resources. character within a game
  * that can move around a maze. This class extends the {@link GameObject} class to
@@ -24,7 +27,10 @@ package model;
  * @author Masumi Yano
  * @since 1.0
  */
-public final class PlayerCharacter extends GameObject {
+public final class PlayerCharacter extends GameObject implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /** The width of the maze in which the player resources. character can move. */
     private int myMazeWidth;
@@ -53,53 +59,63 @@ public final class PlayerCharacter extends GameObject {
         this.myMazeHeight = theMazeHeight;
     }
 
-    /**
-     * Moves the player resources. character up by one unit if it is not at the top edge of the maze.
-     */
-    public void moveUp() {
-        if (myY > 0) {
-            myY--;
-        }
-    }
+//    /**
+//     * Moves the player resources. character up by one unit if it is not at the top edge of the maze.
+//     */
+//    public void moveUp() {
+//        if (myY > 0) {
+//            myY--;
+//        }
+//    }
+//
+//    /**
+//     * Moves the player resources. character down by one unit if it is not at the bottom edge of the maze.
+//     */
+//    public void moveDown() {
+//        if (myY < myMazeHeight - 1) {
+//            myY++;
+//        }
+//    }
+//
+//    /**
+//     * Moves the player resources. character left by one unit if it is not at the left edge of the maze.
+//     */
+//    public void moveLeft() {
+//        if (myX > 0) {
+//            myX--;
+//        }
+//    }
+//
+//    /**
+//     * Moves the player resources. character right by one unit if it is not at the right edge of the maze.
+//     */
+//    public void moveRight() {
+//        if (myX < myMazeWidth - 1) {
+//            myX++;
+//        }
+//    }
+//
+//    /**
+//     * Moves the player in a given direction.
+//     * @param theDirection - The direction the player is going.
+//     */
+//    public void move(final String theDirection) {
+//        switch (theDirection) {
+//            case "NORTH": moveUp(); break;
+//            case "SOUTH": moveDown(); break;
+//            case "WEST": moveLeft(); break;
+//            case "EAST": moveRight(); break;
+//        }
+//    }
 
     /**
-     * Moves the player resources. character down by one unit if it is not at the bottom edge of the maze.
+     * Sets the position of the player character
+     * @param theX - The x coordinate
+     * @param theY - The y coordinate
      */
-    public void moveDown() {
-        if (myY < myMazeHeight - 1) {
-            myY++;
-        }
-    }
-
-    /**
-     * Moves the player resources. character left by one unit if it is not at the left edge of the maze.
-     */
-    public void moveLeft() {
-        if (myX > 0) {
-            myX--;
-        }
-    }
-
-    /**
-     * Moves the player resources. character right by one unit if it is not at the right edge of the maze.
-     */
-    public void moveRight() {
-        if (myX < myMazeWidth - 1) {
-            myX++;
-        }
-    }
-
-    /**
-     * Moves the player in a given direction.
-     * @param theDirection - The direction the player is going.
-     */
-    public void move(final String theDirection) {
-        switch (theDirection) {
-            case "NORTH": moveUp(); break;
-            case "SOUTH": moveDown(); break;
-            case "WEST": moveLeft(); break;
-            case "EAST": moveRight(); break;
-        }
+    public void setPosition (final int theX, final int theY) {
+        myX = theX;
+        myY = theY;
     }
 
     /**

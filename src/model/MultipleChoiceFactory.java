@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,12 +18,16 @@ import java.util.Map;
  * @author Eric John
  * @version 08/13/2024
  */
-public class MultipleChoiceFactory implements QuestionFactory {
+public class MultipleChoiceFactory implements QuestionFactory, Serializable {
+
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * The database connector.
      */
-    private final DatabaseConnector myDBConnector;
+    private transient DatabaseConnector myDBConnector;
 
     /**
      * Multiple choice factory for the classes.
@@ -69,6 +75,14 @@ public class MultipleChoiceFactory implements QuestionFactory {
         }
 
         return choices;
+    }
+
+    /**
+     * Sets the database connector
+     * @param theDBConnector - The database connector
+     */
+    public void setDatabaseConnector(final DatabaseConnector theDBConnector) {
+        this.myDBConnector = theDBConnector;
     }
 
 }

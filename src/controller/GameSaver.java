@@ -35,7 +35,7 @@ public final class GameSaver {
     public static <T extends Serializable> void save(final T theObject, final String theFileName) throws IOException {
         try (FileOutputStream fileOut = new FileOutputStream(theFileName);
              ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-            out.writeObject(theObject);
+             out.writeObject(theObject);
         }
     }
 

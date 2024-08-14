@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -12,7 +14,15 @@ import java.sql.SQLException;
  * @author Eric John
  * @version 08/13/2024
  */
-public class ShortAnswerFactory implements QuestionFactory {
+public class ShortAnswerFactory implements QuestionFactory, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private transient DatabaseConnector dbConnector;
+
+    public ShortAnswerFactory(DatabaseConnector dbConnector) {
+        this.dbConnector = dbConnector;
+    }
 
     /**
      * Creates the question for short answer.
@@ -25,5 +35,13 @@ public class ShortAnswerFactory implements QuestionFactory {
         String question = theRS.getString("question");
         String answer = theRS.getString("correct_answer");
         return new ShortAnswer(question, answer);
+    }
+
+    /**
+     * Sets up the database for short answer
+     * @param theDBConnector - The database connector
+     */
+    public void setDatabaseConnector(DatabaseConnector theDBConnector) {
+        this.dbConnector = theDBConnector;
     }
 }

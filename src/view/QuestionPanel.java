@@ -21,12 +21,32 @@ import model.*;
  *
  */
 public class QuestionPanel extends JPanel {
+
+    /**
+     * Question for the panel
+     */
     private Question myCurrentQuestion;
+
+    /**
+     * Maze for the game
+     */
     private final Maze myMaze;
+
+    /**
+     * Button group for multiple choice/ true false
+     */
     private ButtonGroup myButtonGroup;
+
+    /**
+     * The Question Panel for the game
+     */
     private final JPanel myQuestionPanel;
 
+    /**
+     * The GUI for the game
+     */
     private GUI myGUI;
+
     /**
      * The current direction the player is going
      */
@@ -35,11 +55,11 @@ public class QuestionPanel extends JPanel {
     /**
      * Constructs a new QuestionPanel.
      *
-     * @param maze The Maze object containing the game's state and logic.
+     * @param theMaze The Maze object containing the game's state and logic.
      */
-    public QuestionPanel(Maze maze) {
+    public QuestionPanel(final Maze theMaze) {
         super();
-        this.myMaze = maze;
+        this.myMaze = theMaze;
         this.myButtonGroup = new ButtonGroup();
         setBackground(Color.BLACK);
         myQuestionPanel = new JPanel(new GridLayout(0, 1));
@@ -47,7 +67,11 @@ public class QuestionPanel extends JPanel {
         setFocusable(true);
     }
 
-    public void setGUI(GUI theGUI) {
+    /**
+     * Sets the gui to the given state.
+     * @param theGUI - The GUI of the game
+     */
+    public void setGUI(final GUI theGUI) {
         this.myGUI = theGUI;
     }
 
@@ -56,8 +80,9 @@ public class QuestionPanel extends JPanel {
      * Sets the current question to be displayed on the panel.
      *
      * @param theQuestion The Question object to be displayed.
+     * @param theDirection The direction the player is heading
      */
-    public void setQuestion(final Question theQuestion, Direction theDirection) {
+    public void setQuestion(final Question theQuestion, final Direction theDirection) {
         myCurrentQuestion = theQuestion;
         myCurrentDirection = theDirection;
         displayQuestion();

@@ -4,6 +4,9 @@
  */
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * Creates a Trivia logic for the game along with keeping track of the players right
  * and wrong answers when going through the maze. Along with that, calculates the time
@@ -11,7 +14,10 @@ package model;
  * @author Eric John
  * @version 7/18/2024
  */
-public class Trivia {
+public class Trivia implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * The name of the player.

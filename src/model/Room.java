@@ -6,6 +6,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+import java.io.*;
+
 /**
  * Room class for the maze that contains doors.
  *
@@ -30,7 +32,7 @@ public class Room implements Serializable {
     /**
      * The trivia for the game.
      */
-    private final Question myTrivia;
+    private Question myTrivia;
 
     /**
      * Boolean that checks if the door is answered
@@ -71,6 +73,10 @@ public class Room implements Serializable {
 
     public Question getTrivia() {
         return myTrivia;
+    }
+
+    public void setTrivia(final Question theTrivia) {
+        myTrivia = theTrivia;
     }
 
     /**
@@ -121,6 +127,27 @@ public class Room implements Serializable {
         } else {
             door.close();
         }
+    }
+
+    /**
+     * Writes the state of the maze.
+     * @param theOut - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream theOut) throws IOException {
+        theOut.defaultWriteObject();
+    }
+
+    /**
+     * Writes the state of the maze.
+     * @param theIn - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     * @throws ClassNotFoundException When it cannot find the class
+     */
+    @Serial
+    private void readObject(ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+        theIn.defaultReadObject();
     }
 
 }

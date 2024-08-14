@@ -2,32 +2,62 @@ package view;
 
 import javax.sound.sampled.*;
 import java.io.File;
-import java.io.IOException;
 
 public final class SoundPlayer {
 
+    /**
+     * Singleton instance of the audio for the game
+     */
     private static final SoundPlayer INSTANCE = new SoundPlayer();
 
-    private Clip myBackgroundMusicClip;
+    /**
+     * Clip for the background music
+     */
+    private transient Clip myBackgroundMusicClip;
 
+    /**
+     * Position of where in the audio track the music is.
+     */
     private long myBackgroundMusicPosition;
 
+    /**
+     * Boolean to see if the music is muted
+     */
     private boolean myMute;
 
+    /**
+     * The volume for the game.
+     */
+    private float myVolume = 0.3f;
+
+    /**
+     * Private constructor for audio
+     */
     private SoundPlayer() {super();}
 
+    /**
+     * The instance of the audio
+     * @return Singleton instance of the audio
+     */
     public static SoundPlayer getInstance() {return INSTANCE;}
 
+    /**
+     * Plays the background music
+     */
     public void playBackgroundMusic() {
+        if (myBackgroundMusicClip != null && myBackgroundMusicClip.isRunning()) {
+            return;
+        }
         try {
             final File path = new File("audio/mixkit-game-level-music-689.wav");
             final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(path);
-            final Clip clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
-            clip.loop(Clip.LOOP_CONTINUOUSLY);
-            clip.start();
-            myBackgroundMusicClip = clip;
-            setVolume(0.3f);
+            myBackgroundMusicClip = AudioSystem.getClip();
+            myBackgroundMusicClip.open(audioInputStream);
+            myBackgroundMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
+            setVolume(myVolume);
+            if (!myMute) {
+                myBackgroundMusicClip.start();
+            }
             audioInputStream.close();
 
         } catch (final Exception e) {
@@ -35,14 +65,20 @@ public final class SoundPlayer {
         }
      }
 
-     public void stopBackgroundMusic() {
+    /**
+     * Stops the background music
+     */
+    public void stopBackgroundMusic() {
         if (myBackgroundMusicClip != null && myBackgroundMusicClip.isRunning()) {
             myBackgroundMusicPosition = myBackgroundMusicClip.getMicrosecondPosition();
             myBackgroundMusicClip.stop();
         }
      }
 
-     public void resumeBackgroundMusic() {
+    /**
+     * Continues the background music
+     */
+    public void resumeBackgroundMusic() {
         if (myBackgroundMusicClip != null && !myBackgroundMusicClip.isRunning()
             && !myMute) {
             myBackgroundMusicClip.setMicrosecondPosition(myBackgroundMusicPosition);
@@ -50,7 +86,10 @@ public final class SoundPlayer {
         }
      }
 
-     public void muteBackgroundMusic() {
+    /**
+     * Mutes the background music
+     */
+    public void muteBackgroundMusic() {
         if (myBackgroundMusicClip != null) {
             myMute = true;
             stopBackgroundMusic();
@@ -60,11 +99,20 @@ public final class SoundPlayer {
         }
      }
 
+    /**
+     * Checks if the background music is running
+     * @return True if it is, false otherwise
+     */
      public boolean isBackgroundMusicRunning() {
         return myBackgroundMusicClip != null && myBackgroundMusicClip.isRunning();
      }
 
+    /**
+     * Sets the volume of the game
+     * @param theVolume - The volume for the audio
+     */
      public void setVolume(float theVolume) {
+
         if (myBackgroundMusicClip != null) {
             FloatControl gainControl = (FloatControl) myBackgroundMusicClip.getControl(FloatControl.Type.MASTER_GAIN);
             float dB = (float) (Math.log(theVolume) / Math.log(10.0) * 20.0);
@@ -72,6 +120,10 @@ public final class SoundPlayer {
         }
      }
 
+    /**
+     * Plays a sound effect
+     * @param thePathName - The file path for the sound effect
+     */
      public void playSFX(final String thePathName) {
         try {
             final AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(thePathName));

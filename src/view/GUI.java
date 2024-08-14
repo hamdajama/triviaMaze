@@ -3,18 +3,25 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 
-import java.awt.image.BufferedImage;
+
+
 import java.io.IOException;
+import java.io.Serial;
+import java.io.Serializable;
+import java.io.*;
 
 import java.sql.SQLException;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
+
 import javax.swing.BoxLayout;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -31,8 +38,6 @@ import model.Room;
 //import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
 
 import javax.swing.Timer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Objects;
 
 /**
@@ -50,37 +55,111 @@ import java.util.Objects;
  * @author Eric John
  * @version 7/13/2024
  */
-public class GUI {
+public class GUI implements Serializable {
 
 
+    /**
+     * Serial for the GUI
+     */
+    @Serial
+    private static final long serialVersionUID = 3L;
+
+
+    /**
+     * The player character for the maze
+     */
     private PlayerCharacter myPlayerCharacter;
+
+    /**
+     * The frame for the game
+     */
     private transient JFrame myFrame;
+
+    /**
+     * The maze panel to display the maze
+     */
     private transient MazePanel myMazePanel;
+
+    /**
+     * The maze the player will traverse through
+     */
     private transient Maze myMaze;
+
+    /**
+     * Constant North Direction
+     */
     private static final String UP = "NORTH";
+
+    /**
+     * Constant East Direction
+     */
     private static final String RIGHT = "EAST";
+
+    /**
+     * Constant South Direction
+     */
     private static final String DOWN = "SOUTH";
+
+    /**
+     * Constant West Direction
+     */
     private static final String LEFT = "WEST";
+
     /**
      * The direction the player intends to go.
      */
-    private String currentDirection = DOWN;
-    private int frameIndex = 0;
-    private Map<String, BufferedImage[]> characterImages;
-    private transient Timer animationTimer;
+    private String myCurrentDirection = DOWN;
 
-    private static final long serialVersionUID = 2L;
+    /**
+     * Represents the sprites for the character.
+     */
+    private int myFrameIndex = 0;
 
+    /**
+     * The character images.
+     */
+    private transient Map<String, BufferedImage[]> myCharacterImages;
+
+    private Map<String, String[]> myCharacterImagePaths;
+
+    /**
+     * The animation Timer
+     */
+    private transient Timer myAnimationTimer;
+
+    private boolean isBackgroundMusicPlaying = false;
+
+
+
+    /**
+     * RoomPanel to display the room
+     */
     private RoomPanel myRoomPanel;
+
+    /**
+     * QuestionPanel to display the question
+     */
     private QuestionPanel myQuestionPanel;
+
+    /**
+     * Boolean for saving and loading the game.
+     */
     private boolean isKeyDispatcherAdded = false;
+
+    /**
+     * Boolean if the player is answering a question
+     */
     private boolean isAnsweringQuestion = false;
+
+    /**
+     * Boolean if the player is in the initial position of the maze
+     */
     private boolean isFirstStep = true;
 
     /**
      * The audio for the game.
      */
-    private final SoundPlayer mySound = SoundPlayer.getInstance();
+    private transient SoundPlayer mySound;
 
     /**
      * Creates a new GUI instance and initializes the game.
@@ -92,6 +171,8 @@ public class GUI {
         super();
         myMaze = new Maze(theDBConnector);
         myPlayerCharacter = new PlayerCharacter(0, 0);
+        mySound = SoundPlayer.getInstance();
+        initializeCharacterImagePaths();
         loadCharacterImages();
         setupFrame();
         setupAnimationTimer();
@@ -99,7 +180,6 @@ public class GUI {
             mySound.playBackgroundMusic();
         } catch (final Exception e) {
             System.out.println("Error playing background music: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -124,42 +204,59 @@ public class GUI {
         myFrame.setVisible(true);
     }
 
+    /**
+     * Key events for the game.
+     */
     private void addKeyEventDispatcher() {
         if (!isKeyDispatcherAdded) {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
                 if (e.getID() == KeyEvent.KEY_PRESSED && !myMaze.isQuestionPending()) {
-                    Direction direction = null;
-                    switch (e.getKeyCode()) {
-                        case KeyEvent.VK_W:
-                            direction = Direction.NORTH;
-                            break;
-                        case KeyEvent.VK_S:
-                            direction = Direction.SOUTH;
-                            break;
-                        case KeyEvent.VK_A:
-                            direction = Direction.WEST;
-                            break;
-                        case KeyEvent.VK_D:
-                            direction = Direction.EAST;
-                            break;
-                    }
+                    Direction direction = switch (e.getKeyCode()) {
+                        case KeyEvent.VK_W -> Direction.NORTH;
+                        case KeyEvent.VK_S -> Direction.SOUTH;
+                        case KeyEvent.VK_A -> Direction.WEST;
+                        case KeyEvent.VK_D -> Direction.EAST;
+                        default -> null;
+                    };
                     if (direction != null) {
-                        currentDirection = String.valueOf(direction);
-                      //  myPlayerCharacter.displayPosition();
-                        myMazePanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);
-                        isFirstStep = false;
-                        myRoomPanel.updateDirectionAndFrame(String.valueOf(direction), frameIndex);
-                        mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
-                        System.out.println("Key pressed: " + direction);
-                        myMaze.move(direction);
-                    } else {
-                        System.out.println("Cannot move " + direction);
+                        handleMovement(direction);
                     }
                 }
                 return false;
             });
             isKeyDispatcherAdded = true;
         }
+    }
+
+    /**
+     * Handles the movement for the game
+     * @param theDirection - The direction the player is heading.
+     */
+    private void handleMovement(final Direction theDirection) {
+        if (myMaze.isQuestionPending()) {
+            return; // Don't process movement if a question is pending
+        }
+
+        myCurrentDirection = String.valueOf(theDirection);
+
+        // Only update the visual direction, don't move the character yet
+        myMazePanel.updateDirectionAndFrame(myCurrentDirection, myFrameIndex);
+        myRoomPanel.updateDirectionAndFrame(myCurrentDirection, myFrameIndex);
+
+        isFirstStep = false;
+        mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
+        System.out.println("Key pressed: " + theDirection);
+
+        // Only call maze.move() if the player can actually move in that direction
+        if (myMaze.canMove(theDirection)) {
+            myMaze.move(theDirection);
+        } else {
+            System.out.println("Cannot move in direction: " + theDirection);
+        }
+
+        // Repaint both panels
+        myMazePanel.repaint();
+        myRoomPanel.repaint();
     }
 
 
@@ -169,51 +266,84 @@ public class GUI {
      * Loads the character images for the player character.
      * */
     private void loadCharacterImages() {
-        characterImages = new HashMap<>();
-        try {
-            characterImages.put(UP, new BufferedImage[] {
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_up_2.png"))),
-            });
-            characterImages.put(RIGHT, new BufferedImage[] {
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_right_2.png"))),
-            });
-            characterImages.put(DOWN, new BufferedImage[] {
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_down_2.png"))),
-            });
-            characterImages.put(LEFT, new BufferedImage[] {
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_0.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_1.png"))),
-                    ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource("resources/character/character_left_2.png"))),
-            });
-        } catch (IOException e) {
-            System.err.println("Error loading character images: " + e.getMessage());
-            e.printStackTrace();
+        myCharacterImages = new HashMap<>();
+        for (Map.Entry<String, String[]> entry : myCharacterImagePaths.entrySet()) {
+            String direction = entry.getKey();
+            String[] paths = entry.getValue();
+            BufferedImage[] images = new BufferedImage[paths.length];
+            for (int i = 0; i < paths.length; i++) {
+                try {
+                    images[i] = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResource(paths[i])));
+                } catch (IOException e) {
+                    System.err.println("Error loading character image: " + paths[i]);
+                }
+            }
+            myCharacterImages.put(direction, images);
         }
     }
 
-    private void setupAnimationTimer() {
-        animationTimer = new Timer(200, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frameIndex = (frameIndex + 1) % 3;
-                if (isAnsweringQuestion) {
-                    myMazePanel.updateFrame(frameIndex);
-                }
-                myMazePanel.repaint();
-                if (!isFirstStep) {
-                    myRoomPanel.updateFrame(frameIndex);
-                    myRoomPanel.repaint();
-                }
-
-            }
+    private void initializeCharacterImagePaths() {
+        myCharacterImagePaths = new HashMap<>();
+        myCharacterImagePaths.put(UP, new String[] {
+                "resources/character/character_up_0.png",
+                "resources/character/character_up_1.png",
+                "resources/character/character_up_2.png"
         });
-        animationTimer.start();
+        myCharacterImagePaths.put(RIGHT, new String[] {
+                "resources/character/character_right_0.png",
+                "resources/character/character_right_1.png",
+                "resources/character/character_right_2.png"
+        });
+        myCharacterImagePaths.put(DOWN, new String[] {
+                "resources/character/character_down_0.png",
+                "resources/character/character_down_1.png",
+                "resources/character/character_down_2.png"
+        });
+        myCharacterImagePaths.put(LEFT, new String[] {
+                "resources/character/character_left_0.png",
+                "resources/character/character_left_1.png",
+                "resources/character/character_left_2.png"
+        });
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(myMaze); // Explicitly write the Maze object
+        System.out.println("GUI serialization: Maze written, not null: " + (myMaze != null));
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        myMaze = (Maze) in.readObject(); // Explicitly read the Maze object
+        System.out.println("GUI deserialization: Maze read, not null: " + (myMaze != null));
+
+        if (myMaze == null) {
+            throw new IOException("Maze object is null after deserialization");
+        }
+
+        mySound = SoundPlayer.getInstance();
+        loadCharacterImages();
+    }
+
+    /**
+     * Animation timer to display animation.
+     */
+    private void setupAnimationTimer() {
+        myAnimationTimer = new Timer(200, e -> {
+            myFrameIndex = (myFrameIndex + 1) % 3;
+            if (isAnsweringQuestion) {
+                myMazePanel.updateFrame(myFrameIndex);
+            }
+            myMazePanel.repaint();
+            if (!isFirstStep) {
+                myRoomPanel.updateFrame(myFrameIndex);
+                myRoomPanel.repaint();
+            }
+
+        });
+        myAnimationTimer.start();
     }
 
     /**
@@ -228,7 +358,7 @@ public class GUI {
         menuBar.add(menuFile);
         menuBar.add(helpFile);
 
-        setupMenuFile(menuFile, theFrame);
+        setupMenuFile(menuFile);
         setupHelpFile(helpFile, theFrame);
 
         theFrame.setJMenuBar(menuBar);
@@ -238,17 +368,14 @@ public class GUI {
      * Sets up the File menu and its items.
      *
      * @param theMenuFile The File menu.
-     * @param theFrame    The main game window frame.
      */
-    private void setupMenuFile(final JMenu theMenuFile, final JFrame theFrame) {
+    private void setupMenuFile(final JMenu theMenuFile) {
         final JMenuItem saveFileItem = new JMenuItem("Save game");
         saveFileItem.addActionListener(e -> saveGameState());
         theMenuFile.add(saveFileItem);
 
         final JMenuItem loadFileItem = new JMenuItem("Load game");
-        loadFileItem.addActionListener(e -> {
-            loadGameState();
-        });
+        loadFileItem.addActionListener(e -> loadGameState());
         theMenuFile.add(loadFileItem);
 
         final JMenuItem exitFileItem = new JMenuItem("Exit game");
@@ -257,34 +384,51 @@ public class GUI {
     }
 
 
+    /**
+     * Saves the game.
+     */
     private void saveGameState() {
+        isBackgroundMusicPlaying = mySound.isBackgroundMusicRunning();
         try {
-            GameSaver.save(myPlayerCharacter, "player_character.ser");
-            GameSaver.save(myMaze, "maze.ser");
-            GameSaver.save(myRoomPanel, "room_panel.ser");
-            JOptionPane.showMessageDialog(myFrame, "Game saved successfully!!");
+            GameSaver.save(this, "game_state.ser");
+            JOptionPane.showMessageDialog(myFrame, "Game saved successfully!");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(myFrame, "Error saving game state: " + e.getMessage());
         }
     }
 
+    /**
+     * Loads the game.
+     */
     private void loadGameState() {
         try {
-            PlayerCharacter loadedPlayer = GameSaver.load("player_character.ser");
-            Maze loadedMaze = GameSaver.load("maze.ser");
-            RoomPanel loadedRoomPanel = GameSaver.load("room_panel.ser");
+            GUI loadedState = GameSaver.load("game_state.ser");
+            System.out.println("LoadGameState: Loaded state's Maze not null: " + (loadedState.myMaze != null));
 
+            // Copy all necessary fields from loadedState to this object
+            this.myPlayerCharacter = loadedState.myPlayerCharacter;
+            this.myMaze = loadedState.myMaze;
+            System.out.println("LoadGameState: After copying, this.myMaze not null: " + (this.myMaze != null));
+
+            // ... copy other fields ...
+
+            if (this.myMaze == null) {
+                throw new IOException("Maze object is null after loading");
+            }
+
+            // Reinitialize transient fields and GUI components
             DatabaseConnector dbConnector = new DatabaseConnector();
-            loadedMaze.reinitializeDatabaseConnector(dbConnector);
+            this.myMaze.reinitializeDatabaseConnector(dbConnector);
 
-            this.myPlayerCharacter = loadedPlayer;
-            this.myMaze = loadedMaze;
-            this.myRoomPanel = loadedRoomPanel;
-
+            mySound = SoundPlayer.getInstance();
+            loadCharacterImages();
             reinitializeGUI();
+
+            System.out.println("LoadGameState: After reinitialization, this.myMaze not null: " + (this.myMaze != null));
 
             JOptionPane.showMessageDialog(myFrame, "Game loaded successfully!");
         } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading game state: " + e.getMessage());
             JOptionPane.showMessageDialog(myFrame, "Error loading game: " + e.getMessage());
         }
     }
@@ -381,8 +525,8 @@ public class GUI {
      * @param theFrame    The main game window frame.
      * @param theHalfWidth Half the width of the main game window frame.
      */
-    private void setupMazePanel(JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, frameIndex, characterImages, currentDirection);
+    private void setupMazePanel(final JFrame theFrame, final int theHalfWidth) {
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex, myCharacterImages, myCurrentDirection);
         myMazePanel.setBackground(Color.BLACK);
         myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(myMazePanel, BorderLayout.CENTER);
@@ -395,7 +539,7 @@ public class GUI {
      * @param theHalfWidth  Half the width of the main game window frame.
      * @param theHalfHeight Half the height of the main game window frame.
      */
-    private void setupRightPanel(JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
+    private void setupRightPanel(final JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
         final JPanel rightPanel = new JPanel();
         rightPanel.setBounds(theHalfWidth, 0, theHalfWidth, theFrame.getHeight());
         final BoxLayout boxLayout = new BoxLayout(rightPanel, BoxLayout.Y_AXIS);
@@ -403,7 +547,7 @@ public class GUI {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        myRoomPanel = new RoomPanel(myMaze, frameIndex, characterImages, currentDirection);
+        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages, myCurrentDirection);
         myRoomPanel.setBackground(Color.BLACK);
         myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(myRoomPanel);
@@ -423,7 +567,9 @@ public class GUI {
             } else if ("move".equals(evt.getPropertyName())) {
 
                 Maze.MoveEvent moveEvent = (Maze.MoveEvent) evt.getNewValue();
-                myPlayerCharacter.move(currentDirection);
+                myPlayerCharacter.setPosition(moveEvent.getX(), moveEvent.getY());
+                //myPlayerCharacter.move(myCurrentDirection);
+                myMazePanel.updatePlayerCharacter(myPlayerCharacter);
                 updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(),moveEvent.getY());
                 myQuestionPanel.clearQuestion();
 
@@ -435,6 +581,8 @@ public class GUI {
 
             } else if ("wrong answer".equals(evt.getPropertyName())) {
 
+                myMazePanel.updateDirectionAndFrame(DOWN, myFrameIndex);
+                myRoomPanel.updateDirectionAndFrame(DOWN, myFrameIndex);
                 updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(), myMaze.getCurrentY());
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
                 myMaze.getTrivia().incrementTrys();         // increment tries
@@ -491,21 +639,35 @@ public class GUI {
      * Reinitialize the GUI after loading the game state.
      */
     private void reinitializeGUI() {
-        if (myFrame != null) {
-            myFrame.dispose();
+        if (myMaze == null) {
+            throw new IllegalStateException("Maze is null during GUI reinitialization");
         }
-
         setupFrame();
-
-        if (animationTimer != null) {
-            animationTimer.stop();
-        }
         setupAnimationTimer();
+
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex, myCharacterImages, myCurrentDirection);
+        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages, myCurrentDirection);
+        myQuestionPanel = new QuestionPanel(myMaze);
+        myQuestionPanel.setGUI(this);
+        isKeyDispatcherAdded = false;
+
+        if (myFrame != null) {
+            setupPanels(myFrame);
+        } else {
+            throw new IllegalStateException("Frame is null during GUI reinitialization");
+        }
+
+        if (isBackgroundMusicPlaying) {
+            mySound.playBackgroundMusic();
+        }
 
         myFrame.revalidate();
         myFrame.repaint();
     }
 
+    /**
+     * Stops the animation for the game
+     */
     public void stopAnsweringAnimation() {
         isAnsweringQuestion = false;
     }

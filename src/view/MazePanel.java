@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import model.Maze;
 import model.PlayerCharacter;
 
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -15,7 +16,10 @@ import java.util.Map;
  * @author Eric John
  * @version 8/4/2024
  */
-public class MazePanel extends JPanel {
+public class MazePanel extends JPanel implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * The maze of the game.
@@ -25,13 +29,22 @@ public class MazePanel extends JPanel {
     /**
      * The character.
      */
-    private final PlayerCharacter myPlayerCharacter;
+    private  PlayerCharacter myPlayerCharacter;
 
+    /**
+     * The frame index displaying animation
+     */
     private int myFrameIndex;
 
+    /**
+     * The direction the player is heading.
+     */
     private String myDirection;
 
-    private final Map<String, BufferedImage[]> myCharacterImages;
+    /**
+     * The character sprites for the playercharacter
+     */
+    private final transient Map<String, BufferedImage[]> myCharacterImages;
 
 
     /**
@@ -44,9 +57,9 @@ public class MazePanel extends JPanel {
      * @param theMaze - The maze for the game.
      * @param thePlayerCharacter - The character for the game.
      */
-    public MazePanel(Maze theMaze, PlayerCharacter thePlayerCharacter,
-                     int theFrameIndex, Map<String, BufferedImage[]> theCharacterImage,
-                     String theDirection) {
+    public MazePanel(final Maze theMaze, final PlayerCharacter thePlayerCharacter,
+                     final int theFrameIndex, final Map<String, BufferedImage[]> theCharacterImage,
+                     final String theDirection) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
         myFrameIndex = theFrameIndex;
@@ -60,7 +73,7 @@ public class MazePanel extends JPanel {
      * @param theG - The graphics for the game.
      */
     @Override
-    protected void paintComponent(Graphics theG) {
+    protected void paintComponent(final Graphics theG) {
         super.paintComponent(theG);
         drawMaze(theG);
         drawPlayer(theG);
@@ -71,9 +84,7 @@ public class MazePanel extends JPanel {
      * Draws the maze for the game.
      * @param theG - The graphics for the game.
      */
-    private void drawMaze(Graphics theG) {
-//        //TEMPORARY CALL TO CHECK IF THE ROOM CHANGES COLOR
-//        myMaze.getRoom(0,0).setAnswered(true);
+    private void drawMaze(final Graphics theG) {
         for (int x = 0; x < myMaze.getRoomSize(); x++) {
             for (int y = 0; y < myMaze.getRoomSize(); y++) {
                 if (myMaze.getRoom(x,y).isAnswered()) {
@@ -96,21 +107,60 @@ public class MazePanel extends JPanel {
      * Draws the character for the maze.
      * @param theG - The graphics of the game.
      */
-    private void drawPlayer(Graphics theG) {
+    private void drawPlayer(final Graphics theG) {
         myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
         BufferedImage[] images = myCharacterImages.get(myDirection.toUpperCase());
         BufferedImage currentImage = images[myFrameIndex];
         theG.drawImage(currentImage, myPlayerCharacter.getMyX() * cellSize, myPlayerCharacter.getMyY()*cellSize + 10, this);
     }
 
+    /**
+     * Updates the characterSprite
+     * @param theFrameIndex - The frame index of a character sprite
+     */
     public void updateFrame(final int theFrameIndex) {
         myFrameIndex = theFrameIndex;
         repaint();
     }
 
+    /**
+     * Updates the characterSprite in a given direction
+     * @param theNewDirection - The new direction the player is heading
+     * @param theNewFrameIndex - The frame index of the character sprite.
+     */
     public void updateDirectionAndFrame(final String theNewDirection, final int theNewFrameIndex) {
         myDirection = theNewDirection.toUpperCase();
         myFrameIndex = theNewFrameIndex;
         repaint();
+    }
+
+    /**
+     * Updates the playerCharacter
+     * @param thePlayerCharacter - The playerCharacter
+     */
+    public void updatePlayerCharacter(final PlayerCharacter thePlayerCharacter) {
+        this.myPlayerCharacter = thePlayerCharacter;
+        repaint();
+    }
+
+    /**
+     * Writes the state of the maze.
+     * @param theOut - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     */
+    @Serial
+    private void writeObject(final ObjectOutputStream theOut) throws IOException {
+        theOut.defaultWriteObject();
+    }
+
+    /**
+     * Writes the state of the maze.
+     * @param theIn - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     * @throws ClassNotFoundException When it cannot find the class
+     */
+    @Serial
+    private void readObject(final ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+        theIn.defaultReadObject();
     }
 }

@@ -13,40 +13,77 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
 import java.io.Serializable;
+import java.io.*;
 import javax.swing.JPanel;
 import java.util.EnumMap;
 import java.util.Map;
 
 public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
+
+    /**
+     * Serial for the RoomPanel
+     */
     @Serial
     private static final long serialVersionUID = 3L;
 
+    /**
+     * Enumeration representing the various doorStates.
+     */
     private enum DoorState {
         CLOSED, OPEN, EXIT
     }
 
-    private final Map<Direction, DoorState> doorStates;
+    /**
+     * DoorStates for a door in a given direction
+     */
+    private final Map<Direction, DoorState> myDoorStates;
 
+    /**
+     * Player position x coordinate
+     */
     private int myPlayerX;
+
+    /**
+     * Player position y coordinate
+     */
     private int myPlayerY;
-    private final Maze myMaze;
-    private Map<String, BufferedImage[]> myImages;
+
+    /**
+     * Maze for the game
+     */
+    private  Maze myMaze;
+
+    /**
+     * Images for the character sprite
+     */
+    private transient Map<String, BufferedImage[]> myImages;
+
+    /**
+     * The direction the player is heading
+     */
     private String myDirection;
+
+    /**
+     * Frame index for the character sprite
+     */
     private int myFrameIndex;
 
     /**
      * Creates the panel for the room.
      * @param theMaze - The maze for the game.
+     * @param theFrameIndex - The frame index of the character sprite
+     * @param theImages - The images of the character sprite
+     * @param theDirection - The direction the player is heading.
      */
-    public RoomPanel(Maze theMaze, int theFrameIndex, Map<String, BufferedImage[]> theImages,
-                    String theDirecton) {
+    public RoomPanel(final Maze theMaze, final int theFrameIndex, final Map<String, BufferedImage[]> theImages,
+                     final String theDirection) {
         super();
-        doorStates = new EnumMap<>(Direction.class);
+        myDoorStates = new EnumMap<>(Direction.class);
         for (Direction dir : Direction.values()) {
             if (dir.equals(Direction.NORTH) || dir.equals(Direction.WEST)) {
-                doorStates.put(dir, DoorState.CLOSED);
+                myDoorStates.put(dir, DoorState.CLOSED);
             } else {
-                doorStates.put(dir, DoorState.OPEN);
+                myDoorStates.put(dir, DoorState.OPEN);
             }
 
         }
@@ -54,7 +91,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         myPlayerY = 0;
         myMaze = theMaze;
         myImages = theImages;
-        myDirection = theDirecton;
+        myDirection = theDirection;
         myFrameIndex = theFrameIndex;
     }
 
@@ -105,7 +142,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      */
     private void drawDoor(final Graphics2D theG, final Direction theDirection, final int theX,
                           final int theY, final int theWidth, final int theHeight) {
-        switch (doorStates.get(theDirection)) {
+        switch (myDoorStates.get(theDirection)) {
             case CLOSED:
                 theG.setColor(Color.RED);
                 break;
@@ -163,17 +200,17 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
 
 
             if (myMaze.isAdjacentToExit(dir)) {
-                doorStates.put(dir, DoorState.EXIT);
+                myDoorStates.put(dir, DoorState.EXIT);
             } else if (isEdge(dir)) {
-                doorStates.put(dir, DoorState.CLOSED);
+                myDoorStates.put(dir, DoorState.CLOSED);
             } else if (theRoom.hasBeenAnsweredIncorrectly(dir)) {
-                doorStates.put(dir, DoorState.CLOSED);
+                myDoorStates.put(dir, DoorState.CLOSED);
             } else if (theRoom.isDoorOpen(dir)) {
-                doorStates.put(dir, DoorState.OPEN);
+                myDoorStates.put(dir, DoorState.OPEN);
             } else {
-                doorStates.put(dir, DoorState.CLOSED);
+                myDoorStates.put(dir, DoorState.CLOSED);
             }
-            System.out.println("Door state for " + dir + ": " + doorStates.get(dir));
+            System.out.println("Door state for " + dir + ": " + myDoorStates.get(dir));
         }
         repaint();
     }
@@ -183,7 +220,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theDirection - The direction of the doors.
      * @return - True if the door is on the edge of the maze or false otherwise.
      */
-    private boolean isEdge(Direction theDirection) {
+    private boolean isEdge(final Direction theDirection) {
         return (myPlayerY == 0 && theDirection == Direction.NORTH) ||
                 (myPlayerY == myMaze.getMazeSize() - 1 && theDirection == Direction.SOUTH) ||
                 (myPlayerX == 0 && theDirection == Direction.WEST) ||
@@ -191,21 +228,20 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     }
 
     /**
-     * Helper method that prints where the player is at and what state each dooe is in.
+     * Updates the characterSprite in a given direction
+     * @param theDirection - The new direction the player is heading
+     * @param theFrameIndex - The frame index of the character sprite.
      */
-    private void printDoorStates() {
-        System.out.println("Door states at position (" + myPlayerX + ", " + myPlayerY + "):");
-        for (Direction dir : Direction.values()) {
-            System.out.println(dir + ": " + doorStates.get(dir));
-        }
-    }
-
-    public void updateDirectionAndFrame(String theDirection, int theFrameIndex) {
+    public void updateDirectionAndFrame(final String theDirection, final int theFrameIndex) {
         myDirection = theDirection.toUpperCase();
         myFrameIndex = theFrameIndex;
         repaint();
     }
 
+    /**
+     * Updates the characterSprite
+     * @param theFrameIndex - The frame index of a character sprite
+     */
     public void updateFrame(final int theFrameIndex) {
         myFrameIndex = theFrameIndex;
         repaint();
@@ -223,4 +259,26 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
             updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(), moveEvent.getY());
         }
     }
+
+    /**
+     * Writes the state of the maze.
+     * @param theOut - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     */
+    @Serial
+    private void writeObject(final ObjectOutputStream theOut) throws IOException {
+        theOut.defaultWriteObject();
+    }
+
+    /**
+     * Writes the state of the maze.
+     * @param theIn - The state of the maze
+     * @throws IOException When it cannot write the state of the maze.
+     * @throws ClassNotFoundException When it cannot find the class
+     */
+    @Serial
+    private void readObject(final ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+        theIn.defaultReadObject();
+    }
+
 }

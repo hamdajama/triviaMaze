@@ -4,6 +4,8 @@
  */
 package model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,20 +15,25 @@ import java.util.Map;
  * @author Eric John
  * @version 08/13/2024
  */
-public class QuestionFactoryProvider {
+public class QuestionFactoryProvider implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     /**
      * A map that contains the question factories for the type of question.
      */
     private final Map<String, QuestionFactory> myFactories;
+
+    private transient DatabaseConnector myDBConnector;
 
     /**
      * Puts all the factories into a hashmap
      * @param theDBConnector - The database of the game.
      */
     public QuestionFactoryProvider(final DatabaseConnector theDBConnector) {
+        myDBConnector = theDBConnector;
         myFactories = new HashMap<>();
-        myFactories.put("TrueFalse", new TrueFalseFactory());
-        myFactories.put("ShortAnswer", new ShortAnswerFactory());
+        myFactories.put("TrueFalse", new TrueFalseFactory(theDBConnector));
+        myFactories.put("ShortAnswer", new ShortAnswerFactory(theDBConnector));
         myFactories.put("MultipleQuestion", new MultipleChoiceFactory(theDBConnector));
     }
 
@@ -38,4 +45,23 @@ public class QuestionFactoryProvider {
     public QuestionFactory getFactory(final String theTableName) {
         return myFactories.get(theTableName);
     }
+
+    /**
+     * Sets up the database
+     * @param theDBConnector - The database connector
+     */
+    public void setDatabaseConnector(final DatabaseConnector theDBConnector) {
+        this.myDBConnector = theDBConnector;
+        for (QuestionFactory factory : myFactories.values()) {
+            if (factory instanceof TrueFalseFactory) {
+                ((TrueFalseFactory) factory).setDatabaseConnector(theDBConnector);
+            } else if (factory instanceof ShortAnswerFactory) {
+                ((ShortAnswerFactory) factory).setDatabaseConnector(theDBConnector);
+            } else if (factory instanceof MultipleChoiceFactory) {
+                ((MultipleChoiceFactory) factory).setDatabaseConnector(theDBConnector);
+            }
+        }
+    }
+
+
 }
