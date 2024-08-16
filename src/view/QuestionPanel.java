@@ -191,9 +191,6 @@ public class QuestionPanel extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect answer!");
             myMaze.processAnswer(myCurrentDirection, false);
-            if (myMaze.getCurrentRoom().allClosed()) {
-                JOptionPane.showMessageDialog(this, "Game Over!");
-            }
         }
         myGUI.stopAnsweringAnimation();
         setVisible(false);

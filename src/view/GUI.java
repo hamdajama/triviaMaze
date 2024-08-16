@@ -30,7 +30,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
 
 import model.DatabaseConnector;
 import model.Direction;
@@ -124,9 +126,20 @@ public class GUI implements Serializable {
      */
     private transient Map<String, BufferedImage[]> myCharacterImages;
 
+    /**
+     * A map that contains the character images
+     */
     private Map<String, String[]> myCharacterImagePaths;
 
+    /**
+     * A boolean that determines if the background music is playing
+     */
     private boolean isBackgroundMusicPlaying = false;
+
+    /**
+     * The mute menu item to mute the game.
+     */
+    private JMenuItem myMuteItem;
 
 
 
@@ -307,19 +320,28 @@ public class GUI implements Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         out.writeObject(myMaze);
+        out.writeFloat(mySound.getVolume());
+        out.writeBoolean(mySound.isMuted());
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         myMaze = (Maze) in.readObject();
+        float volume = in.readFloat();
+        boolean muted = in.readBoolean();
 
         if (myMaze == null) {
             throw new IOException("Maze object is null after deserialization");
         }
 
         mySound = SoundPlayer.getInstance();
+        mySound.setVolume(volume);
+        if (muted) {
+            mySound.muteBackgroundMusic();
+        }
         loadCharacterImages();
+        updateMuteMenuItem();
     }
 
     /**
@@ -359,23 +381,79 @@ public class GUI implements Serializable {
         theFrame.setJMenuBar(menuBar);
     }
 
+
     /**
      * Sets up the File menu and its items.
      *
      * @param theMenuFile The File menu.
      */
     private void setupMenuFile(final JMenu theMenuFile) {
-        final JMenuItem saveFileItem = new JMenuItem("Save game");
+        JMenuItem saveFileItem = new JMenuItem("Save game");
         saveFileItem.addActionListener(e -> saveGameState());
         theMenuFile.add(saveFileItem);
 
-        final JMenuItem loadFileItem = new JMenuItem("Load game");
+        JMenuItem loadFileItem = new JMenuItem("Load game");
         loadFileItem.addActionListener(e -> loadGameState());
         theMenuFile.add(loadFileItem);
 
-        final JMenuItem exitFileItem = new JMenuItem("Exit game");
+        JMenuItem changeVolumeItem = new JMenuItem("Change Volume");
+        changeVolumeItem.addActionListener(e -> changeVolume());
+        theMenuFile.add(changeVolumeItem);
+
+        myMuteItem = new JMenuItem("Mute");
+        myMuteItem.addActionListener(e -> toggleMute());
+        theMenuFile.add(myMuteItem);
+
+        JMenuItem exitFileItem = new JMenuItem("Exit game");
         exitFileItem.addActionListener(e -> System.exit(0));
         theMenuFile.add(exitFileItem);
+    }
+
+    /**
+     * Changes the volume of the game.
+     */
+    private void changeVolume() {
+        String input = JOptionPane.showInputDialog(myFrame,
+                "Enter volume (1-10):",
+                "Change Volume",
+                JOptionPane.QUESTION_MESSAGE);
+
+        try {
+            int volume = Integer.parseInt(input);
+            if (volume >= 1 && volume <= 10) {
+                float normalizedVolume = volume / 10f;
+                mySound.setVolume(normalizedVolume);
+            } else {
+                JOptionPane.showMessageDialog(myFrame,
+                        "Please enter a number between 1 and 10. No decimals.",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(myFrame,
+                    "Please enter a valid number.",
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Mutes the game
+     */
+    private void toggleMute() {
+        mySound.muteBackgroundMusic();
+        updateMuteMenuItem();
+    }
+
+    /**
+     * Updates the Mute Menu Item
+     */
+    private void updateMuteMenuItem() {
+        if (mySound.isMuted()) {
+            myMuteItem.setText("Unmute");
+        } else {
+            myMuteItem.setText("Mute");
+        }
     }
 
 
@@ -579,7 +657,6 @@ public class GUI implements Serializable {
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
                 myMaze.getTrivia().incrementTrys();
                 myMaze.getTrivia().incrementWrongAnswer();
-                myMaze.isGameOver();
 
             } else if ("game over".equals(evt.getPropertyName())) {
 
@@ -596,14 +673,32 @@ public class GUI implements Serializable {
      */
     private void showGameOverDialog(final boolean theResult) {
         myMaze.getTrivia().stopTimer();
-        String message = theResult ? "Congratulations, you won!" : "Game over, you lost!";
+        String message;
+        if (theResult) {
+            message = "Congratulations, you won!";
+            mySound.playWinMusic();
+        } else {
+            message = "Game over, you lost!";
+            mySound.playLoseMusic();
+        }
         message += "\nTime taken: " + myMaze.getTrivia().getTime() / 1000 + " seconds";
         message += "\nTries used: " + myMaze.getTrivia().getTrys();
         message += "\nCorrect Answers: " + myMaze.getTrivia().getRightAnswer();
         message += "\nWrong Answers " + myMaze.getTrivia().getWrongAnswer();
-        JOptionPane.showMessageDialog(null, message, "Game Results",
-                                        JOptionPane.INFORMATION_MESSAGE);
-        System.exit(0);
+
+        final String finalMessage = message;
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(null, finalMessage, "Game Results",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
     }
 
 
@@ -658,6 +753,7 @@ public class GUI implements Serializable {
         if (isBackgroundMusicPlaying) {
             mySound.playBackgroundMusic();
         }
+
 
         myFrame.revalidate();
         myFrame.repaint();

@@ -1,7 +1,8 @@
 package view;
 
-import javax.sound.sampled.*;
 import java.io.File;
+
+import javax.sound.sampled.*;
 
 public final class SoundPlayer {
 
@@ -14,6 +15,16 @@ public final class SoundPlayer {
      * Clip for the background music
      */
     private transient Clip myBackgroundMusicClip;
+
+    /**
+     * Winning music for the game.
+     */
+    private Clip myWinClip;
+
+    /**
+     * Losing music for the game.
+     */
+    private Clip myLoseClip;
 
     /**
      * Position of where in the audio track the music is.
@@ -90,11 +101,10 @@ public final class SoundPlayer {
      * Mutes the background music
      */
     public void muteBackgroundMusic() {
-        if (myBackgroundMusicClip != null) {
-            myMute = true;
+        myMute = !myMute;
+        if (myMute) {
             stopBackgroundMusic();
         } else {
-            myMute = false;
             resumeBackgroundMusic();
         }
      }
@@ -111,13 +121,34 @@ public final class SoundPlayer {
      * Sets the volume of the game
      * @param theVolume - The volume for the audio
      */
-     public void setVolume(float theVolume) {
+     public void setVolume(final float theVolume) {
+         myVolume = theVolume;
+         if (myBackgroundMusicClip != null) {
+             setClipVolume(myBackgroundMusicClip, theVolume);
+         }
+         if (myWinClip != null) {
+             setClipVolume(myWinClip, theVolume);
+         }
+         if (myLoseClip != null) {
+             setClipVolume(myLoseClip, theVolume);
+         }
 
-        if (myBackgroundMusicClip != null) {
-            FloatControl gainControl = (FloatControl) myBackgroundMusicClip.getControl(FloatControl.Type.MASTER_GAIN);
-            float dB = (float) (Math.log(theVolume) / Math.log(10.0) * 20.0);
-            gainControl.setValue(dB);
-        }
+     }
+
+    /**
+     * Gets the volume of the game
+     * @return A float representing the volume of the game.
+     */
+    public float getVolume() {
+         return myVolume;
+     }
+
+    /**
+     * Gets if the audio is muted or not.
+     * @return True if it is muted, false otherwise.
+     */
+    public boolean isMuted() {
+        return myMute;
      }
 
     /**
@@ -129,12 +160,94 @@ public final class SoundPlayer {
             final AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(thePathName));
             final Clip clip = AudioSystem.getClip();
             clip.open(audioStream);
+            setClipVolume(clip, myVolume);
             clip.start();
             audioStream.close();
         } catch (final Exception e) {
             System.out.println("Sound playing unavailable: " + e.getMessage());
         }
      }
+
+    /**
+     * Plays the winning music.
+     */
+    public void playWinMusic() {
+         stopAllMusic();
+         playDelayedMusic("audio/mixkit-game-level-completed-2059.wav", myWinClip);
+     }
+
+    /**
+     * Play the losing music.
+     */
+    public void playLoseMusic() {
+        stopAllMusic();
+        playDelayedMusic("audio/mixkit-horror-lose-2028.wav", myLoseClip);
+    }
+
+    /**
+     * Delays the music for the game
+     * @param theFilePath - The filePath of the audio
+     * @param theClip - The clip to play it to.
+     */
+    private void playDelayedMusic(final String theFilePath, final Clip theClip) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // 1 second delay
+                playMusic(theFilePath, theClip);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+    }
+
+
+    /**
+     * Stops all the music for the game.
+     */
+    private void stopAllMusic() {
+        if (myBackgroundMusicClip != null && myBackgroundMusicClip.isRunning()) {
+            myBackgroundMusicClip.stop();
+        }
+        if (myWinClip != null && myWinClip.isRunning()) {
+            myWinClip.stop();
+        }
+        if (myLoseClip != null && myLoseClip.isRunning()) {
+            myLoseClip.stop();
+        }
+    }
+
+    /**
+     * Plays music from a specific file path.
+     * @param theFilePath - The file for the audio
+     * @param theClip - The clip to play it from
+     */
+    private void playMusic(final String theFilePath, Clip theClip) {
+        try {
+            if (theClip != null && theClip.isRunning()) {
+                theClip.stop();
+            }
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(theFilePath));
+            theClip = AudioSystem.getClip();
+            theClip.open(audioInputStream);
+            setClipVolume(theClip, myVolume);
+            theClip.start();
+        } catch (Exception e) {
+            System.out.println("Error playing music: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Sets the clip volume
+     * @param theClip - The clip for the audio
+     * @param theVolume - The volume for the music
+     */
+    private void setClipVolume(final Clip theClip, final float theVolume) {
+        if (theClip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+            FloatControl gainControl = (FloatControl) theClip.getControl(FloatControl.Type.MASTER_GAIN);
+            float dB = (float) (Math.log(theVolume) / Math.log(10.0) * 20.0);
+            gainControl.setValue(dB);
+        }
+    }
 
 
 }
