@@ -1,9 +1,19 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * SoundPlayer.java
+ */
 package view;
 
 import java.io.File;
 
 import javax.sound.sampled.*;
 
+/**
+ * Plays sound effects and music to the game
+ *
+ * @author Eric John
+ * @version 8/15/2024
+ */
 public final class SoundPlayer {
 
     /**
@@ -35,6 +45,7 @@ public final class SoundPlayer {
      * Boolean to see if the music is muted
      */
     private boolean myMute;
+
 
     /**
      * The volume for the game.
