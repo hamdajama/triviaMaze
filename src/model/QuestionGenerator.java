@@ -1,3 +1,7 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * QuestionGenerator.java
+ */
 package model;
 
 import java.io.Serial;
@@ -6,7 +10,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * The QuestionGenerator class is responsible for generating random questions
@@ -74,7 +81,8 @@ public class QuestionGenerator implements Serializable {
      * @return A list of Question objects.
      * @throws SQLException If a database access error occurs.
      */
-    private List<Question> getTable(final Statement theStmt, final String theTableName) throws SQLException {
+    private List<Question> getTable(final Statement theStmt, final String theTableName)
+                                    throws SQLException {
         List<Question> questions = new ArrayList<>();
         String query = "SELECT * FROM " + theTableName;
         ResultSet rs = theStmt.executeQuery(query);

@@ -1,12 +1,20 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * Room.java
+ */
+
 package model;
 
-
-
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
 
-import java.io.*;
+import java.util.EnumMap;
+import java.util.Map;
+
+
 
 /**
  * Room class for the maze that contains doors.
@@ -146,7 +154,8 @@ public class Room implements Serializable {
      * @throws ClassNotFoundException When it cannot find the class
      */
     @Serial
-    private void readObject(ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream theIn) throws IOException,
+                            ClassNotFoundException {
         theIn.defaultReadObject();
     }
 

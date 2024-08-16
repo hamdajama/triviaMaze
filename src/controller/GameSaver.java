@@ -1,6 +1,16 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * GameSaver.java
+ */
+
 package controller;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * The {@code GameSaver} class provides methods to save and load the game state or any serializable object.

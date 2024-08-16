@@ -51,8 +51,8 @@ public class TrueFalse extends Question {
     }
 
     /**
-     * Converts the given number from 0 or 1 to True or False. A private method for the overridden
-     * isMatch method.
+     * Converts the given number from 0 or 1 to True or False. A private method for
+     * the overridden isMatch method.
      * @param theAnswer - The answer given by the player.
      * @return "F" if the given answer is 0. "T" if the given answer is one.
      */

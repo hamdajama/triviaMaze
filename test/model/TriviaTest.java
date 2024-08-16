@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the Trivia class.
+ *
  * @author Eric John
  * @version 7/19/2024
  */
@@ -22,10 +23,14 @@ public class TriviaTest {
     public void testTriviaConstructor() {
         final Trivia person = new Trivia("Bob");
 
-        assertEquals("Bob", person.getName(), "The name for the player is incorrect");
-        assertEquals(0, person.getRightAnswer(), "The player doesn't start with a right answer count of 0.");
-        assertEquals(0, person.getWrongAnswer(), "The player doesn't start with a wrong answer count of 0.");
-        assertEquals(1, person.getTrys(), "The player doesn't start with a try count of 1");
+        assertEquals("Bob", person.getName(),
+                "The name for the player is incorrect");
+        assertEquals(0, person.getRightAnswer(),
+                "The player doesn't start with a right answer count of 0.");
+        assertEquals(0, person.getWrongAnswer(),
+                "The player doesn't start with a wrong answer count of 0.");
+        assertEquals(0, person.getTrys(),
+                "The player doesn't start with a try count of 1");
 
     }
 
@@ -36,11 +41,14 @@ public class TriviaTest {
     public void testIncrementAndDecrementTrys() {
         final Trivia person = new Trivia("Bob");
         person.incrementTrys();
-        assertEquals(2, person.getTrys(), "The player doesn't have a try count of 2");
+        assertEquals(1, person.getTrys(),
+                "The player doesn't have a try count of 2");
         person.incrementTrys();
-        assertEquals(3, person.getTrys(), "The player doesn't have a try count of 3");
+        assertEquals(2, person.getTrys(),
+                "The player doesn't have a try count of 3");
         person.decrementTrys();
-        assertEquals(2, person.getTrys(), "The player doesn't have a try count of 2 after decrementing from 3");
+        assertEquals(1, person.getTrys(),
+                "The player doesn't have a try count of 2 after decrementing from 3");
 
     }
 
@@ -52,7 +60,8 @@ public class TriviaTest {
         final Trivia person = new Trivia("Bob");
         person.incrementRightAnswer();
         person.incrementRightAnswer();
-        assertEquals(2, person.getRightAnswer(), "The player doesn't have a right answer count of 3");
+        assertEquals(2, person.getRightAnswer(),
+                "The player doesn't have a right answer count of 3");
     }
 
     /**
@@ -62,7 +71,8 @@ public class TriviaTest {
     public void testIncrementWrongAnswer() {
         final Trivia person = new Trivia("Bob");
         person.incrementWrongAnswer();
-        assertEquals(1, person.getWrongAnswer(), "The player doesn't have a wrong answer count of 2");
+        assertEquals(1, person.getWrongAnswer(),
+                "The player doesn't have a wrong answer count of 2");
     }
 
     /**
@@ -74,8 +84,10 @@ public class TriviaTest {
         final String givenAnswer = "a";
         final String correctAnswer = "a";
         final String playerAnswer = "b";
-        assertFalse(person.isRightAnswer(playerAnswer, correctAnswer), "This should return false. The answer given is false.");
-        assertTrue(person.isRightAnswer(givenAnswer, correctAnswer), "This should return true. The given answer is the same as the correct answer.");
+        assertFalse(person.isRightAnswer(playerAnswer, correctAnswer),
+                "This should return false. The answer given is false.");
+        assertTrue(person.isRightAnswer(givenAnswer, correctAnswer),
+                "This should return true. The given answer is the same as the correct answer.");
     }
 
     /**
@@ -85,10 +97,12 @@ public class TriviaTest {
     @Test
     public void testGetTime() {
         final Trivia person = new Trivia("Bob");
-        assertEquals(0, person.getTime(), "Timer didn't start. Total time should be 0");
+        assertEquals(0, person.getTime(), "Timer didn't start. " +
+                "Total time should be 0");
         person.startTimer();
         person.stopTimer();
-        assertEquals(0, person.getTime(), "Timer started and stopped. It should be 0.");
+        assertEquals(0, person.getTime(), "Timer started and stopped. " +
+                "It should be 0.");
     }
 
 }

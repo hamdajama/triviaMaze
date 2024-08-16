@@ -9,7 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 
-
+/**
+ * Unit tests for the TrueFalse class
+ *
+ * @author Eric John
+ * @version 08/15/2024
+ */
 public class TrueFalseTest {
     /**
      * The question that comes with questionID 8
@@ -28,8 +33,10 @@ public class TrueFalseTest {
     public void testTrueFalseConstructor() {
         final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
         assertAll("Three argument constructor test.",
-                () -> assertEquals(QUESTION, Question8.getQuestion(), "The question does not match"),
-                () -> assertEquals(ANSWER, Question8.getAnswer(), "The answer does not match"));
+                () -> assertEquals(QUESTION, Question8.getQuestion(),
+                        "The question does not match"),
+                () -> assertEquals(String.valueOf(ANSWER), Question8.getAnswer(),
+                        "The answer does not match"));
     }
 
     /**
@@ -48,8 +55,8 @@ public class TrueFalseTest {
     @Test
     public void testGetAnswer() {
         final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
-        assertEquals(ANSWER, Question8.getAnswer(), "The answer being received is not " +
-                "the same as the one in the db");
+        assertEquals(String.valueOf(ANSWER), Question8.getAnswer(), "The answer being" +
+                " received is not the same as the one in the db");
 
     }
 
@@ -77,8 +84,8 @@ public class TrueFalseTest {
     @Test
     public void testGetHint() {
         final TrueFalse Question8 = new TrueFalse(QUESTION, ANSWER);
-        assertEquals("This question is not false!", Question8.getHint(), "The output is " +
-                "displayed incorrectly");
+        assertEquals("This question is not false!", Question8.getHint(), "The " +
+                "output is displayed incorrectly");
     }
 
 }

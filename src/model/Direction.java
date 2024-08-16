@@ -1,7 +1,12 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * Direction.java
+ */
+
 package model;
 
 /**
- * Direction for the maze
+ * Enumeration class for directions in the maze.
  */
 public enum Direction {
     NORTH, SOUTH, EAST, WEST;

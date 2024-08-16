@@ -1,6 +1,6 @@
 /**
  * TCSS 360 - Trivia Maze
- * QuestionFactoryProvider
+ * QuestionFactoryProvider.java
  */
 package model;
 
@@ -23,6 +23,9 @@ public class QuestionFactoryProvider implements Serializable {
      */
     private final Map<String, QuestionFactory> myFactories;
 
+    /**
+     * The Database connector
+     */
     private transient DatabaseConnector myDBConnector;
 
     /**

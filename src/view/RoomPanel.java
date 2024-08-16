@@ -1,22 +1,36 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * RoomPanel.jave
+ */
 package view;
 
-import model.Maze;
-import model.Room;
-import model.Direction;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.io.*;
+
+
 import javax.swing.JPanel;
+
 import java.util.EnumMap;
 import java.util.Map;
+
+import model.Direction;
+import model.DoorState;
+import model.Maze;
+import model.MoveEvent;
+import model.Room;
 
 public class RoomPanel extends JPanel implements PropertyChangeListener, Serializable {
 
@@ -26,12 +40,6 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     @Serial
     private static final long serialVersionUID = 3L;
 
-    /**
-     * Enumeration representing the various doorStates.
-     */
-    private enum DoorState {
-        CLOSED, OPEN, EXIT
-    }
 
     /**
      * DoorStates for a door in a given direction
@@ -51,12 +59,12 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     /**
      * Maze for the game
      */
-    private  Maze myMaze;
+    private final Maze myMaze;
 
     /**
      * Images for the character sprite
      */
-    private transient Map<String, BufferedImage[]> myImages;
+    private final transient Map<String, BufferedImage[]> myImages;
 
     /**
      * The direction the player is heading
@@ -75,7 +83,8 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theImages - The images of the character sprite
      * @param theDirection - The direction the player is heading.
      */
-    public RoomPanel(final Maze theMaze, final int theFrameIndex, final Map<String, BufferedImage[]> theImages,
+    public RoomPanel(final Maze theMaze, final int theFrameIndex,
+                     final Map<String, BufferedImage[]> theImages,
                      final String theDirection) {
         super();
         myDoorStates = new EnumMap<>(Direction.class);
@@ -117,14 +126,13 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         final int roomSize = 40;
 
         theGraphics2D.setColor(Color.WHITE);
-        theGraphics2D.drawRect(roomSize, roomSize, width - 2 * roomSize, height - 2 * roomSize);
+        theGraphics2D.drawRect(roomSize, roomSize, width - 2 * roomSize,
+                        height - 2 * roomSize);
 
-        final int doorSize = 30;
-
-        drawDoor(theGraphics2D, Direction.NORTH, width / 2 - roomSize / 2, 10, doorSize, doorSize);
-        drawDoor(theGraphics2D, Direction.EAST, width - roomSize, height / 2 - roomSize / 2, doorSize, doorSize);
-        drawDoor(theGraphics2D, Direction.SOUTH, width / 2 - roomSize / 2, height - roomSize, doorSize, doorSize);
-        drawDoor(theGraphics2D, Direction.WEST, 10, height / 2 - roomSize / 2, doorSize, doorSize);
+        drawDoor(theGraphics2D, Direction.NORTH, width / 2 - roomSize / 2, 10);
+        drawDoor(theGraphics2D, Direction.EAST, width - roomSize, height / 2 - roomSize / 2);
+        drawDoor(theGraphics2D, Direction.SOUTH, width / 2 - roomSize / 2, height - roomSize);
+        drawDoor(theGraphics2D, Direction.WEST, 10, height / 2 - roomSize / 2);
 
         drawText(theGraphics2D, width, height);
 
@@ -137,11 +145,9 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theDirection - The direction of the door.
      * @param theX - The x position to draw the door.
      * @param theY - The y position to draw the door.
-     * @param theWidth - The width of the text
-     * @param theHeight - The height of the text
      */
     private void drawDoor(final Graphics2D theG, final Direction theDirection, final int theX,
-                          final int theY, final int theWidth, final int theHeight) {
+                          final int theY) {
         switch (myDoorStates.get(theDirection)) {
             case CLOSED:
                 theG.setColor(Color.RED);
@@ -153,7 +159,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
                 theG.setColor(Color.BLUE);
                 break;
         }
-        theG.fillRect(theX, theY, theWidth, theHeight);
+        theG.fillRect(theX, theY, 30, 30);
     }
 
     /**
@@ -166,7 +172,8 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
         BufferedImage[] images = myImages.get(myDirection.toUpperCase());
         BufferedImage currentImage = images[myFrameIndex];
 
-        theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20, 40, 40, this);
+        theGraphics2D.drawImage(currentImage, (theWidth / 2) - 20, (theHeight / 2) - 20,
+                          40, 40, this);
 
         theGraphics2D.setColor(Color.WHITE);
         theGraphics2D.setFont(new Font("Verdana", Font.BOLD, 10));
@@ -221,7 +228,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @return - True if the door is on the edge of the maze or false otherwise.
      */
     private boolean isEdge(final Direction theDirection) {
-        return (myPlayerY == 0 && theDirection == Direction.NORTH) ||
+        return  (myPlayerY == 0 && theDirection == Direction.NORTH) ||
                 (myPlayerY == myMaze.getMazeSize() - 1 && theDirection == Direction.SOUTH) ||
                 (myPlayerX == 0 && theDirection == Direction.WEST) ||
                 (myPlayerX == myMaze.getMazeSize() - 1 && theDirection == Direction.EAST);
@@ -232,7 +239,8 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @param theDirection - The new direction the player is heading
      * @param theFrameIndex - The frame index of the character sprite.
      */
-    public void updateDirectionAndFrame(final String theDirection, final int theFrameIndex) {
+    public void updateDirectionAndFrame(final String theDirection,
+                                        final int theFrameIndex) {
         myDirection = theDirection.toUpperCase();
         myFrameIndex = theFrameIndex;
         repaint();
@@ -255,7 +263,7 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
     @Override
     public void propertyChange(final PropertyChangeEvent theEvt) {
         if (theEvt.getPropertyName().equals("move")) {
-            Maze.MoveEvent moveEvent = (Maze.MoveEvent) theEvt.getNewValue();
+            MoveEvent moveEvent = (MoveEvent) theEvt.getNewValue();
             updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(), moveEvent.getY());
         }
     }
@@ -277,7 +285,8 @@ public class RoomPanel extends JPanel implements PropertyChangeListener, Seriali
      * @throws ClassNotFoundException When it cannot find the class
      */
     @Serial
-    private void readObject(final ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+    private void readObject(final ObjectInputStream theIn) throws IOException,
+                            ClassNotFoundException {
         theIn.defaultReadObject();
     }
 

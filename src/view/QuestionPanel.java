@@ -1,16 +1,29 @@
-
+/**
+ * TCSS 360 - Trivia Maze
+ * QuestionPanel.java
+ */
 package view;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+
 import java.util.Map;
+
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.ButtonGroup;
-import model.*;
+
+import model.Direction;
+import model.Maze;
+import model.MultipleChoice;
+import model.Question;
+import model.ShortAnswer;
+import model.TrueFalse;
 
 /**
  * The QuestionPanel class represents the panel where questions are displayed to the player.
@@ -184,7 +197,7 @@ public class QuestionPanel extends JPanel {
         }
         myGUI.stopAnsweringAnimation();
         setVisible(false);
-        getParent().requestFocusInWindow(); // Request focus back to the parent frame after answering
+        getParent().requestFocusInWindow();
     }
 
     /**

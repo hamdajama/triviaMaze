@@ -30,8 +30,9 @@ public class MultipleChoiceTest {
      */
     private static final Map<String, String> MULTIPLE_CHOICE = new HashMap<>();
 
-
-
+    /**
+     * The right answer for the question.
+     */
     private static final String RIGHT_ANSWER = "A";
 
 
@@ -45,18 +46,22 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 =
+                new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
         Assertions.assertAll("Three argument constructor test.",
-                () -> Assertions.assertEquals(QUESTION, Question41.getQuestion(), "The question should be \"" + QUESTION + "\""),
-                () -> Assertions.assertEquals(MULTIPLE_CHOICE, Question41.getChoices(), " The choices should be \"" + MULTIPLE_CHOICE + "\""),
-                () -> Assertions.assertEquals(RIGHT_ANSWER, Question41.getAnswer(), "The correct answer is \"" + RIGHT_ANSWER + "\""));
+                () -> Assertions.assertEquals(QUESTION, Question41.getQuestion(),
+                        "The question should be \"" + QUESTION + "\""),
+                () -> Assertions.assertEquals(MULTIPLE_CHOICE, Question41.getChoices(),
+                        " The choices should be \"" + MULTIPLE_CHOICE + "\""),
+                () -> Assertions.assertEquals(RIGHT_ANSWER, Question41.getAnswer(),
+                        "The correct answer is \"" + RIGHT_ANSWER + "\""));
 
     }
 
     /**
-     * Tests if the delete choice method removes two of the incorrect choices and the size of the map is two and
-     * the correct answer is one of them.
+     * Tests if the delete choice method removes two of the incorrect choices and
+     * the size of the map is two and the correct answer is one of them.
      */
     @Test
     public void testDeleteChoice() {
@@ -65,12 +70,15 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 =
+                new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
         Question41.deleteChoice();
 
-        Assertions.assertEquals(2, Question41.getChoices().size(), "There should only be two options for this question");
-        Assertions.assertTrue(Question41.getChoices().containsKey(RIGHT_ANSWER), "The correct answer should still be there");
+        Assertions.assertEquals(2, Question41.getChoices().size(),
+                "There should only be two options for this question");
+        Assertions.assertTrue(Question41.getChoices().containsKey(RIGHT_ANSWER),
+                "The correct answer should still be there");
     }
 
     /**
@@ -83,9 +91,11 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 =
+                new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
-        Assertions.assertFalse(Question41.isMatch("B"), "Should return false. The answer given is incorrect");
+        Assertions.assertFalse(Question41.isMatch("B"),
+                "Should return false. The answer given is incorrect");
     }
 
     /**
@@ -98,9 +108,12 @@ public class MultipleChoiceTest {
         MULTIPLE_CHOICE.put("C", "Ravenclaw");
         MULTIPLE_CHOICE.put("D", "Slytherin");
 
-        final MultipleChoice Question41 = new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
+        final MultipleChoice Question41 =
+                new MultipleChoice(QUESTION, MULTIPLE_CHOICE, RIGHT_ANSWER);
 
-        Assertions.assertTrue(Question41.isMatch("A"), "Should return true. The answer given is correct");
-        Assertions.assertTrue(Question41.isMatch(RIGHT_ANSWER), "Should return true. The answer given is correct");
+        Assertions.assertTrue(Question41.isMatch("A"),
+                "Should return true. The answer given is correct");
+        Assertions.assertTrue(Question41.isMatch(RIGHT_ANSWER),
+                "Should return true. The answer given is correct");
     }
 }

@@ -1,3 +1,8 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * Maze.java
+ */
+
 package model;
 
 import java.beans.PropertyChangeListener;
@@ -96,10 +101,8 @@ public class Maze implements Serializable {
 
     /**
      * Builds the map with rooms, each containing a randomly assigned question.
-     *
-     * @throws SQLException If an error occurs during question retrieval from the database.
      */
-    private void buildMap() throws SQLException {
+    private void buildMap() {
         myMap = new Room[MAZE_SIZE][MAZE_SIZE];
         for (int i = 0; i < MAZE_SIZE; i++) {
             for (int j = 0; j < MAZE_SIZE; j++) {
@@ -194,7 +197,8 @@ public class Maze implements Serializable {
 
             System.out.println("Moving to: " + myCurrentX + ", " + myCurrentY);
 
-            mySupport.firePropertyChange("move", null, new MoveEvent(newRoom, theDirection, myCurrentX, myCurrentY));
+            mySupport.firePropertyChange("move", null,
+                                            new MoveEvent(newRoom, theDirection, myCurrentX, myCurrentY));
             mySupport.firePropertyChange("correct answer", null, getCurrentRoom());
 
             if (isExit(myCurrentX, myCurrentY)) {
@@ -235,7 +239,8 @@ public class Maze implements Serializable {
                 System.out.println("Setting up question for direction: " + theDirection);
                 myQuestionPending = true;
                 myPendingDirection = theDirection;
-                mySupport.firePropertyChange("question", null, new QuestionEvent(currentRoom.getTrivia(), theDirection));
+                mySupport.firePropertyChange("question", null,
+                                                new QuestionEvent(currentRoom.getTrivia(), theDirection));
             }
         } else {
             System.out.println("Cannot move in direction: " + theDirection);
@@ -315,7 +320,8 @@ public class Maze implements Serializable {
      * @return True if it's a valid move. False otherwise.
      */
     private boolean isValidMove(int theX, int theY) {
-        return theX >= 0 && theX < MAZE_SIZE && theY >= 0 && theY < MAZE_SIZE || isExit(theX, theY);
+        return theX >= 0 && theX < MAZE_SIZE &&
+                theY >= 0 && theY < MAZE_SIZE || isExit(theX, theY);
     }
 
     /**
@@ -346,7 +352,6 @@ public class Maze implements Serializable {
             this.myQesGen = new QuestionGenerator(theDbConnector);
             this.questionFactoryProvider = new QuestionFactoryProvider(theDbConnector);
 
-            // Reinitialize questions for each room if necessary
             for (int i = 0; i < MAZE_SIZE; i++) {
                 for (int j = 0; j < MAZE_SIZE; j++) {
                     if (myMap[i][j].getTrivia() == null) {
@@ -356,7 +361,8 @@ public class Maze implements Serializable {
             }
             System.out.println("Maze database connector reinitialized successfully");
         } catch (Exception e) {
-            System.err.println("Error reinitializing Maze database connector: " + e.getMessage());
+            System.err.println("Error reinitializing Maze database connector: "
+                                + e.getMessage());
         }
     }
 
@@ -427,9 +433,7 @@ public class Maze implements Serializable {
      */
     @Serial
     private void writeObject(final ObjectOutputStream theOut) throws IOException {
-      //  System.out.println("Maze writeObject called");
         theOut.defaultWriteObject();
-       // System.out.println("Maze serialization successful");
     }
 
 
@@ -440,116 +444,10 @@ public class Maze implements Serializable {
      * @throws ClassNotFoundException When it cannot find the class
      */
     @Serial
-    private void readObject(ObjectInputStream theIn) throws IOException, ClassNotFoundException {
-       // System.out.println("Maze readObject called");
+    private void readObject(ObjectInputStream theIn) throws IOException,
+                            ClassNotFoundException {
         theIn.defaultReadObject();
         mySupport = new PropertyChangeSupport(this);
-       // System.out.println("Maze deserialization successful");
-    }
-
-
-    /**
-     * Small class to handle moving the player between rooms
-     */
-    public static class MoveEvent {
-        /**
-         * The room the player is going to.
-         */
-        private final Room myRoom;
-
-        /**
-         * The direction to the room.
-         */
-        private final Direction myDirection;
-
-        /**
-         * The x coordinate for the player
-         */
-        private final int myX;
-
-        /**
-         * The y coordinate for the player
-         */
-        private final int myY;
-
-        /**
-         * Moves the player to the given room
-         * @param theRoom - The room to head to
-         * @param theDirection - The direction the room is at
-         * @param theX - The x position
-         * @param theY - The y position
-         */
-        public MoveEvent(final Room theRoom, final Direction theDirection, final int theX, final int theY) {
-            myRoom = theRoom;
-            myDirection = theDirection;
-            myX = theX;
-            myY = theY;
-        }
-
-        /**
-         * Gets the room to go to
-         * @return The room
-         */
-        public Room getRoom() {
-            return myRoom;
-        }
-
-        /**
-         * Gets the x coordinate
-         * @return The x coordinate
-         */
-        public int getX() {
-            return myX;
-        }
-
-        /**
-         * Gets the y coordinate
-         * @return The y coordinate
-         */
-        public int getY() {
-            return myY;
-        }
-    }
-
-    /**
-     * Small class to handle the questions for the game.
-     */
-    public static class QuestionEvent {
-        /**
-         * The question to ask the player.
-         */
-        private final Question myQuestion;
-
-        /**
-         * The direction the player is heading.
-         */
-        private final Direction myDirection;
-
-        /**
-         * Handles a question being passed to the room panel
-         * @param question - The question to be asked
-         * @param direction - The direction the player is going
-         */
-        public QuestionEvent(final Question question, final Direction direction) {
-            myQuestion = question;
-            myDirection = direction;
-        }
-
-        /**
-         * Gets the question to ask the player
-         * @return The question to ask the player
-         */
-        public Question getQuestion() {
-            return myQuestion;
-        }
-
-        /**
-         * Gets the direction the player is going
-         * @return The direction the player is heading
-         */
-        public Direction getDirection() {
-            return myDirection;
-        }
     }
 
 }

@@ -1,24 +1,26 @@
 package view;
 
+import controller.GameSaver;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyEvent;
-
 
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.io.*;
 
 import java.sql.SQLException;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Objects;
 
 import javax.swing.BoxLayout;
 import javax.imageio.ImageIO;
@@ -28,17 +30,19 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import model.*;
-import controller.GameSaver;
-import model.DatabaseConnector;
-import model.Maze;
-import model.PlayerCharacter;
-import model.Room;
-//import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
-
 import javax.swing.Timer;
-import java.util.Objects;
+
+import model.DatabaseConnector;
+import model.Direction;
+import model.Maze;
+import model.MoveEvent;
+import model.PlayerCharacter;
+import model.Question;
+import model.QuestionEvent;
+import model.Room;
+
+
+
 
 /**
  * The GUI class is responsible for creating and managing the graphical user interface
@@ -121,11 +125,6 @@ public class GUI implements Serializable {
     private transient Map<String, BufferedImage[]> myCharacterImages;
 
     private Map<String, String[]> myCharacterImagePaths;
-
-    /**
-     * The animation Timer
-     */
-    private transient Timer myAnimationTimer;
 
     private boolean isBackgroundMusicPlaying = false;
 
@@ -234,12 +233,11 @@ public class GUI implements Serializable {
      */
     private void handleMovement(final Direction theDirection) {
         if (myMaze.isQuestionPending()) {
-            return; // Don't process movement if a question is pending
+            return;
         }
 
         myCurrentDirection = String.valueOf(theDirection);
 
-        // Only update the visual direction, don't move the character yet
         myMazePanel.updateDirectionAndFrame(myCurrentDirection, myFrameIndex);
         myRoomPanel.updateDirectionAndFrame(myCurrentDirection, myFrameIndex);
 
@@ -247,7 +245,6 @@ public class GUI implements Serializable {
         mySound.playSFX("audio/mixkit-player-jumping-in-a-video-game-2043.wav");
         System.out.println("Key pressed: " + theDirection);
 
-        // Only call maze.move() if the player can actually move in that direction
         if (myMaze.canMove(theDirection)) {
             myMaze.move(theDirection);
         } else {
@@ -309,15 +306,13 @@ public class GUI implements Serializable {
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        out.writeObject(myMaze); // Explicitly write the Maze object
-        System.out.println("GUI serialization: Maze written, not null: " + (myMaze != null));
+        out.writeObject(myMaze);
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        myMaze = (Maze) in.readObject(); // Explicitly read the Maze object
-        System.out.println("GUI deserialization: Maze read, not null: " + (myMaze != null));
+        myMaze = (Maze) in.readObject();
 
         if (myMaze == null) {
             throw new IOException("Maze object is null after deserialization");
@@ -331,7 +326,7 @@ public class GUI implements Serializable {
      * Animation timer to display animation.
      */
     private void setupAnimationTimer() {
-        myAnimationTimer = new Timer(200, e -> {
+        Timer myAnimationTimer = new Timer(200, e -> {
             myFrameIndex = (myFrameIndex + 1) % 3;
             if (isAnsweringQuestion) {
                 myMazePanel.updateFrame(myFrameIndex);
@@ -393,7 +388,8 @@ public class GUI implements Serializable {
             GameSaver.save(this, "game_state.ser");
             JOptionPane.showMessageDialog(myFrame, "Game saved successfully!");
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(myFrame, "Error saving game state: " + e.getMessage());
+            JOptionPane.showMessageDialog(myFrame, "Error saving game state: " +
+                    e.getMessage());
         }
     }
 
@@ -403,20 +399,14 @@ public class GUI implements Serializable {
     private void loadGameState() {
         try {
             GUI loadedState = GameSaver.load("game_state.ser");
-            System.out.println("LoadGameState: Loaded state's Maze not null: " + (loadedState.myMaze != null));
 
-            // Copy all necessary fields from loadedState to this object
             this.myPlayerCharacter = loadedState.myPlayerCharacter;
             this.myMaze = loadedState.myMaze;
-            System.out.println("LoadGameState: After copying, this.myMaze not null: " + (this.myMaze != null));
-
-            // ... copy other fields ...
 
             if (this.myMaze == null) {
                 throw new IOException("Maze object is null after loading");
             }
 
-            // Reinitialize transient fields and GUI components
             DatabaseConnector dbConnector = new DatabaseConnector();
             this.myMaze.reinitializeDatabaseConnector(dbConnector);
 
@@ -424,12 +414,11 @@ public class GUI implements Serializable {
             loadCharacterImages();
             reinitializeGUI();
 
-            System.out.println("LoadGameState: After reinitialization, this.myMaze not null: " + (this.myMaze != null));
-
             JOptionPane.showMessageDialog(myFrame, "Game loaded successfully!");
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading game state: " + e.getMessage());
-            JOptionPane.showMessageDialog(myFrame, "Error loading game: " + e.getMessage());
+            JOptionPane.showMessageDialog(myFrame, "Error loading game: " +
+                    e.getMessage());
         }
     }
 
@@ -526,7 +515,8 @@ public class GUI implements Serializable {
      * @param theHalfWidth Half the width of the main game window frame.
      */
     private void setupMazePanel(final JFrame theFrame, final int theHalfWidth) {
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex, myCharacterImages, myCurrentDirection);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex,
+                                    myCharacterImages, myCurrentDirection);
         myMazePanel.setBackground(Color.BLACK);
         myMazePanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(myMazePanel, BorderLayout.CENTER);
@@ -539,7 +529,8 @@ public class GUI implements Serializable {
      * @param theHalfWidth  Half the width of the main game window frame.
      * @param theHalfHeight Half the height of the main game window frame.
      */
-    private void setupRightPanel(final JFrame theFrame, final int theHalfWidth, final int theHalfHeight) {
+    private void setupRightPanel(final JFrame theFrame, final int theHalfWidth,
+                                 final int theHalfHeight) {
         final JPanel rightPanel = new JPanel();
         rightPanel.setBounds(theHalfWidth, 0, theHalfWidth, theFrame.getHeight());
         final BoxLayout boxLayout = new BoxLayout(rightPanel, BoxLayout.Y_AXIS);
@@ -547,7 +538,8 @@ public class GUI implements Serializable {
         rightPanel.setPreferredSize(new Dimension(theHalfWidth, theFrame.getHeight()));
         theFrame.add(rightPanel, BorderLayout.EAST);
 
-        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages, myCurrentDirection);
+        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages,
+                                    myCurrentDirection);
         myRoomPanel.setBackground(Color.BLACK);
         myRoomPanel.setBounds(theHalfWidth, 0, theHalfWidth, theHalfHeight);
         rightPanel.add(myRoomPanel);
@@ -561,14 +553,13 @@ public class GUI implements Serializable {
         myMaze.addPropertyChangeListener(evt -> {
             if ("question".equals(evt.getPropertyName())) {
 
-                Maze.QuestionEvent questionEvent = (Maze.QuestionEvent) evt.getNewValue();
+                QuestionEvent questionEvent = (QuestionEvent) evt.getNewValue();
                 displayQuestion(questionEvent.getQuestion(), questionEvent.getDirection());
 
             } else if ("move".equals(evt.getPropertyName())) {
 
-                Maze.MoveEvent moveEvent = (Maze.MoveEvent) evt.getNewValue();
+                MoveEvent moveEvent = (MoveEvent) evt.getNewValue();
                 myPlayerCharacter.setPosition(moveEvent.getX(), moveEvent.getY());
-                //myPlayerCharacter.move(myCurrentDirection);
                 myMazePanel.updatePlayerCharacter(myPlayerCharacter);
                 updateRoomPanel(moveEvent.getRoom(), moveEvent.getX(),moveEvent.getY());
                 myQuestionPanel.clearQuestion();
@@ -576,17 +567,18 @@ public class GUI implements Serializable {
             } else if ("correct answer".equals(evt.getPropertyName())) {
 
                 mySound.playSFX("audio/mixkit-correct-answer-reward-952.wav");
-                myMaze.getTrivia().incrementTrys();  // Increment tries
-                myMaze.getTrivia().incrementRightAnswer();  // Increment right answer
+                myMaze.getTrivia().incrementTrys();
+                myMaze.getTrivia().incrementRightAnswer();
 
             } else if ("wrong answer".equals(evt.getPropertyName())) {
 
                 myMazePanel.updateDirectionAndFrame(DOWN, myFrameIndex);
                 myRoomPanel.updateDirectionAndFrame(DOWN, myFrameIndex);
-                updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(), myMaze.getCurrentY());
+                updateRoomPanel(myMaze.getCurrentRoom(), myMaze.getCurrentX(),
+                                myMaze.getCurrentY());
                 mySound.playSFX("audio/mixkit-player-losing-or-failing-2042.wav");
-                myMaze.getTrivia().incrementTrys();         // increment tries
-                myMaze.getTrivia().incrementWrongAnswer();  // Increment wrong answer
+                myMaze.getTrivia().incrementTrys();
+                myMaze.getTrivia().incrementWrongAnswer();
                 myMaze.isGameOver();
 
             } else if ("game over".equals(evt.getPropertyName())) {
@@ -599,7 +591,8 @@ public class GUI implements Serializable {
 
     /**
      * Shows the game over dialog based on if they won or lost the game.
-     * @param theResult - If true, creates a congrats message. If false, creates a game over message.
+     * @param theResult - If true, creates a congrats message. If false, creates
+     *                    a game over message.
      */
     private void showGameOverDialog(final boolean theResult) {
         myMaze.getTrivia().stopTimer();
@@ -608,7 +601,8 @@ public class GUI implements Serializable {
         message += "\nTries used: " + myMaze.getTrivia().getTrys();
         message += "\nCorrect Answers: " + myMaze.getTrivia().getRightAnswer();
         message += "\nWrong Answers " + myMaze.getTrivia().getWrongAnswer();
-        JOptionPane.showMessageDialog(null, message, "Game Results", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, message, "Game Results",
+                                        JOptionPane.INFORMATION_MESSAGE);
         System.exit(0);
     }
 
@@ -618,7 +612,8 @@ public class GUI implements Serializable {
      * @param theQuestion - The question to ask the player.
      * @param theDirection - The direction the player is going.
      */
-    private void displayQuestion(final Question theQuestion, final Direction theDirection) {
+    private void displayQuestion(final Question theQuestion,
+                                 final Direction theDirection) {
         System.out.println("Displaying question: " + theQuestion.getQuestion());
         isAnsweringQuestion = true;
         myQuestionPanel.setQuestion(theQuestion, theDirection);
@@ -645,8 +640,10 @@ public class GUI implements Serializable {
         setupFrame();
         setupAnimationTimer();
 
-        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex, myCharacterImages, myCurrentDirection);
-        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages, myCurrentDirection);
+        myMazePanel = new MazePanel(myMaze, myPlayerCharacter, myFrameIndex,
+                                    myCharacterImages, myCurrentDirection);
+        myRoomPanel = new RoomPanel(myMaze, myFrameIndex, myCharacterImages,
+                                    myCurrentDirection);
         myQuestionPanel = new QuestionPanel(myMaze);
         myQuestionPanel.setGUI(this);
         isKeyDispatcherAdded = false;
@@ -654,7 +651,8 @@ public class GUI implements Serializable {
         if (myFrame != null) {
             setupPanels(myFrame);
         } else {
-            throw new IllegalStateException("Frame is null during GUI reinitialization");
+            throw new IllegalStateException("Frame is null during GUI " +
+                    "reinitialization");
         }
 
         if (isBackgroundMusicPlaying) {

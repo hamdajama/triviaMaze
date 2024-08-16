@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * A class that tests the methods in the ShortAnswer class
+ *
  * @author Eric John
  * @version 7/26/2024
  */
@@ -32,8 +33,10 @@ public class ShortAnswerTest {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
 
         assertAll("Three argument constructor test,",
-                () -> assertEquals(QUESTION, Question26.getQuestion(), "The answer displayed is not the same as the database"),
-                () -> assertEquals(ANSWER, Question26.getAnswer(), "The answer is not the same as the database"));
+                () -> assertEquals(QUESTION, Question26.getQuestion(),
+                        "The answer displayed is not the same as the database"),
+                () -> assertEquals(ANSWER, Question26.getAnswer(),
+                        "The answer is not the same as the database"));
     }
 
     /**
@@ -42,7 +45,8 @@ public class ShortAnswerTest {
     @Test
     public void testGetQuestion() {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
-        assertEquals(QUESTION, Question26.getQuestion(),"The method does not get the correct question");
+        assertEquals(QUESTION, Question26.getQuestion(),
+                "The method does not get the correct question");
     }
 
     /**
@@ -51,7 +55,8 @@ public class ShortAnswerTest {
     @Test
     public void testGetAnswer() {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
-        assertEquals(ANSWER, Question26.getAnswer(), "The method does not get the correct answer");
+        assertEquals(ANSWER, Question26.getAnswer(),
+                "The method does not get the correct answer");
     }
 
     /**
@@ -60,7 +65,8 @@ public class ShortAnswerTest {
     @Test
     public void testIncorrectAnswer() {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
-        assertFalse(Question26.isMatch("Buzz Lightyear"),"The method should return false");
+        assertFalse(Question26.isMatch("Buzz Lightyear"),
+                "The method should return false");
     }
 
     /**
@@ -78,7 +84,8 @@ public class ShortAnswerTest {
     @Test
     public void testGetHint() {
         final ShortAnswer Question26 = new ShortAnswer(QUESTION, ANSWER);
-        assertEquals("The word starts with a \"W\"", Question26.getHint(),"The first resources.character is wrong");
+        assertEquals("The word starts with a \"W\"", Question26.getHint(),
+                "The first resources.character is wrong");
     }
 
 

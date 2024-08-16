@@ -6,10 +6,12 @@ package model;
 
 import java.io.Serial;
 import java.io.Serializable;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,14 +61,15 @@ public class MultipleChoiceFactory implements QuestionFactory, Serializable {
      */
     private Map<String, String> fetchChoices(final int theQuestionId) {
         Map<String, String> choices = new HashMap<>();
-        String query = "SELECT choice, choice_text FROM MultipleChoice WHERE question_id = " + theQuestionId;
+        String query = "SELECT choice, choice_text FROM MultipleChoice WHERE question_id = "
+                        + theQuestionId;
 
         try (Connection conn = myDBConnector.getDataSource().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
-                String choice = rs.getString("choice"); // A, B, C, D
+                String choice = rs.getString("choice");
                 String choiceText = rs.getString("choice_text");
                 choices.put(choice, choiceText);
             }

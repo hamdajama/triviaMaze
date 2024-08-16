@@ -1,3 +1,7 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * GameObjectTest.java
+ */
 package model;
 
 import org.junit.jupiter.api.Assertions;
@@ -10,8 +14,10 @@ public class GameObjectTest {
     public void testConstructorAndGetters() {
         GameObject obj = new GameObject(10, 20);
 
-        Assertions.assertEquals(10, obj.getMyX(),"Starting x coordinate should be 10");
-        Assertions.assertEquals(20, obj.getMyY(),"Starting y coordinate should be 20");
+        Assertions.assertEquals(10, obj.getMyX(),
+                "Starting x coordinate should be 10");
+        Assertions.assertEquals(20, obj.getMyY(),
+                "Starting y coordinate should be 20");
     }
 
     @Test
@@ -20,7 +26,8 @@ public class GameObjectTest {
 
         obj.setMyX(30);
         
-        Assertions.assertEquals(30, obj.getMyX(),"Starting x coordinate should be changed from 10 to 30");
+        Assertions.assertEquals(30, obj.getMyX(),
+                "Starting x coordinate should be changed from 10 to 30");
     }
 
     @Test
@@ -29,7 +36,8 @@ public class GameObjectTest {
 
         obj.setMyY(40);
 
-        Assertions.assertEquals(40, obj.getMyY(), "The y coordinate should be changed from 20 to 40");
+        Assertions.assertEquals(40, obj.getMyY(),
+                "The y coordinate should be changed from 20 to 40");
     }
 
     @Test
@@ -46,7 +54,8 @@ public class GameObjectTest {
 
         obj.displayPosition();
 
-        Assertions.assertEquals(expectedOutput, outContent.toString(), "displayPosition should output the correct position");
+        Assertions.assertEquals(expectedOutput, outContent.toString(),
+                "displayPosition should output the correct position");
     }
 }
 

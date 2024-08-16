@@ -1,15 +1,27 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * MazePanel.java
+ */
 package view;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serial;
+import java.io.Serializable;
+
 import javax.swing.JPanel;
+
+import java.util.Map;
 
 import model.Maze;
 import model.PlayerCharacter;
 
-import java.io.*;
-import java.util.Map;
 
 /**
  * The maze panel for the game that shows the player and the maze.
@@ -58,7 +70,8 @@ public class MazePanel extends JPanel implements Serializable {
      * @param thePlayerCharacter - The character for the game.
      */
     public MazePanel(final Maze theMaze, final PlayerCharacter thePlayerCharacter,
-                     final int theFrameIndex, final Map<String, BufferedImage[]> theCharacterImage,
+                     final int theFrameIndex,
+                     final Map<String, BufferedImage[]> theCharacterImage,
                      final String theDirection) {
         myMaze = theMaze;
         myPlayerCharacter = thePlayerCharacter;
@@ -108,10 +121,10 @@ public class MazePanel extends JPanel implements Serializable {
      * @param theG - The graphics of the game.
      */
     private void drawPlayer(final Graphics theG) {
-        myPlayerCharacter.setMazeDimensions(myMaze.getRoomSize(), myMaze.getRoomSize());
         BufferedImage[] images = myCharacterImages.get(myDirection.toUpperCase());
         BufferedImage currentImage = images[myFrameIndex];
-        theG.drawImage(currentImage, myPlayerCharacter.getMyX() * cellSize, myPlayerCharacter.getMyY()*cellSize + 10, this);
+        theG.drawImage(currentImage, myPlayerCharacter.getMyX() * cellSize,
+                    myPlayerCharacter.getMyY()*cellSize + 10, this);
     }
 
     /**
@@ -128,7 +141,8 @@ public class MazePanel extends JPanel implements Serializable {
      * @param theNewDirection - The new direction the player is heading
      * @param theNewFrameIndex - The frame index of the character sprite.
      */
-    public void updateDirectionAndFrame(final String theNewDirection, final int theNewFrameIndex) {
+    public void updateDirectionAndFrame(final String theNewDirection,
+                                        final int theNewFrameIndex) {
         myDirection = theNewDirection.toUpperCase();
         myFrameIndex = theNewFrameIndex;
         repaint();
@@ -160,7 +174,8 @@ public class MazePanel extends JPanel implements Serializable {
      * @throws ClassNotFoundException When it cannot find the class
      */
     @Serial
-    private void readObject(final ObjectInputStream theIn) throws IOException, ClassNotFoundException {
+    private void readObject(final ObjectInputStream theIn) throws IOException,
+                            ClassNotFoundException {
         theIn.defaultReadObject();
     }
 }

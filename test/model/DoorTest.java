@@ -1,7 +1,13 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * DoorTest.java
+ */
+
 package model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 
 public class DoorTest {
 

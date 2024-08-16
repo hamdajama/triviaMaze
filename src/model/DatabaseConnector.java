@@ -1,3 +1,8 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * DatabaseConnector.java
+ */
+
 package model;
 
 import org.sqlite.SQLiteDataSource;

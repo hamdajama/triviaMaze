@@ -1,3 +1,8 @@
+/**
+ * TCSS 360 - Trivia Maze
+ * GameObject.java
+ */
+
 package model;
 
 import java.io.Serial;
