@@ -34,6 +34,17 @@ public class MazePanel extends JPanel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * The controls for the game.
+     */
+    private static final String[] CONTROLS = {
+            "Controls:",
+            "W - Move Up",
+            "A - Move Left",
+            "S - Move Down",
+            "D - Move Right"
+    };
+
+    /**
      * The maze of the game.
      */
     private final Maze myMaze;
@@ -64,6 +75,8 @@ public class MazePanel extends JPanel implements Serializable {
      */
     private final int cellSize = 75;
 
+
+
     /**
      * Creates the maze panel for the game.
      * @param theMaze - The maze for the game.
@@ -90,7 +103,7 @@ public class MazePanel extends JPanel implements Serializable {
         super.paintComponent(theG);
         drawMaze(theG);
         drawPlayer(theG);
-
+        drawControls(theG);
     }
 
     /**
@@ -125,6 +138,23 @@ public class MazePanel extends JPanel implements Serializable {
         BufferedImage currentImage = images[myFrameIndex];
         theG.drawImage(currentImage, myPlayerCharacter.getMyX() * cellSize,
                     myPlayerCharacter.getMyY()*cellSize + 10, this);
+    }
+
+
+    /**
+     * Draws the game controls on the panel
+     * @param theG - The graphics of the game
+     */
+    private void drawControls(final Graphics theG) {
+        theG.setColor(Color.WHITE);
+        theG.setFont(new Font("Verdana", Font.BOLD, 12));
+        int startX = 10;
+        int startY = getHeight() / 2 + 20;
+
+        for (String control : CONTROLS) {
+            theG.drawString(control, startX, startY);
+            startY += 15; // Move to the next line
+        }
     }
 
     /**
